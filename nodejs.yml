@@ -1,0 +1,39 @@
+name: PR validation
+
+on: [push]
+
+jobs:
+  build:
+    env:
+      CI: 1
+      NODE_ENV: test
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: Install and build
+      run: |
+        npm ci
+        npm run bootstrap
+        npm run eslint
+        npm run prepublishOnly
+    - name: Setup test
+      run: |
+        docker-compose up --build --detach
+    - name: Test
+      run: |
+        npm test -- --ci --coverage true --maxWorkers=4 --no-watch
+    - name: Teardown test
+      run: |
+        docker-compose down --rmi all
+      if: always()
+    - name: Archive bundle artifacts
+      uses: actions/upload-artifact@v1
+
+        name: bundle
+        path: packages/bundle/dist
