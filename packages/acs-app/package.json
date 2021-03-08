@@ -19,7 +19,7 @@
   "scripts": {
     "start": "concurrently --kill-others --names \"react,server\" \"npm run start:react\" \"npm run start:server\"",
     "start:react": "react-scripts start",
-    "start:server": "cd .. && cd acs-server && npm start:dev",
+    "start:server": "cd .. && cd acs-server && npm run start:dev",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

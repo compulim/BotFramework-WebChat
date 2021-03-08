@@ -29,7 +29,9 @@ const rateLimiter = new BurstyRateLimiter(
   })
 );
 
-app.use(async (_, res, next) => {
+const apiRouter = express.Router();
+
+apiRouter.use('/api', async (_, res, next) => {
   try {
     await rateLimiter.consume(1);
   } catch (err) {
@@ -41,7 +43,7 @@ app.use(async (_, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
+apiRouter.use('/api', (req, res, next) => {
   const authenticatorTotp = req.headers['x-authenticator-totp'];
 
   authenticator.options = {
@@ -66,10 +68,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api', cors({ origin: [/^http:\/\/localhost[:\/]/iu, 'https://hawo-acs-dev-appserver.azurewebsites.net'] }));
-app.use('/api', json());
+apiRouter.use('/api', cors({ origin: [/^http:\/\/localhost[:\/]/iu, 'https://hawo-acs-dev-appserver.azurewebsites.net'] }));
+apiRouter.use('/api', json());
 
-app.get('/api/settings', (_, res) => {
+apiRouter.get('/api/settings', (_, res) => {
   try {
     res.send(
       JSON.stringify({
@@ -82,7 +84,7 @@ app.get('/api/settings', (_, res) => {
   }
 });
 
-app.post('/api/acs/chat/threads', async ({ body = {}, headers }, res) => {
+apiRouter.post('/api/acs/chat/threads', async ({ body = {}, headers }, res) => {
   try {
     res.send(
       await createChatThread(body.topic || '', body.members || [], {
@@ -96,7 +98,7 @@ app.post('/api/acs/chat/threads', async ({ body = {}, headers }, res) => {
   }
 });
 
-app.get('/api/acs/chat/threads/:threadId/members', async ({ headers, params }, res) => {
+apiRouter.get('/api/acs/chat/threads/:threadId/members', async ({ headers, params }, res) => {
   try {
     res.send(
       await listChatThreadMembers(params.threadId, {
@@ -110,7 +112,7 @@ app.get('/api/acs/chat/threads/:threadId/members', async ({ headers, params }, r
   }
 });
 
-app.post('/api/acs/chat/threads/:threadId/members', async ({ body = {}, headers, params }, res) => {
+apiRouter.post('/api/acs/chat/threads/:threadId/members', async ({ body = {}, headers, params }, res) => {
   try {
     res.send(
       await addChatThreadMembers(params.threadId, body.members || [], {
@@ -124,7 +126,7 @@ app.post('/api/acs/chat/threads/:threadId/members', async ({ body = {}, headers,
   }
 });
 
-app.post('/api/acs/identities/:id/token', async ({ body = {}, params }, res) => {
+apiRouter.post('/api/acs/identities/:id/token', async ({ body = {}, params }, res) => {
   try {
     res.send(await issueToken(params.id, body.scopes || [], { endpointURL: ACS_ENDPOINT_URL, key: ACS_KEY }));
   } catch (err) {
@@ -133,7 +135,7 @@ app.post('/api/acs/identities/:id/token', async ({ body = {}, params }, res) => 
   }
 });
 
-app.post('/api/acs/identities', async (_, res) => {
+apiRouter.post('/api/acs/identities', async (_, res) => {
   try {
     res.send(await createIdentity({ endpointURL: ACS_ENDPOINT_URL, key: ACS_KEY }));
   } catch (err) {
@@ -142,6 +144,7 @@ app.post('/api/acs/identities', async (_, res) => {
   }
 });
 
+app.use(apiRouter);
 app.use(express.static(PUBLIC_PATH));
 
 app.listen(PORT, () => {
