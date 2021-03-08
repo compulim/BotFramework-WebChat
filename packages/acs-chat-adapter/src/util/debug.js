@@ -2,7 +2,7 @@
 
 import styleConsole from './styleConsole';
 
-const { NODE_ENV } = (process && process.env) || {};
+// const { NODE_ENV } = (process && process.env) || {};
 
 function format({ backgroundColor, color }, category, arg0, ...args) {
   return [`%c${category}%c ${arg0}`, ...styleConsole(backgroundColor, color), ...args];
@@ -10,7 +10,8 @@ function format({ backgroundColor, color }, category, arg0, ...args) {
 
 export default function debug(
   category,
-  { backgroundColor = 'green', color = 'white', force = true, _force = NODE_ENV === 'development' } = {}
+  // { backgroundColor = 'green', color = 'white', force = NODE_ENV === 'development' } = {}
+  { backgroundColor = 'green', color = 'white', force = true } = {}
 ) {
   if (!force) {
     return () => 0;

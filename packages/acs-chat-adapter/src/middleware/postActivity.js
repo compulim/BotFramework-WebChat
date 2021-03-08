@@ -9,8 +9,9 @@ export default function createPostActivityMiddleware({ sendMessage }) {
 
   return () => next => action => {
     if (action.type === POST_ACTIVITY) {
+      // eslint-disable-next-line wrap-iife
       (async function () {
-        const { text, type } = action.payload.activity;
+        const { text, type } = action.payload;
 
         if (type === 'message') {
           const now = Date.now();
@@ -20,6 +21,8 @@ export default function createPostActivityMiddleware({ sendMessage }) {
           await sendMessage(text);
 
           debug(`Message sent, took ${Date.now() - now} ms.`);
+        } else {
+          console.warn(`chat-adapter-acs does not support activity of type ${type}`);
         }
       })();
     }

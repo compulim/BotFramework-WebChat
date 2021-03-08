@@ -2,7 +2,6 @@ import { combineReducers } from 'redux';
 
 import activities from './reducers/activities';
 import connectivityStatus from './reducers/connectivityStatus';
-import sendBoxValue from './reducers/sendBoxValue';
 import typing from './reducers/typing';
 
 function createDummyReducer(initialState) {
@@ -13,7 +12,6 @@ export default function createReducer() {
   return combineReducers({
     activities,
     connectivityStatus,
-    sendBoxValue,
     typing,
 
     clockSkewAdjustment: createDummyReducer(0),
@@ -23,6 +21,7 @@ export default function createReducer() {
     notifications: createDummyReducer([]),
     readyState: createDummyReducer(0),
     referenceGrammarID: createDummyReducer(''),
+    // eslint-disable-next-line no-magic-numbers
     sendTimeout: createDummyReducer(30),
     sendTypingIndicator: createDummyReducer(true),
     shouldSpeakIncomingActivity: createDummyReducer(false),

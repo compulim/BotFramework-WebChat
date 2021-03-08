@@ -1,3 +1,0 @@
-const SET_SEND_BOX = 'WEB_CHAT/SET_SEND_BOX';
-
-export { SET_SEND_BOX };

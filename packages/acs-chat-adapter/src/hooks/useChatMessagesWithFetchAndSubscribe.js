@@ -24,6 +24,7 @@ export default function useChatMessagesWithFetchAndSubscribe() {
   useEffect(() => {
     const abortController = new AbortController();
 
+    // eslint-disable-next-line wrap-iife
     (async function () {
       const now = Date.now();
 

@@ -28,14 +28,12 @@ import {
   setDictateState,
   setLanguage,
   setNotification,
-  setSendBox,
   setSendTimeout,
   setSendTypingIndicator,
   startDictate,
   startSpeakingActivity,
   stopDictate,
-  stopSpeakingActivity,
-  submitSendBox
+  stopSpeakingActivity
 } from 'botframework-webchat-core';
 
 import createDefaultCardActionMiddleware from './middleware/createDefaultCardActionMiddleware';
@@ -43,17 +41,17 @@ import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGr
 import defaultSelectVoice from './internal/defaultSelectVoice';
 import mapMap from '../utils/mapMap';
 import observableToPromise from './utils/observableToPromise';
+import patchStyleOptions from '../patchStyleOptions';
+import SendBoxComposer from './SendBoxComposer';
+import singleToArray from './utils/singleToArray';
 import Tracker from './internal/Tracker';
-import WebChatReduxContext, { useDispatch } from './internal/WebChatReduxContext';
 import WebChatAPIContext from './internal/WebChatAPIContext';
+import WebChatReduxContext, { useDispatch } from './internal/WebChatReduxContext';
 
 import applyMiddleware, {
   forLegacyRenderer as applyMiddlewareForLegacyRenderer,
   forRenderer as applyMiddlewareForRenderer
 } from './middleware/applyMiddleware';
-
-import patchStyleOptions from '../patchStyleOptions';
-import singleToArray from './utils/singleToArray';
 
 // List of Redux actions factory we are hoisting as Web Chat functions
 const DISPATCHERS = {
@@ -70,13 +68,11 @@ const DISPATCHERS = {
   setDictateInterims,
   setDictateState,
   setNotification,
-  setSendBox,
   setSendTimeout,
   startDictate,
   startSpeakingActivity,
   stopDictate,
-  stopSpeakingActivity,
-  submitSendBox
+  stopSpeakingActivity
 };
 
 function createCardActionContext({ cardActionMiddleware, directLine, dispatch }) {
@@ -496,8 +492,10 @@ const Composer = ({
 
   return (
     <WebChatAPIContext.Provider value={context}>
-      {typeof children === 'function' ? children(context) : children}
-      {onTelemetry && <Tracker />}
+      <SendBoxComposer dispatch={dispatch}>
+        {typeof children === 'function' ? children(context) : children}
+        {onTelemetry && <Tracker />}
+      </SendBoxComposer>
     </WebChatAPIContext.Provider>
   );
 };

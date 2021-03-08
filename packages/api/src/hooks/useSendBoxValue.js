@@ -1,6 +1,7 @@
-import { useSelector } from './internal/WebChatReduxContext';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useWebChatSendBoxContext from './internal/useWebChatSendBoxContext';
 
 export default function useSendBoxValue() {
-  return [useSelector(({ sendBoxValue }) => sendBoxValue), useWebChatAPIContext().setSendBox];
+  const { sendBoxValue, setSendBoxValue } = useWebChatSendBoxContext();
+
+  return [sendBoxValue, setSendBoxValue];
 }

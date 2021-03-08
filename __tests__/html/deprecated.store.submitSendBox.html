@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <script crossorigin="anonymous" src="/__dist__/testharness.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script type="text/babel" data-presets="env,stage-3,react">
+      const {
+        WebChatTest: { conditions, createDirectLineWithTranscript, createStore, host, pageObjects, timeouts, token }
+      } = window;
+
+      (async function () {
+        const directLine = createDirectLineWithTranscript([]);
+        const store = createStore();
+
+        const RunFunction = ({ fn }) => {
+          fn();
+
+          return false;
+        };
+
+        const renderWithFunction = fn => {
+          const deferreds = [createDeferred(), createDeferred()];
+
+          ReactDOM.render(
+            <WebChat className="webchat">
+              <RunFunction fn={() => deferreds[0].resolve(fn && fn())} key={Date.now() + ''} />
+            </WebChat>,
+            document.getElementById('webchat'),
+            deferreds[1].resolve
+          );
+
+          return Promise.all(deferreds.map(({ promise }) => promise));
+        };
+
+        await pageObjects.wait(conditions.uiConnected(), timeouts.directLine);
+
+        await renderWithFunction(() => useSendBoxValue()[0]('Hello, World!'));
+
+        store.dispatch({ type: 'WEB_CHAT/SUBMIT_SEND_BOX' });
+
+        // This should show the newly submitted (sent) message.
+        await host.snapshot();
+        await host.done();
+      })().catch(async err => {
+        console.error(err);
+
+        await host.error(err);
+      });
+    </script>
+  </body>
+</html>

@@ -78,6 +78,7 @@ const ACSChatAdapter = ({ children, credentials, threadId }) => {
   useEffect(() => {
     const abortController = new AbortController();
 
+    // eslint-disable-next-line wrap-iife
     (async function () {
       const currentCredentials = await fetchCredentials();
 

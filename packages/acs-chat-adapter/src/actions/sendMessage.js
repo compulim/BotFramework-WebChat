@@ -1,3 +1,0 @@
-const SEND_MESSAGE = 'WEB_CHAT/SEND_MESSAGE';
-
-export { SEND_MESSAGE };

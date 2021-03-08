@@ -14,8 +14,8 @@ export default function useMapper(array, mapper) {
   const toRef = useRef([]);
 
   // Variables for debug use only
-  let debugCachedRef = useRef();
-  let debugMemoizedRef = useRef();
+  const debugCachedRef = useRef();
+  const debugMemoizedRef = useRef();
 
   debugCachedRef.current = false;
   debugMemoizedRef.current = true;

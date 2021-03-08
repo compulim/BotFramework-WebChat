@@ -1,7 +1,7 @@
-export default async function resolveFunction(fnOrValue) {
+export default function resolveFunction(fnOrValue) {
   if (typeof fnOrValue === 'function') {
-    return await fnOrValue();
+    return fnOrValue();
   }
 
-  return await fnOrValue;
+  return fnOrValue;
 }

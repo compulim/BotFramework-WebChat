@@ -18,8 +18,7 @@
     "web-vitals": "^1.1.0"
   },
   "scripts": {
-    "start": "concurrently --kill-others --names \"chat-adapter,react,server\" \"npm run start:chat-adapter\" \"npm run start:react\" \"npm run start:server\"",
-    "start:chat-adapter": "cd .. && cd acs-chat-adapter && npm start",
+    "start": "concurrently --kill-others --names \"react,server\" \"npm run start:react\" \"npm run start:server\"",
     "start:react": "react-scripts start",
     "start:server": "cd .. && cd acs-server && npm run start:dev",
     "build": "react-scripts build",

@@ -41,6 +41,9 @@ import useRegisterScrollToEnd from './hooks/internal/useRegisterScrollToEnd';
 import useStyleSet from './hooks/useStyleSet';
 import useStyleToEmotionObject from './hooks/internal/useStyleToEmotionObject';
 import useUniqueId from './hooks/internal/useUniqueId';
+import createDebug from './Utils/debug';
+
+const debug = createDebug('<BasicTranscript>', { backgroundColor: 'red' });
 
 const {
   useActivities,
@@ -1101,6 +1104,8 @@ const BasicTranscript = ({ className }) => {
   const scrollerRef = useRef(() => Infinity);
 
   const scroller = useCallback((...args) => scrollerRef.current(...args), [scrollerRef]);
+
+  debug('Render');
 
   return (
     <ReactScrollToBottomComposer scroller={scroller}>
