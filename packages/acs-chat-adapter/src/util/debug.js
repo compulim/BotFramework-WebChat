@@ -10,7 +10,7 @@ function format({ backgroundColor, color }, category, arg0, ...args) {
 
 export default function debug(
   category,
-  { backgroundColor = 'green', color = 'white', force = NODE_ENV === 'development' } = {}
+  { backgroundColor = 'green', color = 'white', force = true, _force = NODE_ENV === 'development' } = {}
 ) {
   if (!force) {
     return () => 0;
