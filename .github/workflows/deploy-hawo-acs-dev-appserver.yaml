@@ -97,12 +97,12 @@ jobs:
           name: acs-appserver
 
       - name: Deploy to hawo-acs-dev-appserver
-        uses: azure/webapps-deploy@v2.1.2
+        uses: azure/webapps-deploy@v2
         with:
           app-name: hawo-acs-dev-appserver
           slot-name: production
           publish-profile: ${{ secrets.HAWO_ACS_DEV_APPSERVER_PUBLISH_PROFILE }}
-          package: artifacts/acs-appserver.zip
+          package: acs-appserver.zip
 
   # release:
   #   needs: build
