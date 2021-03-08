@@ -1,0 +1,14 @@
+{
+  "plugins": [
+    [
+      "@babel/plugin-transform-typescript",
+      {
+        "isTSX": true
+      }
+    ]
+  ],
+  "presets": [
+    "@babel/preset-react"
+  ],
+  "sourceMaps": "inline"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "botframework-webchat-chat-adapter-acs",
+  "version": "0.0.0-0",
+  "description": "",
+  "main": "lib/index.js",
+  "module": "lib/esm/index.js",
+  "scripts": {
+    "build": "concurrently \"npm run build:babel\"",
+    "build:babel": "concurrently \"npm run build:babel:*\"",
+    "build:babel:cjs": "babel --config-file ./babel.cjs.config.json --extensions \".js,.jsx,.ts,.tsx\" --out-dir lib src",
+    "build:babel:esm": "babel --config-file ./babel.esm.config.json --extensions \".js,.jsx,.ts,.tsx\" --out-dir lib/esm src",
+    "eslint": "eslint src/**/*.{js,ts}",
+    "lint-staged": "lint-staged",
+    "prettier": "prettier --check src/**/*.{js,ts}",
+    "prestart:babel:cjs": "npm run build:babel:cjs",
+    "prestart:babel:esm": "npm run build:babel:esm",
+    "start": "concurrently \"npm run start:babel\"",
+    "start:babel": "concurrently \"npm run start:babel:*\"",
+    "start:babel:cjs": "npm run build:babel:cjs -- --skip-initial-build --watch",
+    "start:babel:esm": "npm run build:babel:esm -- --skip-initial-build --watch"
+  },
+  "author": "Microsoft Corporation (https://microsoft.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.13.0",
+    "@babel/core": "^7.13.8",
+    "@babel/preset-env": "^7.13.9",
+    "@babel/preset-react": "^7.12.13",
+    "concurrently": "^6.0.0",
+    "eslint": "^7.21.0",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "prettier": "^2.2.1"
+  },
+  "dependencies": {
+    "@azure/acs-ui-sdk": "file:azure-acs-ui-sdk-0.1.0.tgz",
+    "core-js": "3.9.1",
+    "prop-types": "15.7.2"
+  },
+  "peerDependencies": {
+    "react": ">= 16.8.6"
+  }
+}

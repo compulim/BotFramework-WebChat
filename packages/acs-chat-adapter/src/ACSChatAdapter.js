@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import createChatAdapterStore from './createChatAdapterStore';
-import createDebug from '../util/debug';
+import createDebug from './util/debug';
 import resolveFunction from './util/resolveFunction';
 import setActivities from './actions/internal/setActivities';
 import setTyping from './actions/internal/setTyping';
-import styleConsole from '../util/styleConsole';
+import styleConsole from './util/styleConsole';
 import useACSSendMessage from './hooks/useACSSendMessage';
 import useWebChatActivities from './hooks/useWebChatActivities';
 import useWebChatTyping from './hooks/useWebChatTyping';

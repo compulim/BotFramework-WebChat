@@ -1,12 +1,13 @@
 import './App.css';
 
+import { ACSChatAdapter } from 'botframework-webchat-chat-adapter-acs';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import ACSChatAdapter from './adapter/ACSChatAdapter';
 import ACSCredentials from './ui/ACSCredentials';
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
 
+// TODO: Remove before flight
 const DUMMY_OBSERVABLE = {
   subscribe: () => () => {}
 };
