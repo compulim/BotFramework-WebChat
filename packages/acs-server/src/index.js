@@ -44,6 +44,11 @@ apiRouter.use('/api', async (_, res, next) => {
 });
 
 apiRouter.use('/api', (req, res, next) => {
+  // TOTP is skipped for localhost connection
+  if (req.ip === '::ffff:127.0.0.1' || req.ip === '127.0.0.1') {
+    return next();
+  }
+
   const authenticatorTotp = req.headers['x-authenticator-totp'];
 
   authenticator.options = {
@@ -68,7 +73,10 @@ apiRouter.use('/api', (req, res, next) => {
   next();
 });
 
-apiRouter.use('/api', cors({ origin: [/^http:\/\/localhost[:\/]/iu, 'https://hawo-acs-dev-appserver.azurewebsites.net'] }));
+apiRouter.use(
+  '/api',
+  cors({ origin: [/^http:\/\/localhost[:\/]/iu, 'https://hawo-acs-dev-appserver.azurewebsites.net'] })
+);
 apiRouter.use('/api', json());
 
 apiRouter.get('/api/settings', (_, res) => {
