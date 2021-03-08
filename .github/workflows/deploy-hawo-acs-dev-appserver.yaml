@@ -25,6 +25,8 @@ jobs:
         env:
           NODE_ENV: production
 
+      - run: mkdir -p artifacts
+
       # - run: mkdir -p artifacts/tarballs
 
       # - name: Run npm pack api
