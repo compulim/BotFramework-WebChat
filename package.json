@@ -23,7 +23,7 @@
   "keywords": [],
   "scripts": {
     "bootstrap": "lerna bootstrap --ci",
-    "build": "lerna run --ignore acs-app --ignore acs-server --ignore playground --stream build",
+    "build": "lerna run --ignore playground --stream build",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "eslint": "lerna run --parallel --stream eslint -- ",
     "start": "concurrently --kill-others --raw \"serve\" \"serve -p 5001 -c serve-test.json\" \"lerna run --ignore acs-app --ignore acs-server --ignore playground --parallel --stream start\"",
