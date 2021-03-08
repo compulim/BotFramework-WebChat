@@ -1,0 +1,25 @@
+.app {
+  background-color: #eee;
+  height: 100%;
+  width: 100%;
+}
+
+.app__webchat-box {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  margin: auto;
+  max-width: 480px;
+  min-width: 360px;
+}
+
+.app__credentials {
+  background-color: antiquewhite;
+  border: solid 1px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  left: 0;
+  margin: 10px;
+  padding: 10px;
+  position: absolute;
+  top: 0;
+  width: calc(100% - 40px);
+}
