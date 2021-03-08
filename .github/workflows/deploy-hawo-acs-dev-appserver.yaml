@@ -69,11 +69,6 @@ jobs:
       #     name: tarballs
       #     path: artifacts/tarballs/**/*
 
-      - name: Run npm build acs-app
-        run: |
-          cd packages/acs-app
-          npm run build
-
       - name: Build acs-appserver.zip/*
         run: |
           cd packages/acs-server
