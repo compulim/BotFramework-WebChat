@@ -10,6 +10,8 @@ function prettierMarkdown(filenames) {
 module.exports = {
   '{docs,samples}/**/*.{html,js,jsx,ts,tsx}': prettierCode,
   '**/*.md': prettierMarkdown,
-  'packages/{api,bundle,component,core,directlinespeech,playground}/src/**/*.{js,jsx,ts,tsx}': prettierCode,
-  '*.{js,jsx,ts,tsx}': 'npm run eslint'
+  'packages/{api,bundle,component,core,directlinespeech,playground}/src/**/*.{js,jsx,ts,tsx}': [
+    prettierCode,
+    'npm run eslint'
+  ]
 };
