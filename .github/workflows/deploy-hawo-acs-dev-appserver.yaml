@@ -74,11 +74,10 @@ jobs:
           cd packages/acs-server
           zip -r ../../artifacts/acs-appserver.zip . -x *.env* -x *.git* -x *.gitignore*
 
-      - name: Build acs-appserver.zip/public
+      - name: Build acs-appserver.zip/build
         run: |
           cd packages/acs-app
-          mv build public
-          zip -r ../../artifacts/acs-appserver.zip public -x *.env* -x *.git* -x *.gitignore*
+          zip -r ../../artifacts/acs-appserver.zip build -x *.env* -x *.git* -x *.gitignore*
 
       - name: Upload ACS app server
         uses: actions/upload-artifact@v2

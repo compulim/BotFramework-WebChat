@@ -14,7 +14,7 @@ const issueToken = require('./util/acs/issueToken');
 const listChatThreadMembers = require('./util/acs/listChatThreadMembers');
 
 const { ACS_ENDPOINT_URL, ACS_KEY, AUTHENTICATOR_SECRET, PORT = 3001 } = process.env;
-const PUBLIC_PATH = join(__dirname, '../public');
+const PUBLIC_PATH = join(__dirname, '../build');
 
 const app = express();
 const rateLimiter = new BurstyRateLimiter(
