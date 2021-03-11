@@ -10,7 +10,7 @@ import {
   createStore,
   disconnect,
   dismissNotification,
-  markActivity,
+  // markActivity,
   postActivity as createPostActivityAction,
   // sendEvent,
   // sendFiles,
@@ -19,9 +19,9 @@ import {
   // sendPostBack,
   // setDictateInterims,
   // setDictateState,
-  setLanguage,
+  // setLanguage,
   setNotification,
-  setSendTimeout,
+  // setSendTimeout,
   // setSendTypingIndicator,
   // startDictate,
   startSpeakingActivity,
@@ -58,7 +58,7 @@ const DISPATCHERS = {
   // clearSuggestedActions,
   dismissNotification,
   // emitTypingIndicator,
-  markActivity,
+  // markActivity,
   // sendEvent,
   // sendFiles,
   // sendMessage,
@@ -67,7 +67,7 @@ const DISPATCHERS = {
   // setDictateInterims,
   // setDictateState,
   setNotification,
-  setSendTimeout,
+  // setSendTimeout,
   // startDictate,
   startSpeakingActivity,
   // stopDictate,
@@ -157,13 +157,9 @@ const Composer = ({
     styleOptions
   ]);
 
-  useEffect(() => {
-    dispatch(setLanguage(locale));
-  }, [dispatch, locale]);
-
-  useEffect(() => {
-    typeof sendTimeout === 'number' && dispatch(setSendTimeout(sendTimeout));
-  }, [dispatch, sendTimeout]);
+  // useEffect(() => {
+  //   dispatch(setLanguage(locale));
+  // }, [dispatch, locale]);
 
   useEffect(() => {
     dispatch(

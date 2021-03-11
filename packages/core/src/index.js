@@ -13,10 +13,10 @@ import postActivity from './actions/postActivity';
 // import sendPostBack from './actions/sendPostBack';
 // import setDictateInterims from './actions/setDictateInterims';
 // import setDictateState from './actions/setDictateState';
-import setLanguage from './actions/setLanguage';
+// import setLanguage from './actions/setLanguage';
 import setNotification from './actions/setNotification';
 // import setSendBox from './actions/setSendBox';
-import setSendTimeout from './actions/setSendTimeout';
+// import setSendTimeout from './actions/setSendTimeout';
 // import setSendTypingIndicator from './actions/setSendTypingIndicator';
 // import startDictate from './actions/startDictate';
 // import startSpeakingActivity from './actions/startSpeakingActivity';
@@ -48,10 +48,10 @@ export {
   // sendPostBack,
   // setDictateInterims,
   // setDictateState,
-  setLanguage,
+  // setLanguage,
   setNotification,
   // setSendBox,
-  setSendTimeout,
+  // setSendTimeout,
   // setSendTypingIndicator,
   // startDictate,
   // startSpeakingActivity,
