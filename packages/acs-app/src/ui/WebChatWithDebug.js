@@ -6,7 +6,7 @@ import { Components, hooks } from 'botframework-webchat';
 import createDebug from '../util/debug';
 
 const { BasicWebChat, Composer } = Components;
-const { useEmitTypingIndicator, useObserveTranscriptFocus } = hooks;
+const { useObserveTranscriptFocus } = hooks;
 
 let debug;
 
@@ -20,24 +20,10 @@ const Debug = () => {
   return false;
 };
 
-const EmitTypingButton = () => {
-  const emitTypingIndicator = useEmitTypingIndicator();
-  const handleClick = useCallback(() => {
-    emitTypingIndicator();
-  }, [emitTypingIndicator]);
-
-  return (
-    <button className="webchat-with-debug__emit-typing-button" onClick={handleClick}>
-      Emit typing
-    </button>
-  );
-};
-
 const WebChatWithDebug = ({ className, ...props }) => {
   return (
     <Composer {...props}>
       <BasicWebChat className={className} />
-      <EmitTypingButton />
       <Debug />
     </Composer>
   );

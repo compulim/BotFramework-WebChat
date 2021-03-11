@@ -16,7 +16,16 @@ import useScrollUp from '../hooks/useScrollUp';
 import useStyleSet from '../hooks/useStyleSet';
 import useStyleToEmotionObject from '../hooks/internal/useStyleToEmotionObject';
 
-const { useDisabled, useLocalizer, useSendBoxValue, useStopDictate, useStyleOptions, useSubmitSendBox } = hooks;
+const {
+  useDisabled,
+  useEmitTypingIndicator,
+  useInputMode,
+  useLocalizer,
+  useSendBoxValue,
+  useStopDictate,
+  useStyleOptions,
+  useSubmitSendBox
+} = hooks;
 
 const ROOT_STYLE = {
   '&.webchat__send-box-text-box': {
@@ -45,7 +54,7 @@ const connectSendTextBox = (...selectors) =>
 
           if (sendBoxValue) {
             scrollToEnd();
-            submitSendBox();
+            submitSendBox('keyboard');
             focusSendBox();
           }
         }
@@ -58,7 +67,7 @@ const connectSendTextBox = (...selectors) =>
 
         if (sendBoxValue) {
           scrollToEnd();
-          submitSendBox();
+          submitSendBox('keyboard');
         }
       },
       value: sendBoxValue
@@ -67,6 +76,7 @@ const connectSendTextBox = (...selectors) =>
   );
 
 function useTextBoxSubmit() {
+  const [_, setInputMode] = useInputMode();
   const [sendBoxValue] = useSendBoxValue();
   const focus = useFocus();
   const scrollToEnd = useScrollToEnd();
@@ -75,8 +85,9 @@ function useTextBoxSubmit() {
   return useCallback(
     setFocus => {
       if (sendBoxValue) {
+        setInputMode('keyboard');
         scrollToEnd();
-        submitSendBox();
+        submitSendBox('keyboard');
 
         if (setFocus) {
           if (setFocus === true) {
@@ -93,12 +104,18 @@ function useTextBoxSubmit() {
 
       return !!sendBoxValue;
     },
-    [focus, scrollToEnd, sendBoxValue, submitSendBox]
+    [focus, scrollToEnd, setInputMode, sendBoxValue, submitSendBox]
   );
 }
 
 function useTextBoxValue() {
+  const [_, setInputMode] = useInputMode();
   const [value, setValue] = useSendBoxValue();
+
+  // TODO: We should redesign how emitTypingIndicator works with chat adapter.
+  //       Yesterday, we fire emitTypingIndicator on a debounced interval of 3s.
+  //       Tomorrow, maybe we should fire startEmitTypingIndicator and stopEmitTypingIndicator.
+  const emitTypingIndicator = useEmitTypingIndicator();
   const replaceEmoticon = useReplaceEmoticon();
   const stopDictate = useStopDictate();
 
@@ -123,6 +140,8 @@ function useTextBoxValue() {
         nextValue = nextValueWithEmoji;
       }
 
+      setInputMode('keyboard');
+      emitTypingIndicator();
       setValue(nextValue);
       stopDictate();
 
@@ -132,7 +151,7 @@ function useTextBoxValue() {
         value: nextValue
       };
     },
-    [replaceEmoticon, setValue, stopDictate, value]
+    [emitTypingIndicator, replaceEmoticon, setInputMode, setValue, stopDictate, value]
   );
 
   return [value, setter];

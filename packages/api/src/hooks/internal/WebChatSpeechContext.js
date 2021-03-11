@@ -2,6 +2,6 @@ import { createContext } from 'react';
 
 const context = createContext();
 
-context.displayName = 'WebChatSendBoxContext';
+context.displayName = 'WebChatSpeechContext';
 
 export default context;

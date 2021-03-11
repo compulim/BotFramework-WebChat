@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
+import createDebug from './Utils/debug';
 import DictationInterims from './SendBox/DictationInterims';
 import MicrophoneButton from './SendBox/MicrophoneButton';
 import SendButton from './SendBox/SendButton';
@@ -12,13 +13,13 @@ import TextBox from './SendBox/TextBox';
 import UploadButton from './SendBox/UploadButton';
 import useStyleSet from './hooks/useStyleSet';
 import useStyleToEmotionObject from './hooks/internal/useStyleToEmotionObject';
-import useWebSpeechPonyfill from './hooks/useWebSpeechPonyfill';
 
 const {
   DictateState: { DICTATING, STARTING }
 } = Constants;
 
-const { useActivities, useDirection, useDictateState, useStyleOptions } = hooks;
+const { useActivities, useDirection, useDictateState, useStyleOptions, useWebSpeechPonyfill } = hooks;
+let debug;
 
 const ROOT_STYLE = {
   '&.webchat__send-box': {
@@ -46,6 +47,8 @@ function useSendBoxSpeechInterimsVisible() {
 }
 
 const BasicSendBox = ({ className }) => {
+  debug || (debug = createDebug('<BasicSendBox>', { backgroundColor: 'orange', color: 'black' }));
+
   const [{ hideUploadButton, sendBoxButtonAlignment }] = useStyleOptions();
   const [{ sendBox: sendBoxStyleSet }] = useStyleSet();
   const [{ SpeechRecognition } = {}] = useWebSpeechPonyfill();
@@ -62,6 +65,8 @@ const BasicSendBox = ({ className }) => {
     'webchat__send-box__button--align-stretch': sendBoxButtonAlignment !== 'bottom' && sendBoxButtonAlignment !== 'top',
     'webchat__send-box__button--align-top': sendBoxButtonAlignment === 'top'
   });
+
+  // debug('Render', { SpeechRecognition, webSpeechPonyfill: useWebSpeechPonyfill() });
 
   return (
     <div

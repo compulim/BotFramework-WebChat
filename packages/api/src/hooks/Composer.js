@@ -3,47 +3,47 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
-import createCustomEvent from '../utils/createCustomEvent';
-import ErrorBoundary from './utils/ErrorBoundary';
-import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
-import isObject from '../utils/isObject';
-import normalizeLanguage from '../utils/normalizeLanguage';
-import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
-
+// TODO: We need to hoist only the minimal actions.
 import {
-  clearSuggestedActions,
+  // clearSuggestedActions,
   connect as createConnectAction,
   createStore,
   disconnect,
   dismissNotification,
-  emitTypingIndicator,
   markActivity,
-  postActivity,
-  sendEvent,
-  sendFiles,
-  sendMessage,
-  sendMessageBack,
-  sendPostBack,
-  setDictateInterims,
-  setDictateState,
+  postActivity as createPostActivityAction,
+  // sendEvent,
+  // sendFiles,
+  // sendMessage,
+  // sendMessageBack,
+  // sendPostBack,
+  // setDictateInterims,
+  // setDictateState,
   setLanguage,
   setNotification,
   setSendTimeout,
-  setSendTypingIndicator,
-  startDictate,
+  // setSendTypingIndicator,
+  // startDictate,
   startSpeakingActivity,
-  stopDictate,
+  // stopDictate,
   stopSpeakingActivity
 } from 'botframework-webchat-core';
 
-import createDefaultCardActionMiddleware from './middleware/createDefaultCardActionMiddleware';
+import CardActionComposer from './CardActionComposer';
+import createCustomEvent from '../utils/createCustomEvent';
+import createDebug from '../utils/debug';
 import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGroupActivitiesMiddleware';
 import defaultSelectVoice from './internal/defaultSelectVoice';
+import ErrorBoundary from './utils/ErrorBoundary';
+import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
+import InputComposer from './InputComposer';
+import isObject from '../utils/isObject';
 import mapMap from '../utils/mapMap';
-import observableToPromise from './utils/observableToPromise';
+import normalizeLanguage from '../utils/normalizeLanguage';
 import patchStyleOptions from '../patchStyleOptions';
-import SendBoxComposer from './SendBoxComposer';
+import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
+import SpeechComposer from './SpeechComposer';
 import Tracker from './internal/Tracker';
 import WebChatAPIContext from './internal/WebChatAPIContext';
 import WebChatReduxContext, { useDispatch } from './internal/WebChatReduxContext';
@@ -55,62 +55,26 @@ import applyMiddleware, {
 
 // List of Redux actions factory we are hoisting as Web Chat functions
 const DISPATCHERS = {
-  clearSuggestedActions,
+  // clearSuggestedActions,
   dismissNotification,
-  emitTypingIndicator,
+  // emitTypingIndicator,
   markActivity,
-  postActivity,
-  sendEvent,
-  sendFiles,
-  sendMessage,
-  sendMessageBack,
-  sendPostBack,
-  setDictateInterims,
-  setDictateState,
+  // sendEvent,
+  // sendFiles,
+  // sendMessage,
+  // sendMessageBack,
+  // sendPostBack,
+  // setDictateInterims,
+  // setDictateState,
   setNotification,
   setSendTimeout,
-  startDictate,
+  // startDictate,
   startSpeakingActivity,
-  stopDictate,
+  // stopDictate,
   stopSpeakingActivity
 };
 
-function createCardActionContext({ cardActionMiddleware, directLine, dispatch }) {
-  const runMiddleware = applyMiddleware(
-    'card action',
-    ...singleToArray(cardActionMiddleware),
-    createDefaultCardActionMiddleware()
-  )({ dispatch });
-
-  return {
-    onCardAction: (cardAction, { target } = {}) =>
-      runMiddleware({
-        cardAction,
-        getSignInUrl:
-          cardAction.type === 'signin'
-            ? () => {
-                const { value } = cardAction;
-
-                if (directLine.getSessionId) {
-                  /**
-                   * @todo TODO: [P3] We should change this one to async/await.
-                   *       This is the first place in this project to use async.
-                   *       Thus, we need to add @babel/plugin-transform-runtime and @babel/runtime.
-                   */
-                  return observableToPromise(directLine.getSessionId()).then(
-                    sessionId => `${value}${encodeURIComponent(`&code_challenge=${sessionId}`)}`
-                  );
-                }
-
-                console.warn('botframework-webchat: OAuth is not supported on this Direct Line adapter.');
-
-                return value;
-              }
-            : null,
-        target
-      })
-  };
-}
+let debug;
 
 function createGroupActivitiesContext({ groupActivitiesMiddleware, groupTimestamp }) {
   const runMiddleware = applyMiddleware(
@@ -177,8 +141,11 @@ const Composer = ({
   typingIndicatorMiddleware,
   typingIndicatorRenderer,
   userID,
-  username
+  username,
+  webSpeechPonyfillFactory
 }) => {
+  debug || (debug = createDebug('<API.Composer>', { backgroundColor: 'red' }));
+
   const dispatch = useDispatch();
   const telemetryDimensionsRef = useRef({});
 
@@ -199,10 +166,6 @@ const Composer = ({
   }, [dispatch, sendTimeout]);
 
   useEffect(() => {
-    dispatch(setSendTypingIndicator(!!sendTypingIndicator));
-  }, [dispatch, sendTypingIndicator]);
-
-  useEffect(() => {
     dispatch(
       createConnectAction({
         directLine,
@@ -218,12 +181,6 @@ const Composer = ({
       dispatch(disconnect());
     };
   }, [dispatch, directLine, userID, username]);
-
-  const cardActionContext = useMemo(() => createCardActionContext({ cardActionMiddleware, directLine, dispatch }), [
-    cardActionMiddleware,
-    directLine,
-    dispatch
-  ]);
 
   const patchedSelectVoice = useMemo(() => selectVoice || defaultSelectVoice.bind(null, { language: locale }), [
     locale,
@@ -416,6 +373,8 @@ const Composer = ({
     );
   }, [typingIndicatorMiddleware, typingIndicatorRenderer]);
 
+  const postActivity = useCallback((...args) => dispatch(createPostActivityAction(...args)), [dispatch]);
+
   /**
    * This is a heavy function, and it is expected to be only called when there is a need to recreate business logic, e.g.
    * - User ID changed, causing all send* functions to be updated
@@ -429,7 +388,6 @@ const Composer = ({
    */
   const context = useMemo(
     () => ({
-      ...cardActionContext,
       ...groupActivitiesContext,
       ...hoistedDispatchers,
       activityRenderer: patchedActivityRenderer,
@@ -459,7 +417,6 @@ const Composer = ({
       username
     }),
     [
-      cardActionContext,
       directLine,
       disabled,
       downscaleImageToDataURL,
@@ -490,12 +447,18 @@ const Composer = ({
     ]
   );
 
+  // debug('Render', { webSpeechPonyfillFactory });
+
   return (
     <WebChatAPIContext.Provider value={context}>
-      <SendBoxComposer dispatch={dispatch}>
-        {typeof children === 'function' ? children(context) : children}
-        {onTelemetry && <Tracker />}
-      </SendBoxComposer>
+      <InputComposer dispatch={dispatch} postActivity={postActivity} sendTypingIndicator={sendTypingIndicator}>
+        <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
+          <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
+            {typeof children === 'function' ? children(context) : children}
+            {onTelemetry && <Tracker />}
+          </CardActionComposer>
+        </SpeechComposer>
+      </InputComposer>
     </WebChatAPIContext.Provider>
   );
 };
@@ -579,7 +542,8 @@ Composer.defaultProps = {
   typingIndicatorMiddleware: undefined,
   typingIndicatorRenderer: undefined,
   userID: '',
-  username: ''
+  username: '',
+  webSpeechPonyfillFactory: undefined
 };
 
 Composer.propTypes = {
@@ -627,5 +591,6 @@ Composer.propTypes = {
   typingIndicatorMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   typingIndicatorRenderer: PropTypes.func,
   userID: PropTypes.string,
-  username: PropTypes.string
+  username: PropTypes.string,
+  webSpeechPonyfillFactory: PropTypes.func
 };

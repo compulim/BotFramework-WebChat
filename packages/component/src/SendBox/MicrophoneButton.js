@@ -11,22 +11,23 @@ import React, { useCallback, useState } from 'react';
 import connectToWebChat from '../connectToWebChat';
 import IconButton from './IconButton';
 import MicrophoneIcon from './Assets/MicrophoneIcon';
-import useDictateAbortable from '../hooks/useDictateAbortable';
 import useStyleSet from '../hooks/useStyleSet';
 import useStyleToEmotionObject from '../hooks/internal/useStyleToEmotionObject';
-import useWebSpeechPonyfill from '../hooks/useWebSpeechPonyfill';
+// import useWebSpeechPonyfill from '../hooks/useWebSpeechPonyfill';
 
 const { DictateState } = Constants;
 
 const {
+  useDictateAbortable,
   useDictateInterims,
   useDictateState,
   useDisabled,
   useLocalizer,
   useSendBoxValue,
-  useShouldSpeakIncomingActivity,
+  // useShouldSpeakIncomingActivity,
   useStartDictate,
-  useStopDictate
+  useStopDictate,
+  useWebSpeechPonyfill
 } = hooks;
 
 const ROOT_STYLE = {
@@ -58,24 +59,20 @@ const connectMicrophoneButton = (...selectors) => {
 
   return connectToWebChat(
     ({
-      disabled,
       dictateInterims,
       dictateState,
+      disabled,
       language,
       setSendBox,
       startDictate,
       stopDictate,
-      stopSpeakingActivity,
       webSpeechPonyfill: { speechSynthesis, SpeechSynthesisUtterance } = {}
     }) => ({
       click: () => {
-        if (dictateState === DictateState.WILL_START) {
-          stopSpeakingActivity();
-        } else if (dictateState === DictateState.DICTATING) {
+        if (dictateState === DictateState.DICTATING || dictateState === DictateState.STARTING) {
           stopDictate();
           setSendBox(dictateInterims.join(' '));
         } else {
-          stopSpeakingActivity();
           startDictate();
         }
 
@@ -91,7 +88,6 @@ const connectMicrophoneButton = (...selectors) => {
 
 const useMicrophoneButtonClick = () => {
   const [, setSendBox] = useSendBoxValue();
-  const [, setShouldSpeakIncomingActivity] = useShouldSpeakIncomingActivity();
   const [{ speechSynthesis, SpeechSynthesisUtterance } = {}] = useWebSpeechPonyfill();
   const [dictateInterims] = useDictateInterims();
   const [dictateState] = useDictateState();
@@ -112,13 +108,10 @@ const useMicrophoneButtonClick = () => {
   // TODO: [P2] We should revisit this function later
   //       The click() logic seems local to the component, but may not be generalized across all implementations.
   return useCallback(() => {
-    if (dictateState === DictateState.WILL_START) {
-      setShouldSpeakIncomingActivity(false);
-    } else if (dictateState === DictateState.DICTATING) {
+    if (dictateState === DictateState.DICTATING || dictateState === DictateState.STARTING) {
       stopDictate();
       setSendBox(dictateInterims.join(' '));
-    } else {
-      setShouldSpeakIncomingActivity(false);
+    } else if (dictateState === DictateState.IDLE) {
       startDictate();
     }
 
@@ -128,7 +121,6 @@ const useMicrophoneButtonClick = () => {
     dictateState,
     primeSpeechSynthesis,
     setSendBox,
-    setShouldSpeakIncomingActivity,
     speechSynthesis,
     SpeechSynthesisUtterance,
     startDictate,

@@ -1,18 +1,19 @@
 import { useCallback } from 'react';
 
-import { useSelector } from './internal/WebChatReduxContext';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useStartSynthesizeActivityFromOthers from './internal/useStartSynthesizeActivityFromOthers';
+import useStopSynthesizeActivityFromOthers from './internal/useStopSynthesizeActivityFromOthers';
+import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
 
 export default function useShouldSpeakIncomingActivity() {
-  const { startSpeakingActivity, stopSpeakingActivity } = useWebChatAPIContext();
+  const { shouldSynthesizeActivityFromOthers } = useWebChatSpeechContext();
+  const startSynthesizeActivityFromOthers = useStartSynthesizeActivityFromOthers();
+  const stopSynthesizeActivityFromOthers = useStopSynthesizeActivityFromOthers();
 
   return [
-    useSelector(({ shouldSpeakIncomingActivity }) => shouldSpeakIncomingActivity),
-    useCallback(
-      value => {
-        value ? startSpeakingActivity() : stopSpeakingActivity();
-      },
-      [startSpeakingActivity, stopSpeakingActivity]
-    )
+    shouldSynthesizeActivityFromOthers,
+    useCallback(value => (value ? startSynthesizeActivityFromOthers() : stopSynthesizeActivityFromOthers()), [
+      startSynthesizeActivityFromOthers,
+      stopSynthesizeActivityFromOthers
+    ])
   ];
 }

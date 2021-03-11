@@ -1,27 +1,27 @@
-import { put, takeEvery } from 'redux-saga/effects';
+// import { put, takeEvery } from 'redux-saga/effects';
 
-import { SEND_MESSAGE } from '../actions/sendMessage';
-import postActivity from '../actions/postActivity';
-import whileConnected from './effects/whileConnected';
+// import { SEND_MESSAGE } from '../actions/sendMessage';
+// import postActivity from '../actions/postActivity';
+// import whileConnected from './effects/whileConnected';
 
-function* postActivityWithMessage({ payload: { channelData, method, text } }) {
-  yield put(
-    postActivity(
-      {
-        channelData,
-        text,
-        textFormat: 'plain',
-        type: 'message'
-      },
-      method
-    )
-  );
-}
+// function* postActivityWithMessage({ payload: { channelData, method, text } }) {
+//   yield put(
+//     postActivity(
+//       {
+//         channelData,
+//         text,
+//         textFormat: 'plain',
+//         type: 'message'
+//       },
+//       method
+//     )
+//   );
+// }
 
-function* sendMessageToPostActivity() {
-  yield takeEvery(({ payload, type }) => type === SEND_MESSAGE && payload.text, postActivityWithMessage);
-}
+// function* sendMessageToPostActivity() {
+//   yield takeEvery(({ payload, type }) => type === SEND_MESSAGE && payload.text, postActivityWithMessage);
+// }
 
-export default function* sendMessageToPostActivitySaga() {
-  yield whileConnected(sendMessageToPostActivity);
-}
+// export default function* sendMessageToPostActivitySaga() {
+//   yield whileConnected(sendMessageToPostActivity);
+// }

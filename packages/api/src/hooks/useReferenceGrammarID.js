@@ -1,5 +1,5 @@
-import { useSelector } from './internal/WebChatReduxContext';
+import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
 
 export default function useReferenceGrammarID() {
-  return [useSelector(({ referenceGrammarID }) => referenceGrammarID)];
+  return [useWebChatSpeechContext().referenceGrammarId];
 }

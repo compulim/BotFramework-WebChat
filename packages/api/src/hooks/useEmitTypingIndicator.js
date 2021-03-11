@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useWebChatInputContext from './internal/useWebChatInputContext';
 
 export default function useEmitTypingIndicator() {
-  return useWebChatAPIContext().emitTypingIndicator;
+  return useWebChatInputContext().emitTypingIndicator;
 }

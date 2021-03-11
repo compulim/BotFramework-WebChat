@@ -1,7 +1,7 @@
-import useWebChatSendBoxContext from './internal/useWebChatSendBoxContext';
+import useWebChatInputContext from './internal/useWebChatInputContext';
 
 export default function useSendBoxValue() {
-  const { sendBoxValue, setSendBoxValue } = useWebChatSendBoxContext();
+  const { sendBoxValue, setSendBoxValue } = useWebChatInputContext();
 
   return [sendBoxValue, setSendBoxValue];
 }

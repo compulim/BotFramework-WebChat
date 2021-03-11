@@ -3,9 +3,8 @@ import { useEffect } from 'react';
 
 import { checkSupport as supportWorker } from '../../Utils/downscaleImageToDataURL/downscaleImageToDataURLUsingWorker';
 import { speechSynthesis } from './BypassSpeechSynthesisPonyfill';
-import useWebSpeechPonyfill from '../useWebSpeechPonyfill';
 
-const { useTrackDimension } = hooks;
+const { useTrackDimension, useWebSpeechPonyfill } = hooks;
 
 const Tracker = () => {
   const [webSpeechPonyfill] = useWebSpeechPonyfill();

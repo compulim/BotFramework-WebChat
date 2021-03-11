@@ -1,9 +1,5 @@
-import { useCallback } from 'react';
-
-import useMarkActivity from './internal/useMarkActivity';
+import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
 
 export default function useMarkActivityAsSpoken() {
-  const markActivity = useMarkActivity();
-
-  return useCallback(activity => markActivity(activity, 'speak', false), [markActivity]);
+  return useWebChatSpeechContext().markActivityAsSpoken;
 }

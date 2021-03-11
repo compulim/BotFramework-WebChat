@@ -1,4 +1,3 @@
-import useDictateAbortable from './useDictateAbortable';
 import useFocus from './useFocus';
 import useFocusSendBox from './useFocusSendBox';
 import useObserveScrollPosition from './useObserveScrollPosition';
@@ -18,7 +17,6 @@ import { useTextBoxSubmit, useTextBoxValue } from '../SendBox/TextBox';
 import { useTypingIndicatorVisible } from '../BasicTypingIndicator';
 
 export {
-  useDictateAbortable,
   useFocus,
   useFocusSendBox,
   useMicrophoneButtonClick,

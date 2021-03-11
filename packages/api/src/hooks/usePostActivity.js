@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useWebChatInputContext from './internal/useWebChatInputContext';
 
 export default function usePostActivity() {
-  return useWebChatAPIContext().postActivity;
+  return useWebChatInputContext().postActivity;
 }

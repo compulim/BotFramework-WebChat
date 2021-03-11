@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useWebChatInputContext from './internal/useWebChatInputContext';
 
 export default function useSendMessage() {
-  return useWebChatAPIContext().sendMessage;
+  return useWebChatInputContext().sendMessage;
 }

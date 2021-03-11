@@ -13,7 +13,7 @@ import useSuggestedActionsAccessKey from '../hooks/internal/useSuggestedActionsA
 import useStyleSet from '../hooks/useStyleSet';
 import useStyleToEmotionObject from '../hooks/internal/useStyleToEmotionObject';
 
-const { useDirection, useDisabled, usePerformCardAction, useStyleOptions, useSuggestedActions } = hooks;
+const { useDirection, useDisabled, usePerformCardAction, useStyleOptions } = hooks;
 
 const ROOT_STYLE = {
   '&.webchat__suggested-action': {
@@ -26,10 +26,9 @@ const ROOT_STYLE = {
 
 const connectSuggestedAction = (...selectors) =>
   connectToWebChat(
-    ({ clearSuggestedActions, disabled, language, onCardAction }, { displayText, text, type, value }) => ({
+    ({ disabled, language, onCardAction }, { displayText, text, type, value }) => ({
       click: () => {
         onCardAction({ displayText, text, type, value });
-        type === 'openUrl' && clearSuggestedActions();
       },
       disabled,
       language
@@ -49,9 +48,8 @@ const SuggestedAction = ({
   type,
   value
 }) => {
-  const [_, setSuggestedActions] = useSuggestedActions();
-  const [{ suggestedActionsStackedLayoutButtonTextWrap }] = useStyleOptions();
   const [{ suggestedAction: suggestedActionStyleSet }] = useStyleSet();
+  const [{ suggestedActionsStackedLayoutButtonTextWrap }] = useStyleOptions();
   const [accessKey] = useSuggestedActionsAccessKey();
   const [direction] = useDirection();
   const [disabled] = useDisabled();
@@ -59,20 +57,16 @@ const SuggestedAction = ({
   const focusRef = useRef();
   const localizeAccessKey = useLocalizeAccessKey();
   const performCardAction = usePerformCardAction();
-  const scrollToEnd = useScrollToEnd();
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
+  const scrollToEnd = useScrollToEnd();
 
   const handleClick = useCallback(
     ({ target }) => {
       performCardAction({ displayText, text, type, value }, { target });
-
-      // Since "openUrl" action do not submit, the suggested action buttons do not hide after click.
-      type === 'openUrl' && setSuggestedActions([]);
-
       focus('sendBoxWithoutKeyboard');
       scrollToEnd();
     },
-    [displayText, focus, performCardAction, scrollToEnd, setSuggestedActions, text, type, value]
+    [displayText, focus, performCardAction, scrollToEnd, text, type, value]
   );
 
   useFocusAccessKeyEffect(accessKey, focusRef);

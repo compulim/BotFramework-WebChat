@@ -392,15 +392,21 @@ useDictateAbortable(): [boolean]
 ```
 <!-- prettier-ignore-end -->
 
+(TODO: We always return `true` now)
+
 When called, this hook will return `true` if the current dictation is abortable, otherwise, `false`.
 
 ## `useDictateInterims`
 
 <!-- prettier-ignore-start -->
 ```js
-useDictateInterims(): [string[][]]
+useDictateInterims(): [string[]?]
 ```
 <!-- prettier-ignore-end -->
+
+(In previous versions of this documentation, we wrote `[string[][]]`. This is wrong. Since the first version of `useDictateInterims` hook, it should return `[string[]]` instead.)
+
+New in 4.13.0: If the interims returned is `undefined` instead of `Array`, it indicates it is not dictating.
 
 This hook will return active interims processed from a dictation event.
 
@@ -415,6 +421,8 @@ useDictateState(): [string]
 <!-- prettier-ignore-end -->
 
 This hook will return one of the following dictation states:
+
+(TODO: We no longer produce `WILL_START` and `STOPPING` state)
 
 -  `IDLE`: Recognition engine is idle; not recognizing
 -  `WILL_START`: Will start recognition after synthesis completed

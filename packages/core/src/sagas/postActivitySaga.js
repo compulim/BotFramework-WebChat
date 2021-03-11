@@ -25,7 +25,7 @@ function getTimestamp(clockSkewAdjustment = 0) {
   return new Date(Date.now() + clockSkewAdjustment).toISOString();
 }
 
-function* postActivity(directLine, userID, username, numActivitiesPosted, { meta: { method }, payload: { activity } }) {
+function* postActivity(directLine, userID, username, numActivitiesPosted, { meta: { method }, payload: activity }) {
   const { clockSkewAdjustment, locale } = yield select(
     combineSelectors({ clockSkewAdjustment: clockSkewAdjustmentSelector, locale: languageSelector })
   );

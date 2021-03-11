@@ -44,7 +44,7 @@ const DictationInterims = ({ className }) => {
     </p>
   ) : (
     dictateState === DICTATING &&
-      (dictateInterims.length ? (
+      (dictateInterims && dictateInterims.length ? (
         <p className={classNames(dictationInterimsStyleSet + '', rootClassName, (className || '') + '', 'dictating')}>
           {dictateInterims.map((interim, index) => (
             <span key={index}>

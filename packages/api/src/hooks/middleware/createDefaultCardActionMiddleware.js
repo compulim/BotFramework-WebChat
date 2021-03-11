@@ -1,7 +1,5 @@
-import { sendMessage, sendMessageBack, sendPostBack } from 'botframework-webchat-core';
-
 export default function createDefaultCardActionMiddleware() {
-  return ({ dispatch }) => next => (...args) => {
+  return ({ sendMessage, sendMessageBack, sendPostBack }) => next => (...args) => {
     const [
       {
         cardAction: { displayText, text, type, value }
@@ -12,7 +10,7 @@ export default function createDefaultCardActionMiddleware() {
       case 'imBack':
         if (typeof value === 'string') {
           // TODO: [P4] Instead of calling dispatch, we should move to dispatchers instead for completeness
-          dispatch(sendMessage(value, 'imBack'));
+          sendMessage(value);
         } else {
           throw new Error('cannot send "imBack" with a non-string value');
         }
@@ -20,12 +18,12 @@ export default function createDefaultCardActionMiddleware() {
         break;
 
       case 'messageBack':
-        dispatch(sendMessageBack(value, text, displayText));
+        sendMessageBack(value, text, displayText);
 
         break;
 
       case 'postBack':
-        dispatch(sendPostBack(value));
+        sendPostBack(value);
 
         break;
 

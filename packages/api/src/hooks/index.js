@@ -10,6 +10,7 @@ import useCreateAttachmentForScreenReaderRenderer from './useCreateAttachmentFor
 import useCreateAvatarRenderer from './useCreateAvatarRenderer';
 import useDateFormatter from './useDateFormatter';
 import useDebouncedNotifications from './useDebouncedNotifications';
+import useDictateAbortable from './useDictateAbortable';
 import useDictateInterims from './useDictateInterims';
 import useDictateState from './useDictateState';
 import useDirection from './useDirection';
@@ -20,6 +21,7 @@ import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
 import useGrammars from './useGrammars';
 import useGroupActivities from './useGroupActivities';
 import useGroupTimestamp from './useGroupTimestamp';
+import useInputMode from './useInputMode';
 import useLanguage from './useLanguage';
 import useLastTypingAt from './useLastTypingAt';
 import useLocalize from './useLocalize'; // Deprecated on or after 2022-02-12
@@ -51,6 +53,7 @@ import useStopDictate from './useStopDictate';
 import useStyleOptions from './useStyleOptions';
 import useSubmitSendBox from './useSubmitSendBox';
 import useSuggestedActions from './useSuggestedActions';
+import useSynthesizingActivities from './useSynthesizingActivities';
 import useTimeoutForSend from './useTimeoutForSend';
 import useTrackDimension from './useTrackDimension';
 import useTrackEvent from './useTrackEvent';
@@ -59,6 +62,7 @@ import useTrackTiming from './useTrackTiming';
 import useUserID from './useUserID';
 import useUsername from './useUsername';
 import useVoiceSelector from './useVoiceSelector';
+import useWebSpeechPonyfill from './useWebSpeechPonyfill';
 
 export {
   useActiveTyping,
@@ -73,6 +77,7 @@ export {
   useCreateAvatarRenderer,
   useDateFormatter,
   useDebouncedNotifications,
+  useDictateAbortable,
   useDictateInterims,
   useDictateState,
   useDirection,
@@ -83,6 +88,7 @@ export {
   useGrammars,
   useGroupActivities,
   useGroupTimestamp,
+  useInputMode,
   useLanguage,
   useLastTypingAt,
   useLocalize,
@@ -114,6 +120,7 @@ export {
   useStyleOptions,
   useSubmitSendBox,
   useSuggestedActions,
+  useSynthesizingActivities,
   useTimeoutForSend,
   useTrackDimension,
   useTrackEvent,
@@ -121,5 +128,6 @@ export {
   useTrackTiming,
   useUserID,
   useUsername,
-  useVoiceSelector
+  useVoiceSelector,
+  useWebSpeechPonyfill
 };

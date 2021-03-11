@@ -1,6 +1,5 @@
-import { useSelector } from './internal/WebChatReduxContext';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
 
 export default function useDictateInterims() {
-  return [useSelector(({ dictateInterims }) => dictateInterims) || [], useWebChatAPIContext().setDictateInterims];
+  return [useWebChatSpeechContext().speechRecognitionInterims];
 }

@@ -1,9 +1,11 @@
 import './App.css';
 
 import { ACSChatAdapter } from 'botframework-webchat-chat-adapter-acs';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { createCognitiveServicesSpeechServicesPonyfillFactory } from 'botframework-webchat';
 
 import ACSCredentials from './ui/ACSCredentials';
+import createFetchSpeechServicesCredentials from './util/createFetchSpeechServicesCredentials';
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
 
@@ -48,6 +50,25 @@ const App = () => {
   const credentials = useCallback(async () => ({ endpointURL, token }), [endpointURL, token]);
   const handleStartClick = useCallback(() => setStarted(Date.now()), [setStarted]);
 
+  const [webSpeechPonyfillFactory, setWebSpeechPonyfillFactory] = useState();
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    const fetchSpeechServicesCredentials = createFetchSpeechServicesCredentials(
+      'https://webchat-mockbot.azurewebsites.net/speechservices/token'
+    );
+
+    (async function () {
+      const webSpeechPonyfillFactory = await createCognitiveServicesSpeechServicesPonyfillFactory({
+        credentials: fetchSpeechServicesCredentials
+      });
+
+      abortController.signal.aborted || setWebSpeechPonyfillFactory(() => webSpeechPonyfillFactory);
+    })();
+
+    return () => abortController.abort();
+  }, [setWebSpeechPonyfillFactory]);
+
   return (
     <div className="app">
       {started && (
@@ -56,7 +77,12 @@ const App = () => {
             {({ connected, store }) =>
               connected ? (
                 // At release, this line can be replaced by <ReactWebChat className="app__webchat" store={store} />.
-                <WebChatWithDebug className="app__webchat" directLine={dummyDirectLine} store={store} />
+                <WebChatWithDebug
+                  className="app__webchat"
+                  directLine={dummyDirectLine}
+                  store={store}
+                  webSpeechPonyfillFactory={webSpeechPonyfillFactory}
+                />
               ) : (
                 <div>Connecting to ACS&hellip;</div>
               )

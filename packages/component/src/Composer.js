@@ -6,12 +6,9 @@ import MarkdownIt from 'markdown-it';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import {
-  speechSynthesis as bypassSpeechSynthesis,
-  SpeechSynthesisUtterance as BypassSpeechSynthesisUtterance
-} from './hooks/internal/BypassSpeechSynthesisPonyfill';
 import addTargetBlankToHyperlinksMarkdown from './Utils/addTargetBlankToHyperlinksMarkdown';
 import createCSSKey from './Utils/createCSSKey';
+import createDebug from './Utils/debug';
 import createDefaultActivityMiddleware from './Middleware/Activity/createCoreMiddleware';
 import createDefaultActivityStatusMiddleware from './Middleware/ActivityStatus/createCoreMiddleware';
 import createDefaultAttachmentForScreenReaderMiddleware from './Middleware/AttachmentForScreenReader/createCoreMiddleware';
@@ -20,7 +17,6 @@ import createDefaultAvatarMiddleware from './Middleware/Avatar/createCoreMiddlew
 import createDefaultCardActionMiddleware from './Middleware/CardAction/createCoreMiddleware';
 import createDefaultToastMiddleware from './Middleware/Toast/createCoreMiddleware';
 import createDefaultTypingIndicatorMiddleware from './Middleware/TypingIndicator/createCoreMiddleware';
-import Dictation from './Dictation';
 import downscaleImageToDataURL from './Utils/downscaleImageToDataURL';
 import ErrorBox from './ErrorBox';
 import mapMap from './Utils/mapMap';
@@ -28,7 +24,9 @@ import singleToArray from './Utils/singleToArray';
 import UITracker from './hooks/internal/UITracker';
 import WebChatUIContext from './hooks/internal/WebChatUIContext';
 
-const { useReferenceGrammarID, useStyleOptions } = hooks;
+const { useStyleOptions, useWebSpeechPonyfill } = hooks;
+
+let debug;
 
 // eslint-disable-next-line no-undef
 const node_env = process.env.node_env || process.env.NODE_ENV;
@@ -39,18 +37,11 @@ function styleSetToEmotionObjects(styleToEmotionObject, styleSet) {
   return mapMap(styleSet, (style, key) => (key === 'options' ? style : styleToEmotionObject(style)));
 }
 
-const ComposerCore = ({
-  children,
-  extraStyleSet,
-  nonce,
-  renderMarkdown,
-  styleSet,
-  suggestedActionsAccessKey,
-  webSpeechPonyfillFactory
-}) => {
-  const [dictateAbortable, setDictateAbortable] = useState();
-  const [referenceGrammarID] = useReferenceGrammarID();
+const ComposerCore = ({ children, extraStyleSet, nonce, renderMarkdown, styleSet, suggestedActionsAccessKey }) => {
+  debug || (debug = createDebug('<Component.Composer>', { backgroundColor: 'orange', color: 'black' }));
+
   const [styleOptions] = useStyleOptions();
+  const callbackRefs = useRef([]);
   const focusSendBoxCallbacksRef = useRef([]);
   const focusTranscriptCallbacksRef = useRef([]);
   const internalMarkdownIt = useMemo(() => new MarkdownIt(), []);
@@ -60,10 +51,6 @@ const ComposerCore = ({
   // Instead of having a `scrollUpCallbacksRef` and `scrollDownCallbacksRef`, they are combined into a single `scrollRelativeCallbacksRef`.
   // The first argument tells whether it should go "up" or "down".
   const scrollRelativeCallbacksRef = useRef([]);
-
-  const dictationOnError = useCallback(err => {
-    console.error(err);
-  }, []);
 
   const internalRenderMarkdownInline = useMemo(
     () => markdown => {
@@ -95,17 +82,6 @@ const ComposerCore = ({
       }),
     [extraStyleSet, styleOptions, styleSet, styleToEmotionObject]
   );
-
-  const webSpeechPonyfill = useMemo(() => {
-    const ponyfill = webSpeechPonyfillFactory && webSpeechPonyfillFactory({ referenceGrammarID });
-    const { speechSynthesis, SpeechSynthesisUtterance } = ponyfill || {};
-
-    return {
-      ...ponyfill,
-      speechSynthesis: speechSynthesis || bypassSpeechSynthesis,
-      SpeechSynthesisUtterance: SpeechSynthesisUtterance || BypassSpeechSynthesisUtterance
-    };
-  }, [referenceGrammarID, webSpeechPonyfillFactory]);
 
   const scrollPositionObserversRef = useRef([]);
   const [numScrollPositionObservers, setNumScrollPositionObservers] = useState(0);
@@ -149,9 +125,11 @@ const ComposerCore = ({
     [transcriptFocusObserversRef, setNumTranscriptFocusObservers]
   );
 
+  const [webSpeechPonyfill] = useWebSpeechPonyfill();
+
   const context = useMemo(
     () => ({
-      dictateAbortable,
+      callbackRefs,
       dispatchScrollPosition,
       dispatchTranscriptFocus,
       focusSendBoxCallbacksRef,
@@ -167,14 +145,12 @@ const ComposerCore = ({
       scrollRelativeCallbacksRef,
       scrollToCallbacksRef,
       scrollToEndCallbacksRef,
-      setDictateAbortable,
       styleSet: patchedStyleSet,
       styleToEmotionObject,
-      suggestedActionsAccessKey,
-      webSpeechPonyfill
+      suggestedActionsAccessKey
     }),
     [
-      dictateAbortable,
+      callbackRefs,
       dispatchScrollPosition,
       dispatchTranscriptFocus,
       focusSendBoxCallbacksRef,
@@ -191,19 +167,14 @@ const ComposerCore = ({
       scrollRelativeCallbacksRef,
       scrollToCallbacksRef,
       scrollToEndCallbacksRef,
-      setDictateAbortable,
       styleToEmotionObject,
-      suggestedActionsAccessKey,
-      webSpeechPonyfill
+      suggestedActionsAccessKey
     ]
   );
 
   return (
     <SayComposer ponyfill={webSpeechPonyfill}>
-      <WebChatUIContext.Provider value={context}>
-        {children}
-        <Dictation onError={dictationOnError} />
-      </WebChatUIContext.Provider>
+      <WebChatUIContext.Provider value={context}>{children}</WebChatUIContext.Provider>
     </SayComposer>
   );
 };
@@ -213,8 +184,7 @@ ComposerCore.defaultProps = {
   nonce: undefined,
   renderMarkdown: undefined,
   styleSet: undefined,
-  suggestedActionsAccessKey: 'A a Å å',
-  webSpeechPonyfillFactory: undefined
+  suggestedActionsAccessKey: 'A a Å å'
 };
 
 ComposerCore.propTypes = {
@@ -222,8 +192,7 @@ ComposerCore.propTypes = {
   nonce: PropTypes.string,
   renderMarkdown: PropTypes.func,
   styleSet: PropTypes.any,
-  suggestedActionsAccessKey: PropTypes.oneOfType([PropTypes.oneOf([false]), PropTypes.string]),
-  webSpeechPonyfillFactory: PropTypes.func
+  suggestedActionsAccessKey: PropTypes.oneOfType([PropTypes.oneOf([false]), PropTypes.string])
 };
 
 const Composer = ({
@@ -240,7 +209,6 @@ const Composer = ({
   suggestedActionsAccessKey,
   toastMiddleware,
   typingIndicatorMiddleware,
-  webSpeechPonyfillFactory,
   ...composerProps
 }) => {
   const { nonce, onTelemetry } = composerProps;
@@ -310,7 +278,6 @@ const Composer = ({
           renderMarkdown={renderMarkdown}
           styleSet={styleSet}
           suggestedActionsAccessKey={suggestedActionsAccessKey}
-          webSpeechPonyfillFactory={webSpeechPonyfillFactory}
         >
           {children}
           {onTelemetry && <UITracker />}
@@ -339,8 +306,7 @@ Composer.defaultProps = {
   toastMiddleware: undefined,
   toastRenderer: undefined,
   typingIndicatorMiddleware: undefined,
-  typingIndicatorRenderer: undefined,
-  webSpeechPonyfillFactory: undefined
+  typingIndicatorRenderer: undefined
 };
 
 Composer.propTypes = {
@@ -362,8 +328,7 @@ Composer.propTypes = {
   toastMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   toastRenderer: PropTypes.func,
   typingIndicatorMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
-  typingIndicatorRenderer: PropTypes.func,
-  webSpeechPonyfillFactory: PropTypes.func
+  typingIndicatorRenderer: PropTypes.func
 };
 
 export default Composer;

@@ -41,9 +41,6 @@ import useRegisterScrollToEnd from './hooks/internal/useRegisterScrollToEnd';
 import useStyleSet from './hooks/useStyleSet';
 import useStyleToEmotionObject from './hooks/internal/useStyleToEmotionObject';
 import useUniqueId from './hooks/internal/useUniqueId';
-import createDebug from './Utils/debug';
-
-const debug = createDebug('<BasicTranscript>', { backgroundColor: 'red' });
 
 const {
   useActivities,
@@ -53,6 +50,7 @@ const {
   useDirection,
   useGroupActivities,
   useLocalizer,
+  useSynthesizingActivities,
   useStyleOptions
 } = hooks;
 
@@ -92,9 +90,10 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   const [
     { bubbleFromUserNubOffset, bubbleNubOffset, groupTimestamp, internalLiveRegionFadeAfter, showAvatarInGroup }
   ] = useStyleOptions();
-  const [focusedActivityKey, setFocusedActivityKey] = useState();
   const [activities] = useActivities();
   const [direction] = useDirection();
+  const [focusedActivityKey, setFocusedActivityKey] = useState();
+  const [synthesizingActivities] = useSynthesizingActivities();
   const createActivityRenderer = useCreateActivityRenderer();
   const createActivityStatusRenderer = useCreateActivityStatusRenderer();
   const createAvatarRenderer = useCreateAvatarRenderer();
@@ -351,9 +350,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             renderActivityStatus,
             renderAvatar,
             role,
-
-            // TODO: [P2] #2858 We should use core/definitions/speakingActivity for this predicate instead
-            shouldSpeak: activity.channelData && activity.channelData.speak,
+            shouldSpeak: synthesizingActivities.includes(activity),
             showCallout
           });
         });
@@ -398,7 +395,8 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     createAvatarRenderer,
     hideAllTimestamps,
     rootElementRef,
-    showAvatarInGroup
+    showAvatarInGroup,
+    synthesizingActivities
   ]);
 
   const renderingActivities = useMemo(() => renderingElements.map(({ activity }) => activity), [renderingElements]);
@@ -1104,8 +1102,6 @@ const BasicTranscript = ({ className }) => {
   const scrollerRef = useRef(() => Infinity);
 
   const scroller = useCallback((...args) => scrollerRef.current(...args), [scrollerRef]);
-
-  debug('Render');
 
   return (
     <ReactScrollToBottomComposer scroller={scroller}>
