@@ -6,7 +6,6 @@ import whileConnected from './effects/whileConnected';
 import clockSkewAdjustmentSelector from '../selectors/clockSkewAdjustment';
 import combineSelectors from '../selectors/combineSelectors';
 import languageSelector from '../selectors/language';
-import sendTimeoutSelector from '../selectors/sendTimeout';
 
 import deleteKey from '../utils/deleteKey';
 import sleep from '../utils/sleep';
@@ -20,6 +19,8 @@ import {
 } from '../actions/postActivity';
 
 import { INCOMING_ACTIVITY } from '../actions/incomingActivity';
+
+const SEND_TIMEOUT = 120000;
 
 function getTimestamp(clockSkewAdjustment = 0) {
   return new Date(Date.now() + clockSkewAdjustment).toISOString();
@@ -100,8 +101,6 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     //   - Direct Line service only respond on HTTP after bot respond to Direct Line
     // - Activity may take too long time to echo back
 
-    const sendTimeout = yield select(sendTimeoutSelector);
-
     const {
       send: { echoBack }
     } = yield race({
@@ -109,7 +108,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
         echoBack: echoBackCall,
         postActivity: observeOnce(directLine.postActivity(activity))
       }),
-      timeout: call(() => sleep(sendTimeout).then(() => Promise.reject(new Error('timeout'))))
+      timeout: call(() => sleep(SEND_TIMEOUT).then(() => Promise.reject(new Error('timeout'))))
     });
 
     yield put({ type: POST_ACTIVITY_FULFILLED, meta, payload: { activity: echoBack } });

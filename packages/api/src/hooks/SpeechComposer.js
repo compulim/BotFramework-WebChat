@@ -2,11 +2,6 @@ import { Constants } from 'botframework-webchat-core';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import {
-  speechSynthesis as bypassSpeechSynthesis,
-  SpeechSynthesisUtterance as BypassSpeechSynthesisUtterance
-} from '../utils/BypassSpeechSynthesisPonyfill';
-
 import createDebug from '../utils/debug';
 import fromWho from '../utils/fromWho';
 import getActivityKey from '../utils/getActivityKey';
@@ -59,15 +54,10 @@ const SpeechComposer = ({
 
   const webSpeechPonyfill = useMemo(() => {
     const ponyfill = webSpeechPonyfillFactory && webSpeechPonyfillFactory({ referenceGrammarID: referenceGrammarId });
-    const { speechSynthesis, SpeechSynthesisUtterance } = ponyfill || {};
 
     debug(`Create webSpeechPonyfill`, { ponyfill });
 
-    return {
-      ...ponyfill,
-      speechSynthesis: speechSynthesis || bypassSpeechSynthesis,
-      SpeechSynthesisUtterance: SpeechSynthesisUtterance || BypassSpeechSynthesisUtterance
-    };
+    return ponyfill;
   }, [referenceGrammarId, webSpeechPonyfillFactory]);
 
   const markActivityAsSpoken = useCallback(
@@ -211,9 +201,16 @@ const SpeechComposer = ({
     recognizedCallback: handleSpeechRecognitionRecognized
   });
 
+  const supportSpeechSynthesis = !!webSpeechPonyfill.speechSynthesis;
+
   const synthesizingActivities = useMemo(() => {
-    // If speech recognition started, or if there is no "speak after this activity key" is set, there is no activities need to be spoken.
-    if (!synthesizeAfterActivityKey || recognitionStartKey || inputMode !== 'speech') {
+    // Only synthesize if:
+    // - startSynthesizeActivityFromOthers was called, and;
+    // - speech recognition has not started, and;
+    // - input mode is "speech", and;
+    // - speech synthesis engine is configured.
+
+    if (!synthesizeAfterActivityKey || recognitionStartKey || inputMode !== 'speech' || !supportSpeechSynthesis) {
       return [];
     }
 
@@ -224,7 +221,7 @@ const SpeechComposer = ({
     }
 
     return activities.slice(index + 1).filter(activity => fromWho(activity) !== 'self');
-  }, [activities, inputMode, recognitionStartKey, synthesizeAfterActivityKey]);
+  }, [activities, inputMode, recognitionStartKey, supportSpeechSynthesis, synthesizeAfterActivityKey]);
 
   const shouldSynthesizeActivityFromOthers = !!synthesizeAfterActivityKey;
 

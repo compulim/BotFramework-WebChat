@@ -18,7 +18,15 @@ const {
   DictateState: { DICTATING, STARTING }
 } = Constants;
 
-const { useActivities, useDirection, useDictateState, useStyleOptions, useWebSpeechPonyfill } = hooks;
+const {
+  useActivities,
+  useDirection,
+  useDictateState,
+  useStyleOptions,
+  useSuggestedActions,
+  useWebSpeechPonyfill
+} = hooks;
+
 let debug;
 
 const ROOT_STYLE = {
@@ -54,6 +62,7 @@ const BasicSendBox = ({ className }) => {
   const [{ SpeechRecognition } = {}] = useWebSpeechPonyfill();
   const [direction] = useDirection();
   const [speechInterimsVisible] = useSendBoxSpeechInterimsVisible();
+  const [suggestedActions = []] = useSuggestedActions();
   const styleToEmotionObject = useStyleToEmotionObject();
 
   const rootClassName = styleToEmotionObject(ROOT_STYLE) + '';
@@ -74,7 +83,7 @@ const BasicSendBox = ({ className }) => {
       dir={direction}
       role="form"
     >
-      <SuggestedActions />
+      <SuggestedActions suggestedActions={suggestedActions} />
       <div className="webchat__send-box__main">
         {!hideUploadButton && <UploadButton className={buttonClassName} />}
         {speechInterimsVisible ? (

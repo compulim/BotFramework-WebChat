@@ -206,7 +206,7 @@ SuggestedActionStackedContainer.propTypes = {
   screenReaderText: PropTypes.string.isRequired
 };
 
-const SuggestedActions = ({ className, suggestedActions = [] }) => {
+const SuggestedActions = ({ className, suggestedActions }) => {
   const [{ suggestedActionLayout, suggestedActionsStackedLayoutButtonTextWrap }] = useStyleOptions();
   const [accessKey] = useSuggestedActionsAccessKey();
   const localize = useLocalizer();

@@ -19,7 +19,7 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
   const [activities] = useActivities();
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
   const [sendBoxValue, setSendBoxValue] = useState('');
-  const activityForSuggestedActions = useRef();
+  const activityForSuggestedActionsRef = useRef();
   const forceRender = useForceRender();
   const sendTypingIndicator = useSendTypingIndicator();
   const suggestedActionsRef = useRef([]);
@@ -153,13 +153,13 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
     }
   }, [activities]);
 
-  if (lastRenderedActivity !== activityForSuggestedActions.current) {
-    activityForSuggestedActions.current = lastRenderedActivity;
+  if (lastRenderedActivity !== activityForSuggestedActionsRef.current) {
+    activityForSuggestedActionsRef.current = lastRenderedActivity;
 
     if (
       fromWho(lastRenderedActivity) === 'others' &&
       lastRenderedActivity.suggestedActions &&
-      lastRenderedActivity.actions
+      lastRenderedActivity.suggestedActions.actions
     ) {
       suggestedActionsRef.current = lastRenderedActivity.suggestedActions.actions || [];
     } else {
@@ -172,6 +172,17 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
 
     forceRender();
   }, [forceRender, suggestedActionsRef]);
+
+  debug(
+    ['Render'],
+    [
+      {
+        activityForSuggestedActions: activityForSuggestedActionsRef.current,
+        lastRenderedActivity,
+        suggestedActions: suggestedActionsRef.current
+      }
+    ]
+  );
 
   const inputContext = useMemo(
     () => ({

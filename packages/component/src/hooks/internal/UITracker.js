@@ -2,7 +2,6 @@ import { hooks } from 'botframework-webchat-api';
 import { useEffect } from 'react';
 
 import { checkSupport as supportWorker } from '../../Utils/downscaleImageToDataURL/downscaleImageToDataURLUsingWorker';
-import { speechSynthesis } from './BypassSpeechSynthesisPonyfill';
 
 const { useTrackDimension, useWebSpeechPonyfill } = hooks;
 
@@ -11,8 +10,7 @@ const Tracker = () => {
   const trackDimension = useTrackDimension();
 
   const speechRecognitionCapability = !!webSpeechPonyfill.SpeechRecognition;
-  const speechSynthesisCapability =
-    webSpeechPonyfill.speechSynthesis && webSpeechPonyfill.speechSynthesis !== speechSynthesis;
+  const speechSynthesisCapability = !!webSpeechPonyfill.speechSynthesis;
 
   useEffect(() => {
     trackDimension('capability:downscaleImage:workerType', supportWorker() ? 'web worker' : 'main');

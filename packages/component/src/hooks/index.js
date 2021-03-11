@@ -9,7 +9,6 @@ import useScrollToEnd from './useScrollToEnd';
 import useScrollUp from './useScrollUp';
 import useSendFiles from './useSendFiles';
 import useStyleSet from './useStyleSet';
-import useWebSpeechPonyfill from './useWebSpeechPonyfill';
 
 import { useMicrophoneButtonClick, useMicrophoneButtonDisabled } from '../SendBox/MicrophoneButton';
 import { useSendBoxSpeechInterimsVisible } from '../BasicSendBox';
@@ -34,6 +33,5 @@ export {
   useStyleSet,
   useTextBoxSubmit,
   useTextBoxValue,
-  useTypingIndicatorVisible,
-  useWebSpeechPonyfill
+  useTypingIndicatorVisible
 };

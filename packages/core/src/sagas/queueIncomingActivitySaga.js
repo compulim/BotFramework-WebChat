@@ -1,10 +1,8 @@
 import { call, cancelled, fork, put, race, select, take } from 'redux-saga/effects';
 
 import { QUEUE_INCOMING_ACTIVITY } from '../actions/queueIncomingActivity';
-import activitiesSelector, { ofType as activitiesOfType } from '../selectors/activities';
-import activityFromBot from '../definitions/activityFromBot';
+import activitiesSelector from '../selectors/activities';
 import incomingActivity, { INCOMING_ACTIVITY } from '../actions/incomingActivity';
-import setSuggestedActions from '../actions/setSuggestedActions';
 import sleep from '../utils/sleep';
 import whileConnected from './effects/whileConnected';
 
@@ -49,7 +47,7 @@ function* waitForActivityId(replyToId, initialActivities) {
   }
 }
 
-function* queueIncomingActivity({ userID }) {
+function* queueIncomingActivity() {
   yield takeEveryAndSelect(QUEUE_INCOMING_ACTIVITY, activitiesSelector, function* queueIncomingActivity(
     { payload: { activity } },
     initialActivities
@@ -81,19 +79,6 @@ function* queueIncomingActivity({ userID }) {
     }
 
     yield put(incomingActivity(activity));
-
-    // Update suggested actions
-    // TODO: [P3] We could put this logic inside reducer to minimize number of actions dispatched.
-    const messageActivities = yield select(activitiesOfType('message'));
-    const lastMessageActivity = messageActivities[messageActivities.length - 1];
-
-    if (activityFromBot(lastMessageActivity)) {
-      const { suggestedActions: { actions, to } = {} } = lastMessageActivity;
-
-      // If suggested actions is not destined to anyone, or is destined to the user, show it.
-      // In other words, if suggested actions is destined to someone else, don't show it.
-      yield put(setSuggestedActions(to && to.length && !to.includes(userID) ? null : actions));
-    }
   });
 }
 
