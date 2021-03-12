@@ -50,7 +50,6 @@ const {
   useDirection,
   useGroupActivities,
   useLocalizer,
-  useSynthesizingActivities,
   useStyleOptions
 } = hooks;
 
@@ -93,7 +92,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   const [activities] = useActivities();
   const [direction] = useDirection();
   const [focusedActivityKey, setFocusedActivityKey] = useState();
-  const [synthesizingActivities] = useSynthesizingActivities();
+  const [synthesizingActivities] = useActivities('speechsynthesis');
   const createActivityRenderer = useCreateActivityRenderer();
   const createActivityStatusRenderer = useCreateActivityStatusRenderer();
   const createAvatarRenderer = useCreateAvatarRenderer();

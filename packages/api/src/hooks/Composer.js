@@ -20,13 +20,13 @@ import {
   // setDictateInterims,
   // setDictateState,
   // setLanguage,
-  setNotification,
+  setNotification
   // setSendTimeout,
   // setSendTypingIndicator,
   // startDictate,
-  startSpeakingActivity,
+  // startSpeakingActivity,
   // stopDictate,
-  stopSpeakingActivity
+  // stopSpeakingActivity
 } from 'botframework-webchat-core';
 
 import CardActionComposer from './CardActionComposer';
@@ -66,12 +66,12 @@ const DISPATCHERS = {
   // sendPostBack,
   // setDictateInterims,
   // setDictateState,
-  setNotification,
+  setNotification
   // setSendTimeout,
   // startDictate,
-  startSpeakingActivity,
+  // startSpeakingActivity,
   // stopDictate,
-  stopSpeakingActivity
+  // stopSpeakingActivity
 };
 
 let debug;

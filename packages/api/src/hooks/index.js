@@ -53,7 +53,6 @@ import useStopDictate from './useStopDictate';
 import useStyleOptions from './useStyleOptions';
 import useSubmitSendBox from './useSubmitSendBox';
 import useSuggestedActions from './useSuggestedActions';
-import useSynthesizingActivities from './useSynthesizingActivities';
 import useTimeoutForSend from './useTimeoutForSend';
 import useTrackDimension from './useTrackDimension';
 import useTrackEvent from './useTrackEvent';
@@ -120,7 +119,6 @@ export {
   useStyleOptions,
   useSubmitSendBox,
   useSuggestedActions,
-  useSynthesizingActivities,
   useTimeoutForSend,
   useTrackDimension,
   useTrackEvent,
