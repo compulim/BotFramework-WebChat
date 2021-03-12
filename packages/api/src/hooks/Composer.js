@@ -29,6 +29,7 @@ import {
   // stopSpeakingActivity
 } from 'botframework-webchat-core';
 
+import ActivitiesComposer from './ActivitiesComposer';
 import CardActionComposer from './CardActionComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';
@@ -447,14 +448,16 @@ const Composer = ({
 
   return (
     <WebChatAPIContext.Provider value={context}>
-      <InputComposer dispatch={dispatch} postActivity={postActivity} sendTypingIndicator={sendTypingIndicator}>
-        <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
-          <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
-            {typeof children === 'function' ? children(context) : children}
-            {onTelemetry && <Tracker />}
-          </CardActionComposer>
-        </SpeechComposer>
-      </InputComposer>
+      <ActivitiesComposer>
+        <InputComposer dispatch={dispatch} postActivity={postActivity} sendTypingIndicator={sendTypingIndicator}>
+          <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
+            <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
+              {typeof children === 'function' ? children(context) : children}
+              {onTelemetry && <Tracker />}
+            </CardActionComposer>
+          </SpeechComposer>
+        </InputComposer>
+      </ActivitiesComposer>
     </WebChatAPIContext.Provider>
   );
 };

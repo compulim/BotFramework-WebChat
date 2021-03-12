@@ -14,10 +14,10 @@ import useSendTypingIndicator from './useSendTypingIndicator';
 let debug;
 
 const InputComposer = ({ children, dispatch, postActivity }) => {
-  debug || (debug = createDebug('InputComposer'));
+  debug || (debug = createDebug('<InputComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const [activities] = useActivities();
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
+  const [renderedActivities] = useActivities('render');
   const [sendBoxValue, setSendBoxValue] = useState('');
   const activityForSuggestedActionsRef = useRef();
   const forceRender = useForceRender();
@@ -144,14 +144,14 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
 
   // TODO: This is not a good way to see if the activity should be rendered or not.
   const lastRenderedActivity = useMemo(() => {
-    for (let index = activities.length - 1; index >= 0; index--) {
-      const activity = activities[index];
+    for (let index = renderedActivities.length - 1; index >= 0; index--) {
+      const activity = renderedActivities[index];
 
       if (activity.type === 'message') {
         return activity;
       }
     }
-  }, [activities]);
+  }, [renderedActivities]);
 
   if (lastRenderedActivity !== activityForSuggestedActionsRef.current) {
     activityForSuggestedActionsRef.current = lastRenderedActivity;
@@ -173,16 +173,16 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
     forceRender();
   }, [forceRender, suggestedActionsRef]);
 
-  debug(
-    ['Render'],
-    [
-      {
-        activityForSuggestedActions: activityForSuggestedActionsRef.current,
-        lastRenderedActivity,
-        suggestedActions: suggestedActionsRef.current
-      }
-    ]
-  );
+  // debug(
+  //   ['Render'],
+  //   [
+  //     {
+  //       activityForSuggestedActions: activityForSuggestedActionsRef.current,
+  //       lastRenderedActivity,
+  //       suggestedActions: suggestedActionsRef.current
+  //     }
+  //   ]
+  // );
 
   const inputContext = useMemo(
     () => ({

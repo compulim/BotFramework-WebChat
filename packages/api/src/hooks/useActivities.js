@@ -1,19 +1,25 @@
 import { useContext } from 'react';
 
-import { useSelector } from './internal/WebChatReduxContext';
+import useWebChatActivitiesContext from './internal/useWebChatActivitiesContext';
 import WebChatSpeechContext from './internal/WebChatSpeechContext';
 
-// TODO: Add options to support: "all" (default), "render" and "speechsynthesis".
 export default function useActivities(options = 'all') {
-  const allActivities = useSelector(({ activities }) => activities);
+  const { acknowledgedActivities, activities: allActivities } = useWebChatActivitiesContext();
   const speechContext = useContext(WebChatSpeechContext);
 
-  if (options === 'speechsynthesis') {
+  if (options === 'acknowledge') {
+    return [acknowledgedActivities];
+  } else if (options === 'speechsynthesis') {
     if (!speechContext) {
       throw new Error('This hook can only be used on a component that is a descendant of <Composer>');
     }
 
     return [speechContext.synthesizingActivities];
+  } else if (options === 'render') {
+    // TODO: Support "render" options
+    console.warn(
+      'botframework-webchat: useActivities() currently does not support "render", falling back to all activities.'
+    );
   }
 
   return [allActivities];
