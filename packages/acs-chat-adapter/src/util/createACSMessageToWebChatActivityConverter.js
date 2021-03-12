@@ -1,5 +1,17 @@
+import acsReadReceiptsToWebChatReadAts from './acsReadReceiptsToWebChatReadAts';
+import createDebug from './debug';
+import styleConsole from './styleConsole';
+
+let debug;
+
 export default function createACSMessageToWebChatActivityConverter({ identity }) {
-  return message => {
+  debug ||
+    (debug = createDebug('util:acsMessageToWebChatActivity', {
+      backgroundColor: 'lightgray',
+      color: 'black'
+    }));
+
+  return (acsChatMessage, acsReadReceipts) => {
     const now = new Date();
     const {
       clientMessageId,
@@ -10,16 +22,33 @@ export default function createACSMessageToWebChatActivityConverter({ identity })
       senderDisplayName,
       threadId,
       type
-    } = message;
+    } = acsChatMessage;
 
     const role = identity === communicationUserId ? 'user' : 'bot';
-    const who = identity === communicationUserId ? 'self' : identity.startsWith('8:') ? 'others' : 'system';
+    const who = identity === communicationUserId ? 'self' : identity.startsWith('8:') ? 'others' : 'service';
+
+    // TODO: Assert data if it met our expectation.
+    if (who === 'self') {
+      // Assertion: to work properly, every activity must contains an ID during their lifetime, and this ID must not be changed during any moment of its life.
+      if (!clientMessageId) {
+        // TODO: Check if conversation history contains "clientMessageId".
+        // TODO: After the message is sent and echoed back from ACS, the "clientMessageId" is gone.
+        //       This is crucial for the operation of Web Chat, because, if we can't reference the same message, we will be creating new DOM elements.
+        //       Creating new DOM elements will hurt accessibility (ARIA live region).
+        debug('🔥🔥🔥 %cFor outgoing message, "clientMessageId" must be set.%c', ...styleConsole('red'));
+      }
+    }
+
+    const readAts = acsReadReceiptsToWebChatReadAts(acsReadReceipts);
 
     return {
       channelData: {
+        'acs:chat-message': acsChatMessage,
         'acs:converted-at': now.toISOString(),
-        'acs:message': message,
+        'acs:read-receipts': acsReadReceipts,
         'webchat:key': clientMessageId || id,
+        'webchat:read-ats': readAts,
+        // If it contains "id", it's sent.
         ...(who === 'self' && { 'webchat:send-state': id ? 'sent' : 'sending' }),
         'webchat:who': who
       },

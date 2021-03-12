@@ -29,16 +29,13 @@ const InternalACSChatAdapter = ({ children }) => {
   ]);
 
   const { dispatch } = store;
-  const chatActivities = useWebChatActivities();
+  const activities = useWebChatActivities();
   const typing = useWebChatTyping();
 
-  useMemo(() => dispatch(setActivities(chatActivities)), [chatActivities, dispatch]);
+  useMemo(() => dispatch(setActivities(activities)), [activities, dispatch]);
   useMemo(() => dispatch(setTyping(typing)), [dispatch, typing]);
 
-  internalDebug(
-    [`Rendering %c${chatActivities.length}%c activities`, ...styleConsole('purple')],
-    [{ chatActivities, typing }]
-  );
+  internalDebug([`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')], [{ activities, typing }]);
 
   return children({ connected: true, store });
 };
