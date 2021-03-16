@@ -1,4 +1,3 @@
-import acsReadReceiptsToWebChatReadAts from './acsReadReceiptsToWebChatReadAts';
 import createDebug from './debug';
 import styleConsole from './styleConsole';
 
@@ -11,7 +10,7 @@ export default function createACSMessageToWebChatActivityConverter({ identity })
       color: 'black'
     }));
 
-  return (acsChatMessage, acsReadReceipts) => {
+  return (acsChatMessage, readAt) => {
     const now = new Date();
     const {
       clientMessageId,
@@ -20,6 +19,7 @@ export default function createACSMessageToWebChatActivityConverter({ identity })
       id,
       sender: { communicationUserId },
       senderDisplayName,
+      // TODO: "threadId" is undefined.
       threadId,
       type
     } = acsChatMessage;
@@ -39,15 +39,13 @@ export default function createACSMessageToWebChatActivityConverter({ identity })
       }
     }
 
-    const readAts = acsReadReceiptsToWebChatReadAts(acsReadReceipts);
-
     return {
       channelData: {
         'acs:chat-message': acsChatMessage,
+        'acs:chat-message-id': acsChatMessage.id,
         'acs:converted-at': now.toISOString(),
-        'acs:read-receipts': acsReadReceipts,
         'webchat:key': clientMessageId || id,
-        'webchat:read-ats': readAts,
+        'webchat:read-at': readAt,
         // If it contains "id", it's sent.
         ...(who === 'self' && { 'webchat:send-state': id ? 'sent' : 'sending' }),
         'webchat:who': who

@@ -9,7 +9,7 @@ export default function createEmitTypingIndicatorMiddleware({ sendTypingNotifica
 
   return () => next => action => {
     if (action.type === EMIT_TYPING_INDICATOR) {
-      debug('sending typing notification');
+      debug('Sending typing notification');
       sendTypingNotification();
     }
 

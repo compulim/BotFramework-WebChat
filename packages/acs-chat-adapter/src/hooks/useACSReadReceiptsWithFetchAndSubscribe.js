@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFetchReadReceipts, useSubscribeReadReceipt } from '@azure/acs-ui-sdk';
 import { useReceipts } from '@azure/acs-ui-sdk/dist/providers/ChatThreadProvider';
 
 import createDebug from '../../util/debug';
 import styleConsole from '../../util/styleConsole';
+import useDebugDeps from './useDebugDeps';
+import useMapper from './useMapper';
 
 // This helper is needed because:
 // - useChatMessages() won't return conversation history, but only new outgoing messages during this session
@@ -13,12 +15,17 @@ import styleConsole from '../../util/styleConsole';
 // I think the API design need some tweaks.
 
 let debug;
+let EMPTY_ARRAY;
+let PASSTHRU_FN;
 
-export default function useReadReceiptsWithFetchAndSubscribe() {
+export default function useACSReadReceiptsWithFetchAndSubscribe() {
   debug ||
     (debug = createDebug('acs:useReadReceiptsWithFetchAndSubscribe', { backgroundColor: 'yellow', color: 'black' }));
+  EMPTY_ARRAY || (EMPTY_ARRAY = []);
+  PASSTHRU_FN || (PASSTHRU_FN = value => value);
 
   const fetchReadReceipts = useFetchReadReceipts();
+  const [initialReadReceipts, setInitialReadReceipts] = useState(EMPTY_ARRAY);
 
   // Required for conversation history.
   useEffect(() => {
@@ -30,7 +37,9 @@ export default function useReadReceiptsWithFetchAndSubscribe() {
 
       debug('Initial fetch started');
 
-      const readReceipts = await fetchReadReceipts();
+      const initialReadReceipts = await fetchReadReceipts();
+
+      setInitialReadReceipts(initialReadReceipts && initialReadReceipts.length ? initialReadReceipts : EMPTY_ARRAY);
 
       if (abortController.signal.aborted) {
         return;
@@ -38,10 +47,11 @@ export default function useReadReceiptsWithFetchAndSubscribe() {
 
       debug(
         [
-          `Initial fetch done, took ${Date.now() - now} ms for %c${readReceipts.length}%c read receipts.`,
+          `Initial fetch done, took %c${Date.now() - now} ms%c for %c${initialReadReceipts.length}%c read receipts.`,
+          ...styleConsole('green'),
           ...styleConsole('purple')
         ],
-        [readReceipts]
+        [initialReadReceipts]
       );
     })();
 
@@ -51,5 +61,16 @@ export default function useReadReceiptsWithFetchAndSubscribe() {
   // Required for new incoming messages.
   useSubscribeReadReceipt();
 
-  return useReceipts();
+  const newReceipts = useReceipts() || EMPTY_ARRAY;
+
+  useDebugDeps({ initialReadReceipts, newReceipts }, 'useACSReadReceiptsWithFetchAndSubscribe');
+
+  // TODO: If read receipt is not supported in this chat message or thread, it should pass undefined instead of empty array.
+  const result = useMemo(() => {
+    const result = [...initialReadReceipts, ...newReceipts];
+
+    return result.length ? result : EMPTY_ARRAY;
+  }, [initialReadReceipts, newReceipts]);
+
+  return useMapper(result, PASSTHRU_FN);
 }

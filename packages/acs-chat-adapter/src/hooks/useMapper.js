@@ -1,3 +1,5 @@
+// TODO: Write tests
+
 import { useMemo, useRef } from 'react';
 
 import createDebug from '../../util/debug';
@@ -6,72 +8,68 @@ import styleConsole from '../../util/styleConsole';
 let debug;
 
 export default function useMapper(array, mapper) {
-  // Lazy initializing constants to save loading speed and memory
   debug || (debug = createDebug('util:useMapper', { backgroundColor: 'lightgray', color: 'black' }));
 
+  const debugMemoizedRef = useRef();
   const fromRef = useRef([]);
   const lastResultRef = useRef([]);
-  const toRef = useRef([]);
+  const resultCachedRef = useRef();
 
-  // Variables for debug use only
-  const debugCachedRef = useRef();
-  const debugMemoizedRef = useRef();
-
-  debugCachedRef.current = false;
   debugMemoizedRef.current = true;
+  resultCachedRef.current = true;
 
-  const result = useMemo(() => {
+  const nextResult = useMemo(() => {
     debugMemoizedRef.current = false;
 
-    const nextFrom = [];
-    const nextTo = [];
+    // Perf: caching current acessor
+    const { current: from } = fromRef;
+    const { current: lastResult } = lastResultRef;
+    const nextResult = [];
 
-    let result = array.map(element => {
-      const index = fromRef.current.indexOf(element);
-      const transformed = ~index ? toRef.current[index] : mapper(element);
-
-      if (!~nextFrom.indexOf(element)) {
-        nextFrom.push(element);
-        nextTo.push(transformed);
+    array.forEach((element, index) => {
+      if (from[index] === element) {
+        return nextResult.push(lastResult[index]);
       }
 
-      return transformed;
+      resultCachedRef.current = false;
+
+      const lastIndex = from.indexOf(element);
+
+      if (~lastIndex) {
+        return nextResult.push(lastResult[lastIndex]);
+      }
+
+      nextResult.push(mapper.call(array, element, index));
     });
 
-    // Commit mapping cache.
-    fromRef.current = nextFrom;
-    toRef.current = nextTo;
-
-    // Shallow-check if the result same as previous one.
-    const { current: lastResult } = lastResultRef;
-
-    if (result.length === lastResult.length && result.every((element, index) => element === lastResult[index])) {
-      // No, the result didn't changed, reuse previous result.
-      result = lastResultRef.current;
-      debugCachedRef.current = true;
-    } else {
-      // Yes, the result has changed, save the new result.
-      lastResultRef.current = result;
-      debugCachedRef.current = false;
+    // If the result is from cache, then, use the last result instead.
+    if (resultCachedRef.current) {
+      return lastResultRef.current;
     }
 
-    return result;
-  }, [array, debugCachedRef, debugMemoizedRef, mapper]);
+    return nextResult;
+  }, [array, debugMemoizedRef, fromRef, lastResultRef, mapper, resultCachedRef]);
 
   if (debugMemoizedRef.current) {
     // debug('Memoize %chit%c', ...styleConsole('green', 'white'));
-  } else if (debugCachedRef.current) {
+  } else if (resultCachedRef.current) {
     // Seeing this log line means performance issue in the input.
     // If the input is memoized correctly, we should not see this line.
     debug(
-      'Not memoized but %ccache hit%c, this is very likely %cwasted render%c',
-      ...styleConsole('red'),
-      ...styleConsole('red')
+      [
+        'Not memoized but %ccache hit%c, this is very likely %cwasted render%c',
+        ...styleConsole('red'),
+        ...styleConsole('red')
+      ],
+      [{ array, from: fromRef.current, lastResult: lastResultRef.current, nextResult }]
     );
   } else {
     // The input array has changed and we updated our output.
     debug('Not memoized and %ccache miss%c', ...styleConsole('green'));
   }
 
-  return result;
+  fromRef.current = array;
+  lastResultRef.current = nextResult;
+
+  return nextResult;
 }

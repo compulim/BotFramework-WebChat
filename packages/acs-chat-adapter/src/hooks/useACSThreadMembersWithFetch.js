@@ -8,14 +8,20 @@ import { useThreadMembers } from '@azure/acs-ui-sdk/dist/providers/ChatThreadPro
 // Even fetchThreadMembers() is called, useThreadMembers() will not continue to update.
 // There are no useSubscribeThreadMembers() hooks.
 
-// I think the API design need some tweaks.
+// TODO: I think the API design need some tweaks.
 
-export default function useThreadMembersWithFetch() {
+let EMPTY_ARRAY;
+
+export default function useACSThreadMembersWithFetch() {
+  EMPTY_ARRAY || (EMPTY_ARRAY = []);
+
   const fetchThreadMembers = useFetchThreadMembers();
 
   useEffect(() => {
     fetchThreadMembers();
   }, [fetchThreadMembers]);
 
-  return useThreadMembers();
+  const result = useThreadMembers();
+
+  return result && result.length ? result : EMPTY_ARRAY;
 }

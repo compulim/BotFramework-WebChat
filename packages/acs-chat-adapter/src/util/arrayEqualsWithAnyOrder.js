@@ -1,4 +1,5 @@
-// TODO: Write unit tests
+// TODO: Write unit tests.
+// TODO: Maybe not used.
 export default function arrayEqualsWithAnyOrder(x, y) {
   if (!x || !y || x.length !== y.length) {
     return false;

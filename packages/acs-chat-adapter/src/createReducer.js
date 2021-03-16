@@ -3,6 +3,7 @@ import { combineReducers } from 'redux';
 import activities from './reducers/activities';
 import connectivityStatus from './reducers/connectivityStatus';
 import typing from './reducers/typing';
+import userId from './reducers/userId';
 
 function createDummyReducer(initialState) {
   return () => initialState;
@@ -13,6 +14,7 @@ export default function createReducer() {
     activities,
     connectivityStatus,
     typing,
+    userId,
 
     clockSkewAdjustment: createDummyReducer(0),
     dictateInterims: createDummyReducer([]),

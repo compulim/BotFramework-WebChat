@@ -448,7 +448,7 @@ const Composer = ({
 
   return (
     <WebChatAPIContext.Provider value={context}>
-      <ActivitiesComposer>
+      <ActivitiesComposer dispatch={dispatch}>
         <InputComposer dispatch={dispatch} postActivity={postActivity} sendTypingIndicator={sendTypingIndicator}>
           <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
             <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>

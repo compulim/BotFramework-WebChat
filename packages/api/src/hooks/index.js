@@ -1,4 +1,3 @@
-import useAcknowledgeActivity from './useAcknowledgeActivity';
 import useActiveTyping from './useActiveTyping';
 import useActivities from './useActivities';
 import useAvatarForBot from './useAvatarForBot';
@@ -65,7 +64,6 @@ import useVoiceSelector from './useVoiceSelector';
 import useWebSpeechPonyfill from './useWebSpeechPonyfill';
 
 export {
-  useAcknowledgeActivity,
   useActiveTyping,
   useActivities,
   useAvatarForBot,

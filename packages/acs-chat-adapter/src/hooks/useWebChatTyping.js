@@ -1,21 +1,27 @@
 import { useMemo } from 'react';
-import { useTypingUsers } from '@azure/acs-ui-sdk';
 
 import createACSTypingUserToWebChatTypingEntry from '../util/createACSTypingUserToWebChatTypingEntry';
-import useACSIdentity from './useACSIdentity';
+import useACSTypingUsers from './useACSTypingUsers';
+import useACSUserId from './useACSUserId';
+import useDebugDeps from './useDebugDeps';
 import useMapper from './useMapper';
-import useThreadMembersWithFetch from './useThreadMembersWithFetch';
 
 export default function useWebChatTyping() {
-  const identity = useACSIdentity();
-  const threadMembers = useThreadMembersWithFetch();
+  const typingUsers = useACSTypingUsers();
+  const userId = useACSUserId();
 
-  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntry(identity), [
-    identity
-  ]);
-  const typingUsers = useTypingUsers(threadMembers);
+  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntry(userId), [userId]);
 
   const typingEntries = useMapper(typingUsers, acsTypingUserToWebChatTypingEntry);
+
+  useDebugDeps(
+    {
+      typingEntries,
+      typingUsers,
+      userId
+    },
+    'useWebChatTyping'
+  );
 
   return useMemo(() => {
     const now = Date.now();

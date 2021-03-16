@@ -157,9 +157,10 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
     activityForSuggestedActionsRef.current = lastRenderedActivity;
 
     if (
-      fromWho(lastRenderedActivity) === 'others' &&
+      lastRenderedActivity &&
       lastRenderedActivity.suggestedActions &&
-      lastRenderedActivity.suggestedActions.actions
+      lastRenderedActivity.suggestedActions.actions &&
+      fromWho(lastRenderedActivity) === 'others'
     ) {
       suggestedActionsRef.current = lastRenderedActivity.suggestedActions.actions || [];
     } else {

@@ -1,3 +1,5 @@
 export default function fromWho(activity) {
-  return activity.who || (activity.from.role === 'user' ? 'self' : 'others');
+  const { channelData: { 'webchat:who': who } = {}, from: { role } = {} } = activity;
+
+  return who || (role === 'user' ? 'self' : 'others');
 }

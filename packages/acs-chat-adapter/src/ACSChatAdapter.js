@@ -1,4 +1,5 @@
-import { ChatProvider, useSendTypingNotification } from '@azure/acs-ui-sdk';
+import { ChatProvider, useSendReadReceipt, useSendTypingNotification } from '@azure/acs-ui-sdk';
+import { useUserId } from '@azure/acs-ui-sdk/dist/providers/ChatProvider';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -7,6 +8,7 @@ import createDebug from './util/debug';
 import resolveFunction from './util/resolveFunction';
 import setActivities from './actions/internal/setActivities';
 import setTyping from './actions/internal/setTyping';
+import setUserId from './actions/internal/setUserId';
 import styleConsole from './util/styleConsole';
 import useACSSendMessage from './hooks/useACSSendMessage';
 import useWebChatActivities from './hooks/useWebChatActivities';
@@ -21,19 +23,23 @@ const InternalACSChatAdapter = ({ children }) => {
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
   const sendMessage = useACSSendMessage();
+  const sendReadReceipt = useSendReadReceipt();
   const sendTypingNotification = useSendTypingNotification();
 
-  const store = useMemo(() => createChatAdapterStore({ sendMessage, sendTypingNotification }), [
+  const store = useMemo(() => createChatAdapterStore({ sendMessage, sendReadReceipt, sendTypingNotification }), [
     sendMessage,
+    sendReadReceipt,
     sendTypingNotification
   ]);
 
   const { dispatch } = store;
   const activities = useWebChatActivities();
   const typing = useWebChatTyping();
+  const userId = useUserId();
 
   useMemo(() => dispatch(setActivities(activities)), [activities, dispatch]);
   useMemo(() => dispatch(setTyping(typing)), [dispatch, typing]);
+  useMemo(() => dispatch(setUserId(userId)), [dispatch, userId]);
 
   internalDebug([`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')], [{ activities, typing }]);
 

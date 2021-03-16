@@ -4,12 +4,11 @@ import useWebChatActivitiesContext from './internal/useWebChatActivitiesContext'
 import WebChatSpeechContext from './internal/WebChatSpeechContext';
 
 export default function useActivities(options = 'all') {
-  const { acknowledgedActivities, activities: allActivities } = useWebChatActivitiesContext();
+  // TODO: Verify all activities are valid, e.g. contains channelData, etc.
+  const { activities: allActivities } = useWebChatActivitiesContext();
   const speechContext = useContext(WebChatSpeechContext);
 
-  if (options === 'acknowledge') {
-    return [acknowledgedActivities];
-  } else if (options === 'speechsynthesis') {
+  if (options === 'speechsynthesis') {
     if (!speechContext) {
       throw new Error('This hook can only be used on a component that is a descendant of <Composer>');
     }

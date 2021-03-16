@@ -2,12 +2,12 @@ import { useCallback } from 'react';
 import { useSendMessage } from '@azure/acs-ui-sdk';
 
 import useACSDisplayName from './useACSDisplayName';
-import useACSIdentity from './useACSIdentity';
+import useACSUserId from './useACSUserId';
 
 export default function useACSSendMessage() {
   const displayName = useACSDisplayName();
-  const identity = useACSIdentity();
   const sendMessage = useSendMessage();
+  const userId = useACSUserId();
 
-  return useCallback(message => sendMessage(displayName, identity, message), [displayName, identity, sendMessage]);
+  return useCallback(message => sendMessage(displayName, userId, message), [displayName, userId, sendMessage]);
 }
