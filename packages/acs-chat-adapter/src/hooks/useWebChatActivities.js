@@ -1,6 +1,5 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
-import arrayEquals from '../util/arrayEquals';
 import createACSMessageToWebChatActivityConverter from '../util/createACSMessageToWebChatActivityConverter';
 import createDebug from '../util/debug';
 import styleConsole from '../util/styleConsole';
@@ -8,6 +7,7 @@ import useACSChatMessagesWithFetchAndSubscribe from './useACSChatMessagesWithFet
 import useACSReadReceiptsWithFetchAndSubscribe from './useACSReadReceiptsWithFetchAndSubscribe';
 import useACSUserId from './useACSUserId';
 import useDebugDeps from './useDebugDeps';
+import useMemoWithPrevious from './useMemoWithPrevious';
 
 let debug;
 
@@ -47,101 +47,93 @@ export default function useWebChatActivities() {
     [acsReadReceipts]
   );
 
-  const activitiesCachedRef = useRef();
-  const activitiesCacheRef = useRef([]);
-  const activitiesRef = useRef([]);
-  const debugMemoizedRef = useRef();
+  useDebugDeps({ acsChatMessages, acsReadReceipts, readOnByUserIds }, 'useWebChatActivities:2');
 
-  activitiesCachedRef.current = true;
-  debugMemoizedRef.current = true;
+  const { activities } = useMemoWithPrevious(
+    ({ activities, activitiesCache } = { activities: [], activitiesCache: [] }) => {
+      let cached = true;
+      let nextActivities = [];
+      let nextActivitiesCache = [];
 
-  useDebugDeps(
-    { acsChatMessages, acsReadReceipts, activitiesCacheRef, activitiesRef, readOnByUserIds },
-    'useWebChatActivities:2'
-  );
+      acsChatMessages.forEach((acsChatMessage, index) => {
+        const { createdOn } = acsChatMessage;
 
-  const { nextActivities, nextActivitiesCache } = useMemo(() => {
-    debugMemoizedRef.current = false;
+        const userReads = Object.entries(readOnByUserIds)
+          .filter(([_, readOn]) => readOn >= createdOn)
+          .map(([userId]) => userId)
+          .sort();
 
-    // Perf: caching current accessor
-    const { current: activities } = activitiesRef;
-    const { current: activitiesCache } = activitiesCacheRef;
+        const activityCache = activitiesCache[index];
 
-    const nextActivities = [];
-    const nextActivitiesCache = [];
+        if (
+          activityCache &&
+          Object.is(activityCache.acsChatMessage, acsChatMessage) &&
+          Object.is(activityCache.userReads, userReads)
+        ) {
+          nextActivitiesCache.push(activityCache);
+          nextActivities.push(activities[index]);
 
-    acsChatMessages.forEach((acsChatMessage, index) => {
-      const { createdOn } = acsChatMessage;
-
-      const userReads = Object.entries(readOnByUserIds)
-        .filter(([_, readOn]) => readOn >= createdOn)
-        .map(([userId]) => userId)
-        .sort();
-
-      const cache = activitiesCache[index];
-
-      if (cache && cache.acsChatMessage === acsChatMessage && arrayEquals(cache.userReads, userReads)) {
-        nextActivitiesCache.push(cache);
-        nextActivities.push(activities[index]);
-
-        return;
-      }
-
-      activitiesCachedRef.current = false;
-
-      const lastIndex = activitiesCache.findIndex(
-        cache => cache.acsChatMessage === acsChatMessage && arrayEquals(cache.userReads, userReads)
-      );
-
-      if (~lastIndex) {
-        nextActivitiesCache.push(activitiesCache[lastIndex]);
-        nextActivities.push(activities[lastIndex]);
-
-        return;
-      }
-
-      const activity = acsMessageToWebChatActivity(
-        acsChatMessage,
-        Object.fromEntries(userReads.map(userId => [userId, true]))
-      );
-
-      nextActivitiesCache.push({ acsChatMessage, userReads });
-      nextActivities.push(activity);
-    });
-
-    return { nextActivities, nextActivitiesCache };
-  }, [acsChatMessages, acsMessageToWebChatActivity, activitiesCacheRef, activitiesRef, readOnByUserIds]);
-
-  if (debugMemoizedRef.current) {
-    // debug('Activities memoize %chit%c', ...styleConsole('green', 'white'));
-  } else if (activitiesCachedRef.current) {
-    // Seeing this log line means performance issue in the input.
-    // If the input is memoized correctly, we should not see this line.
-    debug(
-      [
-        'Activities not memoized but %ccache hit%c, this is very likely %cwasted render%c',
-        ...styleConsole('red'),
-        ...styleConsole('red')
-      ],
-      [
-        {
-          acsChatMessages,
-          activities: activitiesRef.current,
-          activitiesCache: activitiesCacheRef.current,
-          nextActivities,
-          nextActivitiesCache
+          return;
         }
-      ]
-    );
-  } else {
-    // The input array has changed and we updated our output.
-    debug('Activities not memoized and %ccache miss%c', ...styleConsole('green'));
-  }
 
-  activitiesCacheRef.current = nextActivitiesCache;
-  activitiesRef.current = nextActivities;
+        cached = false;
 
-  const { current: activities } = activitiesRef.current;
+        const lastIndex = activitiesCache.findIndex(
+          activityCache =>
+            Object.is(activityCache.acsChatMessage, acsChatMessage) && Object.is(activityCache.userReads, userReads)
+        );
+
+        if (~lastIndex) {
+          nextActivitiesCache.push(activitiesCache[lastIndex]);
+          nextActivities.push(activities[lastIndex]);
+
+          return;
+        }
+
+        const activity = acsMessageToWebChatActivity(
+          acsChatMessage,
+          Object.fromEntries(userReads.map(userId => [userId, true]))
+        );
+
+        nextActivitiesCache.push({ acsChatMessage, userReads });
+        nextActivities.push(activity);
+      });
+
+      if (cached) {
+        nextActivities = activities;
+        nextActivitiesCache = activitiesCache;
+
+        // Seeing this log line means performance issue in the input.
+        // If the input is memoized correctly, we should not see this line.
+        debug(
+          [
+            'Activities not memoized but %ccache hit%c, this is very likely %cwasted render%c',
+            ...styleConsole('red'),
+            ...styleConsole('red')
+          ],
+          [
+            {
+              acsChatMessages,
+              from: {
+                activities,
+                activitiesCache
+              },
+              to: {
+                activities: nextActivities,
+                activitiesCache: nextActivitiesCache
+              }
+            }
+          ]
+        );
+      } else {
+        // The input array has changed and we updated our output.
+        debug('Activities not memoized and %ccache miss%c', ...styleConsole('green'));
+      }
+
+      return { activities: nextActivities, activitiesCache: nextActivitiesCache };
+    },
+    [acsChatMessages, acsMessageToWebChatActivity, readOnByUserIds]
+  );
 
   useMemo(
     () =>

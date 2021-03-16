@@ -1,75 +1,58 @@
 // TODO: Write tests
 
-import { useMemo, useRef } from 'react';
-
 import createDebug from '../../util/debug';
 import styleConsole from '../../util/styleConsole';
+import useMemoWithPrevious from './useMemoWithPrevious';
 
 let debug;
 
-export default function useMapper(array, mapper) {
+export default function useMapper(nextArray, mapper) {
   debug || (debug = createDebug('util:useMapper', { backgroundColor: 'lightgray', color: 'black' }));
 
-  const debugMemoizedRef = useRef();
-  const fromRef = useRef([]);
-  const lastResultRef = useRef([]);
-  const resultCachedRef = useRef();
+  const { result } = useMemoWithPrevious(
+    ({ array, result } = { array: [], result: [] }) => {
+      let resultCached = true;
+      let nextResult = [];
 
-  debugMemoizedRef.current = true;
-  resultCachedRef.current = true;
+      nextArray.forEach((element, index) => {
+        if (array[index] === element) {
+          return nextResult.push(result[index]);
+        }
 
-  const nextResult = useMemo(() => {
-    debugMemoizedRef.current = false;
+        resultCached = false;
 
-    // Perf: caching current acessor
-    const { current: from } = fromRef;
-    const { current: lastResult } = lastResultRef;
-    const nextResult = [];
+        const lastIndex = array.indexOf(element);
 
-    array.forEach((element, index) => {
-      if (from[index] === element) {
-        return nextResult.push(lastResult[index]);
+        if (~lastIndex) {
+          return nextResult.push(result[lastIndex]);
+        }
+
+        nextResult.push(mapper.call(nextArray, element, index));
+      });
+
+      if (resultCached) {
+        // If the result is from cache, then, use the last result instead.
+        nextResult = result;
+
+        // Seeing this log line means performance issue in the input.
+        // If the input is memoized correctly, we should not see this line.
+        debug(
+          [
+            'Not memoized but %ccache hit%c, this is very likely %cwasted render%c',
+            ...styleConsole('red'),
+            ...styleConsole('red')
+          ],
+          [{ from: { array, result }, to: { array: nextArray, result: nextResult } }]
+        );
+      } else {
+        // The input array has changed and we updated our output.
+        debug('Not memoized and %ccache miss%c', ...styleConsole('green'));
       }
 
-      resultCachedRef.current = false;
+      return { array: nextArray, result: nextResult };
+    },
+    [mapper, nextArray]
+  );
 
-      const lastIndex = from.indexOf(element);
-
-      if (~lastIndex) {
-        return nextResult.push(lastResult[lastIndex]);
-      }
-
-      nextResult.push(mapper.call(array, element, index));
-    });
-
-    // If the result is from cache, then, use the last result instead.
-    if (resultCachedRef.current) {
-      return lastResultRef.current;
-    }
-
-    return nextResult;
-  }, [array, debugMemoizedRef, fromRef, lastResultRef, mapper, resultCachedRef]);
-
-  if (debugMemoizedRef.current) {
-    // debug('Memoize %chit%c', ...styleConsole('green', 'white'));
-  } else if (resultCachedRef.current) {
-    // Seeing this log line means performance issue in the input.
-    // If the input is memoized correctly, we should not see this line.
-    debug(
-      [
-        'Not memoized but %ccache hit%c, this is very likely %cwasted render%c',
-        ...styleConsole('red'),
-        ...styleConsole('red')
-      ],
-      [{ array, from: fromRef.current, lastResult: lastResultRef.current, nextResult }]
-    );
-  } else {
-    // The input array has changed and we updated our output.
-    debug('Not memoized and %ccache miss%c', ...styleConsole('green'));
-  }
-
-  fromRef.current = array;
-  lastResultRef.current = nextResult;
-
-  return nextResult;
+  return result;
 }
