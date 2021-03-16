@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import { useSelector } from './internal/WebChatReduxContext';
 import createDebug from '../utils/debug';
@@ -15,6 +15,7 @@ const ActivitiesComposer = ({ children, dispatch }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const activities = useSelector(({ activities }) => activities);
+  const [autoSendReadReceipts, setAutoSendReadReceipts] = useState(true);
   const [userId] = useUserId();
 
   // Validate "userId" must be set.
@@ -30,53 +31,44 @@ const ActivitiesComposer = ({ children, dispatch }) => {
 
   activitiesRef.current = activities;
 
-  const markActivityAsRead = useCallback(
-    activity => {
-      const activityKey = getActivityKey(activity);
-
-      if (!~activitiesRef.current.indexOf(activity)) {
-        return console.warn(
-          'botframework-webchat: the activity passed to useMarkActivityKeyAsRead() must be present in the transcript.'
-        );
-      }
-
-      debug([`Mark activity %c${activityKey}%c as read`, ...styleConsole('purple')], [{ activity }]);
-
-      dispatch({
-        payload: activity,
-        type: 'CHAT_ADAPTER/MARK_ACTIVITY_AS_READ'
-      });
-    },
-    [activitiesRef]
-  );
-
   const activityKeyMarkAsReadRef = useRef();
 
   // TODO: Find a way to cache and only mark as read when activity key changed.
   // TODO: Add a flag to enable/disable auto mark as read, e.g. for DOM document.onvisibilitychange.
   useMemo(() => {
+    if (!autoSendReadReceipts) {
+      return;
+    }
+
     for (let index = activities.length - 1; index >= 0; index--) {
       const activity = activities[index];
 
       if (fromWho(activity) === 'others') {
-        if (
-          !activity.channelData['webchat:read-at'][userId] &&
-          activityKeyMarkAsReadRef.current !== getActivityKey(activity)
-        ) {
-          activityKeyMarkAsReadRef.current = getActivityKey(activity);
-          markActivityAsRead(activity);
+        const activityKey = getActivityKey(activity);
+
+        if (!activity.channelData['webchat:read-at'][userId] && activityKeyMarkAsReadRef.current !== activityKey) {
+          activityKeyMarkAsReadRef.current = activityKey;
+
+          debug([`Sending read receipt for activity %c${activityKey}%c`, ...styleConsole('purple')], [{ activity }]);
+
+          dispatch({
+            payload: activity,
+            type: 'CHAT_ADAPTER/SEND_READ_RECEIPT'
+          });
         }
 
         return;
       }
     }
-  }, [activities, activityKeyMarkAsReadRef, markActivityAsRead, userId]);
+  }, [activities, activityKeyMarkAsReadRef, autoSendReadReceipts, userId]);
 
   const context = useMemo(
     () => ({
-      activities
+      activities,
+      autoSendReadReceipts,
+      setAutoSendReadReceipts
     }),
-    [activities]
+    [activities, autoSendReadReceipts, setAutoSendReadReceipts]
   );
 
   return <WebChatActivitiesContext.Provider value={context}>{children}</WebChatActivitiesContext.Provider>;

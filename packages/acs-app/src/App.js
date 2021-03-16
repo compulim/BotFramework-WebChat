@@ -99,7 +99,7 @@ const App = () => {
         token={token}
       >
         <div>
-          <button onClick={handleStartClick} type="button">
+          <button accessKey="s" onClick={handleStartClick} type="button">
             Start
           </button>
         </div>

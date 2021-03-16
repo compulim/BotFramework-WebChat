@@ -16,6 +16,7 @@ import random from 'math-random';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import BasicTypingIndicator from './BasicTypingIndicator';
+import createDebug from './Utils/debug';
 import Fade from './Utils/Fade';
 import FocusRedirector from './Utils/FocusRedirector';
 import getActivityUniqueId from './Utils/getActivityUniqueId';
@@ -28,6 +29,7 @@ import ScreenReaderActivity from './ScreenReaderActivity';
 import ScreenReaderText from './ScreenReaderText';
 import ScrollToEndButton from './Activity/ScrollToEndButton';
 import SpeakActivity from './Activity/Speak';
+import styleConsole from '../../acs-chat-adapter/src/util/styleConsole';
 import tabbableElements from './Utils/tabbableElements';
 import useAcknowledgedActivity from './hooks/internal/useAcknowledgedActivity';
 import useDispatchScrollPosition from './hooks/internal/useDispatchScrollPosition';
@@ -44,6 +46,7 @@ import useUniqueId from './hooks/internal/useUniqueId';
 
 const {
   useActivities,
+  useAutoSendReadReceipts,
   useCreateActivityRenderer,
   useCreateActivityStatusRenderer,
   useCreateAvatarRenderer,
@@ -52,6 +55,8 @@ const {
   useLocalizer,
   useStyleOptions
 } = hooks;
+
+let debug;
 
 const ROOT_STYLE = {
   '&.webchat__basic-transcript': {
@@ -1097,10 +1102,31 @@ const SetScroller = ({ activityElementsRef, scrollerRef }) => {
 };
 
 const BasicTranscript = ({ className }) => {
+  debug || (debug = createDebug('<BasicTranscript>', { backgroundColor: 'yellow', color: 'black' }));
+
   const activityElementsRef = useRef([]);
   const scrollerRef = useRef(() => Infinity);
 
   const scroller = useCallback((...args) => scrollerRef.current(...args), [scrollerRef]);
+  const [_, setAutoSendReadReceipts] = useAutoSendReadReceipts();
+
+  useEffect(() => {
+    if (!document) {
+      return;
+    }
+
+    const handleVisibilityChange = ({ target: { visibilityState } }) => {
+      debug(`Visibility changed to %c${visibilityState}%c`, ...styleConsole('purple'));
+
+      setAutoSendReadReceipts(visibilityState !== 'hidden');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    handleVisibilityChange({ target: document });
+
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [setAutoSendReadReceipts]);
 
   return (
     <ReactScrollToBottomComposer scroller={scroller}>
