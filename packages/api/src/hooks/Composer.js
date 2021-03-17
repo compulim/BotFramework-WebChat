@@ -113,7 +113,35 @@ const Composer = ({
   username,
   webSpeechPonyfillFactory
 }) => {
-  debug || (debug = createDebug('<API.Composer>', { backgroundColor: 'red' }));
+  debug || (debug = createDebug('<Composer>', { backgroundColor: 'red' }));
+
+  useMemo(() => {
+    const capabilities = [];
+
+    capabilities.push(`${notifications ? '✔️' : '❌'} Notifications`);
+    capabilities.push(`${sendEvent ? '✔️' : '❌'} Send event`);
+    capabilities.push(`${sendFiles ? '✔️' : '❌'} Send file`);
+    capabilities.push(`${sendMessage ? '✔️' : '❌'} Send text message`);
+    capabilities.push(`${sendMessageBack ? '✔️' : '❌'} Send message back action`);
+    capabilities.push(`${sendPostBack ? '✔️' : '❌'} Send post back action`);
+    capabilities.push(`${activities ? '✔️' : '❌'} Transcript`);
+
+    if (typingUsers) {
+      capabilities.push(`✔️ Typing indicator (receive)`);
+    }
+
+    if (emitTypingIndicator) {
+      capabilities.push(`✔️ Typing indicator (send)`);
+    }
+
+    if (!emitTypingIndicator && !typingUsers) {
+      capabilities.push(`❌ Typing indicator`);
+    }
+
+    debug(`Chat adapter capabilities:\n\n${capabilities.join('\n')}`);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // const dispatch = useDispatch();
   const telemetryDimensionsRef = useRef({});
