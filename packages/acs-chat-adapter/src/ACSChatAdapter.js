@@ -39,7 +39,6 @@ const InternalACSChatAdapter = ({ children }) => {
 
   return children({
     activities,
-    connected: true,
     emitTypingIndicator,
     notifications,
     sendMessage,
@@ -110,7 +109,7 @@ const ACSChatAdapter = ({ children, credentials, threadId }) => {
       {/* </ChatThreadProvider> */}
     </ChatProvider>
   ) : (
-    children({ connected: false })
+    children()
   );
 };
 

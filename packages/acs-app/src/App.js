@@ -60,9 +60,8 @@ const App = () => {
       {started && (
         <div className="app__webchat-box" key={started}>
           <ACSChatAdapter credentials={credentials} threadId={threadId}>
-            {({ connected, ...chatAdapterProps }) =>
-              connected ? (
-                // At release, this line can be replaced by <ReactWebChat className="app__webchat" store={store} />.
+            {chatAdapterProps =>
+              chatAdapterProps ? (
                 <WebChatWithDebug
                   {...chatAdapterProps}
                   className="app__webchat"
