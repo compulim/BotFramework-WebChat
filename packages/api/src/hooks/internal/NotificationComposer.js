@@ -1,45 +1,99 @@
 import PropTypes from 'prop-types';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import WebChatNotificationContext from './WebChatNotificationContext';
 
-const NotificationComposer = ({
-  children,
-  connectivityStatus,
-  dismissNotification,
-  notifications,
-  setNotification
-}) => {
-  // TODO: It seems notifications can be something local to Web Chat too.
-  //       For example, if chat adapter don't support notifications, end-dev should still able to call setNotification/dismissNotification.
-  //       If chat adapter support, then we should merge the notifications from chat adapter, along with notifications by end-dev.
+const NotificationComposer = ({ chatAdapterNotifications, children }) => {
+  const [dismissedChatAdapterNotifications, setDismissedChatAdapterNotifications] = useState([]);
+  const [localNotifications, setLocalNotifications] = useState([]);
+
+  // Perf: decoupling for callback
+  const chatAdapterNotificationsForCallbacksRef = useRef();
+
+  chatAdapterNotificationsForCallbacksRef.current = chatAdapterNotifications;
+
+  const dismissChatAdapterNotification = useCallback(
+    id => {
+      const notification = chatAdapterNotificationsForCallbacksRef.current.find(notification => notification.id === id);
+
+      notification &&
+        setDismissedChatAdapterNotifications(dismissedChatAdapterNotifications => [
+          ...dismissedChatAdapterNotifications.filter(dismissed =>
+            chatAdapterNotificationsForCallbacksRef.current.find(
+              chatAdapterNotification =>
+                chatAdapterNotification.id === dismissed.id && chatAdapterNotification.timestamp === dismissed.timestamp
+            )
+          ),
+          { id, timestamp: notification.timestamp }
+        ]);
+    },
+    [chatAdapterNotificationsForCallbacksRef, setDismissedChatAdapterNotifications]
+  );
+
+  const dismissNotification = useCallback(
+    id => {
+      if (chatAdapterNotificationsForCallbacksRef.current.find(notification => notification.id === id)) {
+        return dismissChatAdapterNotification(id);
+      }
+
+      setLocalNotifications(localNotifications =>
+        localNotifications.filter(localNotification => localNotification.id !== id)
+      );
+    },
+    [chatAdapterNotificationsForCallbacksRef, dismissChatAdapterNotification, setLocalNotifications]
+  );
+
+  const setNotification = useCallback(
+    notification => {
+      setLocalNotifications(localNotifications => [
+        ...localNotifications.filter(localNotification => localNotification.id !== notification.id),
+        localNotifications
+      ]);
+    },
+    [setLocalNotifications]
+  );
+
+  const notifications = useMemo(
+    () => [
+      ...(chatAdapterNotifications || []).filter(
+        chatAdapterNotification =>
+          !dismissedChatAdapterNotifications.find(
+            dismissedChatAdapterNotification =>
+              chatAdapterNotification.id === dismissedChatAdapterNotification.id &&
+              chatAdapterNotification.timestamp === dismissedChatAdapterNotification.timestamp
+          )
+      ),
+      ...localNotifications
+    ],
+    [chatAdapterNotifications, dismissedChatAdapterNotifications, localNotifications]
+  );
+
   const context = useMemo(
     () => ({
-      connectivityStatus,
       dismissNotification,
       notifications,
       setNotification
     }),
-    [connectivityStatus, dismissNotification, notifications, setNotification]
+    [dismissNotification, notifications, setNotification]
   );
 
   return <WebChatNotificationContext.Provider value={context}>{children}</WebChatNotificationContext.Provider>;
 };
 
 NotificationComposer.defaultProps = {
-  children: undefined,
-  connectivityStatus: 'connected',
-  dismissNotification: undefined,
-  notifications: [],
-  setNotification: undefined
+  chatAdapterNotifications: undefined,
+  children: undefined
 };
 
 NotificationComposer.propTypes = {
-  children: PropTypes.any,
-  connectivityStatus: PropTypes.string,
-  dismissNotification: PropTypes.func,
-  notifications: PropTypes.array,
-  setNotification: PropTypes.func
+  chatAdapterNotifications: PropTypes.arrayOf(
+    PropTypes.shape({
+      data: PropTypes.any,
+      id: PropTypes.string,
+      timestamp: PropTypes.number
+    })
+  ),
+  children: PropTypes.any
 };
 
 export default NotificationComposer;

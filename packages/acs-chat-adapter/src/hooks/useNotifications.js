@@ -14,7 +14,8 @@ export default function useNotifications() {
     () => [
       {
         data: connected ? 'connected' : wasConnectedRef.current ? 'reconnecting' : 'connecting',
-        id: 'connectivitystatus'
+        id: 'connectivitystatus',
+        timestamp: Date.now()
       }
     ],
     [connected, wasConnectedRef]

@@ -34,9 +34,9 @@ function* connectionStatusToNotification({ payload: { directLine } }) {
         case 1:
           yield put(
             setNotification({
+              data: reconnecting ? 'reconnecting' : 'connecting',
               id: CONNECTIVITY_STATUS_NOTIFICATION_ID,
-              level: 'info',
-              message: reconnecting ? 'reconnecting' : 'connecting'
+              level: 'info'
             })
           );
 
@@ -47,9 +47,9 @@ function* connectionStatusToNotification({ payload: { directLine } }) {
 
           yield put(
             setNotification({
+              data: 'connected',
               id: CONNECTIVITY_STATUS_NOTIFICATION_ID,
-              level: 'success',
-              message: 'connected'
+              level: 'success'
             })
           );
 
@@ -61,9 +61,9 @@ function* connectionStatusToNotification({ payload: { directLine } }) {
 
           yield put(
             setNotification({
+              data: 'fatal',
               id: CONNECTIVITY_STATUS_NOTIFICATION_ID,
-              level: 'error',
-              message: 'failedtoconnect'
+              level: 'error'
             })
           );
 
@@ -78,6 +78,6 @@ function* connectionStatusToNotification({ payload: { directLine } }) {
   }
 }
 
-export default function*() {
+export default function* () {
   yield takeLatest(CONNECT, connectionStatusToNotification);
 }

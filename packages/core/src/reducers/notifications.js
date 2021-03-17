@@ -12,7 +12,7 @@ export default function notifications(state = DEFAULT_STATE, { payload, type }) 
   if (type === DISMISS_NOTIFICATION) {
     state = updateIn(state, [payload.id]);
   } else if (type === SAGA_ERROR) {
-    state = updateIn(state, ['connectivitystatus', 'message'], () => 'javascripterror');
+    state = updateIn(state, ['connectivitystatus', 'data'], () => 'javascripterror');
   } else if (type === SET_NOTIFICATION) {
     const { alt, data, id, level, message } = payload;
     const notification = state[id];

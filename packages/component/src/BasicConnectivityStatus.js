@@ -15,15 +15,14 @@ const BasicConnectivityStatus = () => {
     return false;
   }
 
-  // TODO: Use "data" instead of "message".
-  switch (connectivityStatus.data || connectivityStatus.message) {
+  switch (connectivityStatus.data) {
     case 'connecting':
       return <ConnectivityStatusConnecting />;
 
     case 'javascripterror':
       return <ConnectivityStatusJavaScriptError />;
 
-    case 'failedtoconnect':
+    case 'fatal':
       return <ConnectivityStatusFailedToConnect />;
 
     case 'reconnecting':

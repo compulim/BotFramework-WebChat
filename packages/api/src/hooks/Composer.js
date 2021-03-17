@@ -75,11 +75,9 @@ const Composer = ({
   avatarRenderer,
   cardActionMiddleware,
   children,
-  connectivityStatus, // TODO: Consider deprecate this in favor of notifications.
   dir,
   directLine,
   disabled,
-  dismissNotification,
   downscaleImageToDataURL,
   emitTypingIndicator,
   grammars,
@@ -102,7 +100,6 @@ const Composer = ({
   sendReadReceipt,
   sendTimeout,
   sendTypingIndicator,
-  setNotification,
   styleOptions,
   toastMiddleware,
   toastRenderer,
@@ -411,12 +408,7 @@ const Composer = ({
   return (
     <WebChatAPIContext.Provider value={context}>
       <ActivitiesComposer activities={activities} sendReadReceipt={sendReadReceipt}>
-        <NotificationComposer
-          connectivityStatus={connectivityStatus}
-          dismissNotification={dismissNotification}
-          notifications={notifications}
-          setNotification={setNotification}
-        >
+        <NotificationComposer chatAdapterNotifications={notifications}>
           <TypingComposer
             emitTypingIndicator={emitTypingIndicator}
             lastTypingAt={lastTypingAt}
@@ -509,12 +501,6 @@ ComposeWithStore.propTypes = {
 
 export default ComposeWithStore;
 
-/**
- * @todo TODO: [P3] We should consider moving some data from Redux store to props
- *       Although we use `connectToWebChat` to hide the details of accessor of Redux store,
- *       we should clean up the responsibility between Context and Redux store
- *       We should decide which data is needed for React but not in other environment such as CLI/VSCode
- */
 Composer.defaultProps = {
   activityMiddleware: undefined,
   activityRenderer: undefined,
@@ -527,11 +513,9 @@ Composer.defaultProps = {
   avatarRenderer: undefined,
   cardActionMiddleware: undefined,
   children: undefined,
-  connectivityStatus: undefined,
   dir: 'auto',
   directLine: undefined, // TODO: Should we remove this?
   disabled: false,
-  dismissNotification: undefined,
   downscaleImageToDataURL: undefined,
   emitTypingIndicator: undefined,
   grammars: [],
@@ -554,7 +538,6 @@ Composer.defaultProps = {
   sendReadReceipt: undefined,
   sendTimeout: undefined,
   sendTypingIndicator: true,
-  setNotification: undefined,
   styleOptions: {},
   toastMiddleware: undefined,
   toastRenderer: undefined,
@@ -580,7 +563,6 @@ Composer.propTypes = {
   avatarRenderer: PropTypes.func,
   cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   children: PropTypes.any,
-  connectivityStatus: PropTypes.string,
   dir: PropTypes.oneOf(['auto', 'ltr', 'rtl']),
   directLine: PropTypes.shape({
     activity$: PropTypes.shape({
@@ -595,7 +577,6 @@ Composer.propTypes = {
     token: PropTypes.string
   }),
   disabled: PropTypes.bool,
-  dismissNotification: PropTypes.func,
   downscaleImageToDataURL: PropTypes.func,
   emitTypingIndicator: PropTypes.func,
   grammars: PropTypes.arrayOf(PropTypes.string),
@@ -626,7 +607,6 @@ Composer.propTypes = {
   sendReadReceipt: PropTypes.func,
   sendTimeout: PropTypes.number,
   sendTypingIndicator: PropTypes.bool,
-  setNotification: PropTypes.func,
   styleOptions: PropTypes.any,
   toastMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   toastRenderer: PropTypes.func,
