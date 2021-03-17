@@ -1,5 +1,6 @@
 import { POST_ACTIVITY } from '../actions/postActivity';
 import createDebug from '../../util/debug';
+import styleConsole from '../util/styleConsole';
 
 let debug;
 
@@ -16,11 +17,15 @@ export default function createPostActivityMiddleware({ sendMessage }) {
         if (type === 'message') {
           const now = Date.now();
 
-          debug(`Sending message "${text}".`);
+          debug(`Sending message %c${text}%c.`, ...styleConsole('purple'));
 
           await sendMessage(text);
 
-          debug(`Message sent, took ${Date.now() - now} ms.`);
+          debug(
+            `Message %c${text}%c sent, took %c${Date.now() - now} ms%c.`,
+            ...styleConsole('purple'),
+            ...styleConsole('green')
+          );
         } else {
           console.warn(`chat-adapter-acs does not support activity of type ${type}`);
         }
