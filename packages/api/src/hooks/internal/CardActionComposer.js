@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import applyMiddleware from './middleware/applyMiddleware';
+import applyMiddleware from '../middleware/applyMiddleware';
 // import createDebug from '../utils/debug';
-import createDefaultCardActionMiddleware from './middleware/createDefaultCardActionMiddleware';
-import observableToPromise from './utils/observableToPromise';
-import singleToArray from './utils/singleToArray';
-import usePostActivity from './usePostActivity';
-import useSendMessage from './useSendMessage';
-import useSendMessageBack from './useSendMessageBack';
-import useSendPostBack from './useSendPostBack';
-import WebChatCardActionContext from './internal/WebChatCardActionContext';
-import useClearSuggestedActions from './useClearSuggestedActions';
+import createDefaultCardActionMiddleware from '../middleware/createDefaultCardActionMiddleware';
+import observableToPromise from '../utils/observableToPromise';
+import singleToArray from '../utils/singleToArray';
+import usePostActivity from '../usePostActivity';
+import useSendMessage from '../useSendMessage';
+import useSendMessageBack from '../useSendMessageBack';
+import useSendPostBack from '../useSendPostBack';
+import WebChatCardActionContext from './WebChatCardActionContext';
+import useClearSuggestedActions from '../useClearSuggestedActions';
 
 // let debug;
 

@@ -14,7 +14,7 @@ import { Provider } from 'react-redux';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
-import WebChatReduxContext, { useDispatch, useSelector } from './internal/WebChatReduxContext';
+import WebChatReduxContext, { useDispatch, useSelector } from './WebChatReduxContext';
 
 const InternalLegacyChatAdapterBridge = ({ children, directLine, userID, username }) => {
   const dispatch = useDispatch();

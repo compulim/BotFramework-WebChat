@@ -2,25 +2,25 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
-import ActivitiesComposer from './ActivitiesComposer';
-import CardActionComposer from './CardActionComposer';
+import ActivitiesComposer from './internal/ActivitiesComposer';
+import CardActionComposer from './internal/CardActionComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';
 import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGroupActivitiesMiddleware';
 import defaultSelectVoice from './internal/defaultSelectVoice';
 import ErrorBoundary from './utils/ErrorBoundary';
 import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
-import InputComposer from './InputComposer';
+import InputComposer from './internal/InputComposer';
 import isObject from '../utils/isObject';
-import LegacyChatAdapterBridge from './LegacyChatAdapterBridge';
+import LegacyChatAdapterBridge from './internal/LegacyChatAdapterBridge';
 import normalizeLanguage from '../utils/normalizeLanguage';
-import NotificationComposer from './NotificationComposer';
+import NotificationComposer from './internal/NotificationComposer';
 import patchStyleOptions from '../patchStyleOptions';
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
-import SpeechComposer from './SpeechComposer';
+import SpeechComposer from './internal/SpeechComposer';
 import Tracker from './internal/Tracker';
-import TypingComposer from './TypingComposer';
+import TypingComposer from './internal/TypingComposer';
 import WebChatAPIContext from './internal/WebChatAPIContext';
 
 import applyMiddleware, {

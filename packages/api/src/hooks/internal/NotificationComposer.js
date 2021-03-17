@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 
-import WebChatNotificationContext from './internal/WebChatNotificationContext';
+import WebChatNotificationContext from './WebChatNotificationContext';
 
 const NotificationComposer = ({
   children,

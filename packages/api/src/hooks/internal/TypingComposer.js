@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 
-import WebChatTypingContext from './internal/WebChatTypingContext';
+import WebChatTypingContext from './WebChatTypingContext';
 
 const TypingComposer = ({
   children,

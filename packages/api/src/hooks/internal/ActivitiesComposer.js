@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { useMemo, useRef, useState } from 'react';
 
-import createDebug from '../utils/debug';
-import fromWho from '../utils/fromWho';
-import getActivityKey from '../utils/getActivityKey';
-import styleConsole from '../utils/styleConsole';
-import useUserId from './useUserID';
-import WebChatActivitiesContext from './internal/WebChatActivitiesContext';
+import createDebug from '../../utils/debug';
+import fromWho from '../../utils/fromWho';
+import getActivityKey from '../../utils/getActivityKey';
+import styleConsole from '../../utils/styleConsole';
+import useUserId from '../useUserID';
+import WebChatActivitiesContext from './WebChatActivitiesContext';
 
 let debug;
 
@@ -76,11 +76,11 @@ ActivitiesComposer.defaultProps = {
 };
 
 ActivitiesComposer.propTypes = {
-  activities: PropTypes.array(
+  activities: PropTypes.arrayOf(
     PropTypes.shape({
-      channelData: {
+      channelData: PropTypes.shape({
         'webchat:read-at': PropTypes.objectOf(PropTypes.oneOfType([PropTypes.bool, PropTypes.number]))
-      }
+      })
     })
   ),
   children: PropTypes.any,

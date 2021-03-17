@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import createDebug from '../utils/debug';
-import fromWho from '../utils/fromWho';
-import mime from '../utils/mime-wrapper';
-import useActivities from './useActivities';
-import useForceRender from './internal/useForceRender';
-import useTrackEvent from './useTrackEvent';
-import WebChatInputContext from './internal/WebChatInputContext';
+import createDebug from '../../utils/debug';
+import fromWho from '../../utils/fromWho';
+import mime from '../../utils/mime-wrapper';
+import useActivities from '../useActivities';
+import useForceRender from './useForceRender';
+import useTrackEvent from '../useTrackEvent';
+import WebChatInputContext from './WebChatInputContext';
 
 let debug;
 
