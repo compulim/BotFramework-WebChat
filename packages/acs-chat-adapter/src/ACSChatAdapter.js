@@ -1,4 +1,8 @@
-import { ChatProvider, useSendReadReceipt, useSendTypingNotification } from '@azure/acs-ui-sdk';
+import {
+  ChatProvider,
+  useSendReadReceipt as useACSSendReadReceipt,
+  useSendTypingNotification as useACSSendTypingNotification
+} from '@azure/acs-ui-sdk';
 import { useUserId } from '@azure/acs-ui-sdk/dist/providers/ChatProvider';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -22,28 +26,46 @@ const InternalACSChatAdapter = ({ children }) => {
   internalDebug ||
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const sendMessage = useACSSendMessage();
-  const sendReadReceipt = useSendReadReceipt();
-  const sendTypingNotification = useSendTypingNotification();
+  const acsSendMessage = useACSSendMessage();
+  const acsSendReadReceipt = useACSSendReadReceipt();
+  const acsSendTypingNotification = useACSSendTypingNotification();
 
-  const store = useMemo(() => createChatAdapterStore({ sendMessage, sendReadReceipt, sendTypingNotification }), [
-    sendMessage,
-    sendReadReceipt,
-    sendTypingNotification
-  ]);
+  // TODO: Remove store and use native chat adapter interface.
+  const store = useMemo(
+    () =>
+      createChatAdapterStore({
+        sendMessage: acsSendMessage,
+        sendReadReceipt: acsSendReadReceipt,
+        sendTypingNotification: acsSendTypingNotification
+      }),
+    [acsSendMessage, acsSendReadReceipt, acsSendTypingNotification]
+  );
 
   const { dispatch } = store;
   const activities = useWebChatActivities();
-  const typing = useWebChatTyping();
+  const typingUsers = useWebChatTyping();
   const userId = useUserId();
 
   useMemo(() => dispatch(setActivities(activities)), [activities, dispatch]);
-  useMemo(() => dispatch(setTyping(typing)), [dispatch, typing]);
+  useMemo(() => dispatch(setTyping(typingUsers)), [dispatch, typingUsers]);
   useMemo(() => dispatch(setUserId(userId)), [dispatch, userId]);
 
-  internalDebug([`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')], [{ activities, typing }]);
+  internalDebug(
+    [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
+    [{ activities, typingUsers }]
+  );
 
-  return children({ connected: true, store });
+  const sendReadReceipt = useCallback(
+    activity => {
+      dispatch({
+        payload: activity,
+        type: 'CHAT_ADAPTER/SEND_READ_RECEIPT'
+      });
+    },
+    [dispatch]
+  );
+
+  return children({ connected: true, sendReadReceipt, store });
 };
 
 InternalACSChatAdapter.defaultProps = {};

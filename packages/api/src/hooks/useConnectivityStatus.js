@@ -1,5 +1,5 @@
-import { useSelector } from './internal/WebChatReduxContext';
+import useWebChatNotificationContext from './internal/useWebChatNotificationContext';
 
 export default function useConnectivityStatus() {
-  return [useSelector(({ connectivityStatus }) => connectivityStatus)];
+  return [useWebChatNotificationContext().connectivityStatus];
 }

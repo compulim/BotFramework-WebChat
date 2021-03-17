@@ -140,8 +140,10 @@ function useTextBoxValue() {
         nextValue = nextValueWithEmoji;
       }
 
+      // If emitTypingIndicator is falsy, the chat adapter does not support typing indicator.
+      emitTypingIndicator && emitTypingIndicator();
+
       setInputMode('keyboard');
-      emitTypingIndicator();
       setValue(nextValue);
       stopDictate();
 

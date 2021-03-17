@@ -1,33 +1,6 @@
-import { Provider } from 'react-redux';
 import PropTypes from 'prop-types';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
-
-// TODO: We need to hoist only the minimal actions.
-import {
-  // clearSuggestedActions,
-  connect as createConnectAction,
-  createStore,
-  disconnect,
-  dismissNotification,
-  // markActivity,
-  postActivity as createPostActivityAction,
-  // sendEvent,
-  // sendFiles,
-  // sendMessage,
-  // sendMessageBack,
-  // sendPostBack,
-  // setDictateInterims,
-  // setDictateState,
-  // setLanguage,
-  setNotification
-  // setSendTimeout,
-  // setSendTypingIndicator,
-  // startDictate,
-  // startSpeakingActivity,
-  // stopDictate,
-  // stopSpeakingActivity
-} from 'botframework-webchat-core';
 
 import ActivitiesComposer from './ActivitiesComposer';
 import CardActionComposer from './CardActionComposer';
@@ -39,41 +12,21 @@ import ErrorBoundary from './utils/ErrorBoundary';
 import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
 import InputComposer from './InputComposer';
 import isObject from '../utils/isObject';
-import mapMap from '../utils/mapMap';
+import LegacyChatAdapterBridge from './LegacyChatAdapterBridge';
 import normalizeLanguage from '../utils/normalizeLanguage';
+import NotificationComposer from './NotificationComposer';
 import patchStyleOptions from '../patchStyleOptions';
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
 import SpeechComposer from './SpeechComposer';
 import Tracker from './internal/Tracker';
+import TypingComposer from './TypingComposer';
 import WebChatAPIContext from './internal/WebChatAPIContext';
-import WebChatReduxContext, { useDispatch } from './internal/WebChatReduxContext';
 
 import applyMiddleware, {
   forLegacyRenderer as applyMiddlewareForLegacyRenderer,
   forRenderer as applyMiddlewareForRenderer
 } from './middleware/applyMiddleware';
-
-// List of Redux actions factory we are hoisting as Web Chat functions
-const DISPATCHERS = {
-  // clearSuggestedActions,
-  dismissNotification,
-  // emitTypingIndicator,
-  // markActivity,
-  // sendEvent,
-  // sendFiles,
-  // sendMessage,
-  // sendMessageBack,
-  // sendPostBack,
-  // setDictateInterims,
-  // setDictateState,
-  setNotification
-  // setSendTimeout,
-  // startDictate,
-  // startSpeakingActivity,
-  // stopDictate,
-  // stopSpeakingActivity
-};
 
 let debug;
 
@@ -110,44 +63,54 @@ function mergeStringsOverrides(localizedStrings, language, overrideLocalizedStri
 }
 
 const Composer = ({
+  activities,
   activityMiddleware,
   activityRenderer,
   activityStatusMiddleware,
   activityStatusRenderer,
-  attachmentMiddleware,
   attachmentForScreenReaderMiddleware,
+  attachmentMiddleware,
   attachmentRenderer,
   avatarMiddleware,
   avatarRenderer,
   cardActionMiddleware,
   children,
+  connectivityStatus, // TODO: Consider deprecate this in favor of notifications.
   dir,
   directLine,
   disabled,
+  dismissNotification,
   downscaleImageToDataURL,
+  emitTypingIndicator,
   grammars,
   groupActivitiesMiddleware,
   groupTimestamp,
   internalErrorBoxClass,
+  lastTypingAt, // Deprecated: removed on or after 2022-02-16.
   locale,
+  notifications,
   onTelemetry,
   overrideLocalizedStrings,
+  postActivity, // TODO: We should use sendXxx instead
   renderMarkdown,
   selectVoice,
+  sendReadReceipt,
   sendTimeout,
   sendTypingIndicator,
+  setNotification,
   styleOptions,
   toastMiddleware,
   toastRenderer,
   typingIndicatorMiddleware,
   typingIndicatorRenderer,
+  typingUsers,
   userID,
   username,
   webSpeechPonyfillFactory
 }) => {
   debug || (debug = createDebug('<API.Composer>', { backgroundColor: 'red' }));
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const telemetryDimensionsRef = useRef({});
 
   const patchedDir = useMemo(() => (dir === 'ltr' || dir === 'rtl' ? dir : 'auto'), [dir]);
@@ -157,27 +120,6 @@ const Composer = ({
     sendTimeout,
     styleOptions
   ]);
-
-  // useEffect(() => {
-  //   dispatch(setLanguage(locale));
-  // }, [dispatch, locale]);
-
-  useEffect(() => {
-    dispatch(
-      createConnectAction({
-        directLine,
-        userID,
-        username
-      })
-    );
-
-    return () => {
-      /**
-       * @todo TODO: [P3] disconnect() is an async call (pending -> fulfilled), we need to wait, or change it to reconnect()
-       */
-      dispatch(disconnect());
-    };
-  }, [dispatch, directLine, userID, username]);
 
   const patchedSelectVoice = useMemo(() => selectVoice || defaultSelectVoice.bind(null, { language: locale }), [
     locale,
@@ -191,11 +133,6 @@ const Composer = ({
         groupTimestamp: patchedStyleOptions.groupTimestamp
       }),
     [groupActivitiesMiddleware, patchedStyleOptions.groupTimestamp]
-  );
-
-  const hoistedDispatchers = useMemo(
-    () => mapMap(DISPATCHERS, dispatcher => (...args) => dispatch(dispatcher(...args))),
-    [dispatch]
   );
 
   const patchedLocalizedStrings = useMemo(
@@ -370,8 +307,6 @@ const Composer = ({
     );
   }, [typingIndicatorMiddleware, typingIndicatorRenderer]);
 
-  const postActivity = useCallback((...args) => dispatch(createPostActivityAction(...args)), [dispatch]);
-
   /**
    * This is a heavy function, and it is expected to be only called when there is a need to recreate business logic, e.g.
    * - User ID changed, causing all send* functions to be updated
@@ -386,14 +321,12 @@ const Composer = ({
   const context = useMemo(
     () => ({
       ...groupActivitiesContext,
-      ...hoistedDispatchers,
       activityRenderer: patchedActivityRenderer,
       activityStatusRenderer: patchedActivityStatusRenderer,
       attachmentForScreenReaderRenderer: patchedAttachmentForScreenReaderRenderer,
       attachmentRenderer: patchedAttachmentRenderer,
       avatarRenderer: patchedAvatarRenderer,
       dir: patchedDir,
-      directLine,
       disabled,
       downscaleImageToDataURL,
       grammars: patchedGrammars,
@@ -414,11 +347,9 @@ const Composer = ({
       username
     }),
     [
-      directLine,
       disabled,
       downscaleImageToDataURL,
       groupActivitiesContext,
-      hoistedDispatchers,
       internalErrorBoxClass,
       locale,
       localizedGlobalize,
@@ -444,19 +375,32 @@ const Composer = ({
     ]
   );
 
-  // debug('Render', { webSpeechPonyfillFactory });
-
   return (
     <WebChatAPIContext.Provider value={context}>
-      <ActivitiesComposer dispatch={dispatch}>
-        <InputComposer dispatch={dispatch} postActivity={postActivity} sendTypingIndicator={sendTypingIndicator}>
-          <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
-            <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
-              {typeof children === 'function' ? children(context) : children}
-              {onTelemetry && <Tracker />}
-            </CardActionComposer>
-          </SpeechComposer>
-        </InputComposer>
+      <ActivitiesComposer activities={activities} sendReadReceipt={sendReadReceipt}>
+        <NotificationComposer
+          connectivityStatus={connectivityStatus}
+          dismissNotification={dismissNotification}
+          notifications={notifications}
+          setNotification={setNotification}
+        >
+          <TypingComposer
+            emitTypingIndicator={emitTypingIndicator}
+            lastTypingAt={lastTypingAt}
+            sendTypingIndicator={sendTypingIndicator}
+            typingUsers={typingUsers}
+          >
+            {/* TODO: Move typing related props to <TypingComposer> */}
+            <InputComposer postActivity={postActivity}>
+              <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
+                <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
+                  {typeof children === 'function' ? children(context) : children}
+                  {onTelemetry && <Tracker />}
+                </CardActionComposer>
+              </SpeechComposer>
+            </InputComposer>
+          </TypingComposer>
+        </NotificationComposer>
       </ActivitiesComposer>
     </WebChatAPIContext.Provider>
   );
@@ -464,6 +408,9 @@ const Composer = ({
 
 // We will create a Redux store if it was not passed in
 const ComposeWithStore = ({ internalRenderErrorBox, onTelemetry, store, ...props }) => {
+  // TODO: We should eventually not needing these props in Web Chat, but only in chat adapter.
+  const { directLine, userID, username } = props;
+
   const [error, setError] = useState();
 
   const handleError = useCallback(
@@ -476,15 +423,20 @@ const ComposeWithStore = ({ internalRenderErrorBox, onTelemetry, store, ...props
     [onTelemetry, setError]
   );
 
-  const memoizedStore = useMemo(() => store || createStore(), [store]);
-
   return error ? (
     !!internalRenderErrorBox && internalRenderErrorBox({ error, type: 'uncaught exception' })
   ) : (
     <ErrorBoundary onError={handleError}>
-      <Provider context={WebChatReduxContext} store={memoizedStore}>
-        <Composer internalRenderErrorBox={internalRenderErrorBox} onTelemetry={onTelemetry} {...props} />
-      </Provider>
+      <LegacyChatAdapterBridge directLine={directLine} store={store} userID={userID} username={username}>
+        {chatAdapterProps => (
+          <Composer
+            internalRenderErrorBox={internalRenderErrorBox}
+            onTelemetry={onTelemetry}
+            {...chatAdapterProps}
+            {...props}
+          />
+        )}
+      </LegacyChatAdapterBridge>
     </ErrorBoundary>
   );
 };
@@ -492,13 +444,30 @@ const ComposeWithStore = ({ internalRenderErrorBox, onTelemetry, store, ...props
 ComposeWithStore.defaultProps = {
   internalRenderErrorBox: undefined,
   onTelemetry: undefined,
-  store: undefined
+  store: undefined,
+  userID: undefined,
+  username: undefined
 };
 
 ComposeWithStore.propTypes = {
+  directLine: PropTypes.shape({
+    activity$: PropTypes.shape({
+      subscribe: PropTypes.func.isRequired
+    }).isRequired,
+    connectionStatus$: PropTypes.shape({
+      subscribe: PropTypes.func.isRequired
+    }).isRequired,
+    end: PropTypes.func,
+    getSessionId: PropTypes.func,
+    postActivity: PropTypes.func.isRequired,
+    referenceGrammarID: PropTypes.string,
+    token: PropTypes.string
+  }).isRequired,
   internalRenderErrorBox: PropTypes.any,
   onTelemetry: PropTypes.func,
-  store: PropTypes.any
+  store: PropTypes.any,
+  userID: PropTypes.string,
+  username: PropTypes.string
 };
 
 export default ComposeWithStore;
@@ -521,31 +490,42 @@ Composer.defaultProps = {
   avatarRenderer: undefined,
   cardActionMiddleware: undefined,
   children: undefined,
+  connectivityStatus: undefined,
   dir: 'auto',
   disabled: false,
+  dismissNotification: undefined,
   downscaleImageToDataURL: undefined,
+  emitTypingIndicator: undefined,
   grammars: [],
   groupActivitiesMiddleware: undefined,
   groupTimestamp: undefined,
   internalErrorBoxClass: undefined,
+  lastTypingAt: undefined, // Deprecated: removed on or after 2022-02-16.
   locale: window.navigator.language || 'en-US',
+  notifications: undefined,
   onTelemetry: undefined,
   overrideLocalizedStrings: undefined,
+  postActivity: undefined, // TODO: We should use sendXxx instead.
   renderMarkdown: undefined,
   selectVoice: undefined,
+  sendReadReceipt: undefined,
   sendTimeout: undefined,
-  sendTypingIndicator: false,
+  sendTypingIndicator: true,
+  setNotification: undefined,
   styleOptions: {},
   toastMiddleware: undefined,
   toastRenderer: undefined,
   typingIndicatorMiddleware: undefined,
   typingIndicatorRenderer: undefined,
+  typingUsers: undefined,
   userID: '',
   username: '',
   webSpeechPonyfillFactory: undefined
 };
 
 Composer.propTypes = {
+  // TODO: Type the activity
+  activities: PropTypes.array.isRequired,
   activityMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   activityRenderer: PropTypes.func,
   activityStatusMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
@@ -557,6 +537,7 @@ Composer.propTypes = {
   avatarRenderer: PropTypes.func,
   cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   children: PropTypes.any,
+  connectivityStatus: PropTypes.string,
   dir: PropTypes.oneOf(['auto', 'ltr', 'rtl']),
   directLine: PropTypes.shape({
     activity$: PropTypes.shape({
@@ -572,23 +553,45 @@ Composer.propTypes = {
     token: PropTypes.string
   }).isRequired,
   disabled: PropTypes.bool,
+  dismissNotification: PropTypes.func,
   downscaleImageToDataURL: PropTypes.func,
+  emitTypingIndicator: PropTypes.func,
   grammars: PropTypes.arrayOf(PropTypes.string),
   groupActivitiesMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   groupTimestamp: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
   internalErrorBoxClass: PropTypes.func, // This is for internal use only. We don't allow customization of error box.
+  lastTypingAt: PropTypes.any, // Deprecated: removed on or after 2022-02-16.
   locale: PropTypes.string,
+  notifications: PropTypes.arrayOf(
+    PropTypes.shape({
+      alt: PropTypes.string,
+      data: PropTypes.any,
+      id: PropTypes.string,
+      level: PropTypes.string,
+      message: PropTypes.string
+    })
+  ),
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
+  postActivity: PropTypes.func, // TODO: We should use sendXxx instead.
   renderMarkdown: PropTypes.func,
   selectVoice: PropTypes.func,
+  sendReadReceipt: PropTypes.func,
   sendTimeout: PropTypes.number,
   sendTypingIndicator: PropTypes.bool,
+  setNotification: PropTypes.func,
   styleOptions: PropTypes.any,
   toastMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   toastRenderer: PropTypes.func,
   typingIndicatorMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   typingIndicatorRenderer: PropTypes.func,
+  typingUsers: PropTypes.any, // TODO: Check why objectOf is not working on empty object.
+  // typingUsers: PropTypes.objectOf({
+  //   at: PropTypes.number,
+  //   name: PropTypes.string,
+  //   role: PropTypes.string,
+  //   who: PropTypes.string
+  // }),
   userID: PropTypes.string,
   username: PropTypes.string,
   webSpeechPonyfillFactory: PropTypes.func

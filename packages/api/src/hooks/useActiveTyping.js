@@ -1,21 +1,21 @@
 import { useEffect } from 'react';
 
-import { useSelector } from './internal/WebChatReduxContext';
 import useForceRender from './internal/useForceRender';
 import useStyleOptions from './useStyleOptions';
+import useWebChatTypingContext from './internal/useWebChatTypingContext';
 
 function useActiveTyping(expireAfter) {
   const now = Date.now();
 
   const [{ typingAnimationDuration }] = useStyleOptions();
+  const { typingUsers } = useWebChatTypingContext();
   const forceRender = useForceRender();
-  const typing = useSelector(({ typing }) => typing);
 
   if (typeof expireAfter !== 'number') {
     expireAfter = typingAnimationDuration;
   }
 
-  const activeTyping = Object.entries(typing).reduce((activeTyping, [id, { at, name, role }]) => {
+  const activeTyping = Object.entries(typingUsers).reduce((activeTyping, [id, { at, name, role }]) => {
     const until = at + expireAfter;
 
     if (until > now) {

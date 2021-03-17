@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useMemo, useRef, useState } from 'react';
 
-import { useSelector } from './internal/WebChatReduxContext';
 import createDebug from '../utils/debug';
 import fromWho from '../utils/fromWho';
 import getActivityKey from '../utils/getActivityKey';
@@ -11,10 +10,9 @@ import WebChatActivitiesContext from './internal/WebChatActivitiesContext';
 
 let debug;
 
-const ActivitiesComposer = ({ children, dispatch }) => {
+const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const activities = useSelector(({ activities }) => activities);
   const [autoSendReadReceipts, setAutoSendReadReceipts] = useState(true);
   const [userId] = useUserId();
 
@@ -36,7 +34,7 @@ const ActivitiesComposer = ({ children, dispatch }) => {
   // TODO: Find a way to cache and only mark as read when activity key changed.
   // TODO: Add a flag to enable/disable auto mark as read, e.g. for DOM document.onvisibilitychange.
   useMemo(() => {
-    if (!autoSendReadReceipts) {
+    if (!autoSendReadReceipts || !sendReadReceipt) {
       return;
     }
 
@@ -51,16 +49,13 @@ const ActivitiesComposer = ({ children, dispatch }) => {
 
           debug([`Sending read receipt for activity %c${activityKey}%c`, ...styleConsole('purple')], [{ activity }]);
 
-          dispatch({
-            payload: activity,
-            type: 'CHAT_ADAPTER/SEND_READ_RECEIPT'
-          });
+          sendReadReceipt(activity);
         }
 
         return;
       }
     }
-  }, [activities, activityKeyMarkAsReadRef, autoSendReadReceipts, userId]);
+  }, [activities, activityKeyMarkAsReadRef, autoSendReadReceipts, sendReadReceipt, userId]);
 
   const context = useMemo(
     () => ({
@@ -75,12 +70,21 @@ const ActivitiesComposer = ({ children, dispatch }) => {
 };
 
 ActivitiesComposer.defaultProps = {
-  children: undefined
+  activities: undefined,
+  children: undefined,
+  sendReadReceipt: undefined
 };
 
 ActivitiesComposer.propTypes = {
+  activities: PropTypes.array(
+    PropTypes.shape({
+      channelData: {
+        'webchat:read-at': PropTypes.objectOf(PropTypes.oneOfType([PropTypes.bool, PropTypes.number]))
+      }
+    })
+  ),
   children: PropTypes.any,
-  dispatch: PropTypes.func.isRequired
+  sendReadReceipt: PropTypes.func
 };
 
 export default ActivitiesComposer;

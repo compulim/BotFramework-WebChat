@@ -467,9 +467,18 @@ To modify this value, change the value in the style options prop passed to Web C
 
 <!-- prettier-ignore-start -->
 ```js
-useDismissNotification(): (id: string) => void
+useDismissNotification(): (id: string) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+<!--
+  TODO: Find an easier way for developer to find out if chat adapter support certain capabilities or not
+        For example, when Web Chat is loaded, in debug mode, prompt it.
+        Also, it's difficult to understand the relationship between this hook vs. props passed by chat adapter.
+        For example, we can say, if "dismissNotification" prop is not set by chat adapter, this hook will be undefined.
+-->
+
+New in 4.13.0: If the chat adapter does not support notifications, it will return `undefined`.
 
 This hook will return a function which can be called to dismiss a notification given its ID.
 
@@ -477,11 +486,13 @@ This hook will return a function which can be called to dismiss a notification g
 
 <!-- prettier-ignore-start -->
 ```js
-useEmitTypingIndicator(): () => void
+useEmitTypingIndicator(): () => void | undefined
 ```
 <!-- prettier-ignore-end -->
 
 When called, this function will send a typing activity from the user to the bot.
+
+New in 4.13.0: If the chat adapter does not support emit typing indicator, it will return `undefined`.
 
 ## `useFocus`
 
@@ -753,9 +764,11 @@ List of supported card action types can be found in this [Direct Line Activity c
 
 <!-- prettier-ignore-start -->
 ```js
-usePostActivity(): (activity: Activity) => void
+usePostActivity(): (activity: Activity) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support emit typing indicator, it will return `undefined`.
 
 When called, this function will post the activity on behalf of the user, to the bot.
 
@@ -996,9 +1009,11 @@ This hook will return the current value of the send box and the setter function 
 
 <!-- prettier-ignore-start -->
 ```js
-useSendEvent(): (name: string, value: string) => void
+useSendEvent(): (name: string, value: string) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending event, it will return `undefined`.
 
 When called, this function will send an event activity to the bot.
 
@@ -1006,9 +1021,11 @@ When called, this function will send an event activity to the bot.
 
 <!-- prettier-ignore-start -->
 ```js
-useSendFiles(): (files: (Blob | File)[]) => void
+useSendFiles(): (files: (Blob | File)[]) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending files, it will return `undefined`.
 
 When called, this function will send a message activity with one or more [File](https://developer.mozilla.org/en-US/docs/Web/API/File) attachments to the bot, including these operations:
 
@@ -1021,9 +1038,11 @@ If you are using an `ArrayBuffer`, you can use `FileReader` to convert it into a
 
 <!-- prettier-ignore-start -->
 ```js
-useSendMessage(): (text: string, method: string) => void
+useSendMessage(): (text: string, method: string) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending message, it will return `undefined`.
 
 When called, this function will send a text message activity to the bot.
 
@@ -1033,9 +1052,11 @@ You can optionally include the input method how the text message was collected. 
 
 <!-- prettier-ignore-start -->
 ```js
-useSendMessageBack(): (value: any, text: string, displayText: string) => void
+useSendMessageBack(): (value: any, text: string, displayText: string) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending message back, it will return `undefined`.
 
 When called, this function will send a `messageBack` activity to the bot.
 
@@ -1043,9 +1064,11 @@ When called, this function will send a `messageBack` activity to the bot.
 
 <!-- prettier-ignore-start -->
 ```js
-useSendPostBack(): (value: any) => void
+useSendPostBack(): (value: any) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending postback, it will return `undefined`.
 
 When called, this function will send a `postBack` activity to the bot.
 
@@ -1084,9 +1107,11 @@ interface Notification {
   message: string;
 }
 
-useSetNotification(): (notification: Notification) => void
+useSetNotification(): (notification: Notification) => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending message, it will return `undefined`.
 
 This hook will return a function which can be called to add or update a notification. If a notification with same ID is already in the system, it will be updated. Otherwise, a new notification will be added.
 
@@ -1159,9 +1184,11 @@ To modify this value, change the value in the style options prop passed to Web C
 
 <!-- prettier-ignore-start -->
 ```js
-useSubmitSendBox(): () => void
+useSubmitSendBox(): () => void | undefined
 ```
 <!-- prettier-ignore-end -->
+
+New in 4.13.0: If the chat adapter does not support sending message, it will return `undefined`.
 
 This function will send the text in the send box to the bot and clear the send box.
 

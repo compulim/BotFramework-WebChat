@@ -1,5 +1,5 @@
-import { useSelector } from './internal/WebChatReduxContext';
+import useWebChatNotificationContext from './internal/useWebChatNotificationContext';
 
 export default function useNotifications() {
-  return [useSelector(({ notifications }) => notifications)];
+  return [useWebChatNotificationContext().notifications];
 }

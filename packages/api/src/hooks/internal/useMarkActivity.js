@@ -1,5 +1,8 @@
-import useWebChatAPIContext from './useWebChatAPIContext';
+// import useWebChatAPIContext from './useWebChatAPIContext';
 
 export default function useMarkActivity() {
-  return useWebChatAPIContext().markActivity;
+  // TODO: Deprecated, how to backcompat?
+  throw new Error('Backcompat not implemented');
+
+  // return useWebChatAPIContext().markActivity;
 }

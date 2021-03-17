@@ -32,13 +32,11 @@ const Debug = () => {
   return false;
 };
 
-const WebChatWithDebug = ({ className, ...props }) => {
-  return (
-    <Composer {...props}>
-      <BasicWebChat className={className} />
-      <Debug />
-    </Composer>
-  );
-};
+const WebChatWithDebug = ({ className, ...props }) => (
+  <Composer {...props}>
+    <BasicWebChat className={className} />
+    <Debug />
+  </Composer>
+);
 
 export default WebChatWithDebug;

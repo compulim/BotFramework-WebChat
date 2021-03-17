@@ -52,10 +52,10 @@ Timestamp.propTypes = {
   activity: PropTypes.shape({
     channelData: PropTypes.shape({
       'webchat:read-at': PropTypes.any,
-      'webchat:who': PropTypes.oneOf('channel', 'others', 'self')
+      'webchat:who': PropTypes.oneOf(['channel', 'others', 'self'])
     }),
     from: PropTypes.shape({
-      role: PropTypes.oneOf('bot', 'channe', 'user')
+      role: PropTypes.oneOf(['bot', 'channel', 'user'])
     }),
     timestamp: PropTypes.string.isRequired
   }).isRequired,

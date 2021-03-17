@@ -1,4 +1,4 @@
-import { useSelector } from './internal/WebChatReduxContext';
+import useWebChatTypingContext from './internal/useWebChatTypingContext';
 
 let showDeprecationNotes = true;
 
@@ -11,5 +11,5 @@ export default function useLastTypingAt() {
     showDeprecationNotes = false;
   }
 
-  return [useSelector(({ lastTypingAt }) => lastTypingAt)];
+  return [useWebChatTypingContext().lastTypingAt];
 }

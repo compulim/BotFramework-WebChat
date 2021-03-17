@@ -1,19 +1,17 @@
-import { emitTypingIndicator as createEmitTypingIndicatorAction } from 'botframework-webchat-core';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import createDebug from '../utils/debug';
+import fromWho from '../utils/fromWho';
 import mime from '../utils/mime-wrapper';
 import useActivities from './useActivities';
 import useForceRender from './internal/useForceRender';
 import useTrackEvent from './useTrackEvent';
 import WebChatInputContext from './internal/WebChatInputContext';
-import fromWho from '../utils/fromWho';
-import useSendTypingIndicator from './useSendTypingIndicator';
 
 let debug;
 
-const InputComposer = ({ children, dispatch, postActivity }) => {
+const InputComposer = ({ children, postActivity }) => {
   debug || (debug = createDebug('<InputComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
@@ -21,124 +19,136 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
   const [sendBoxValue, setSendBoxValue] = useState('');
   const activityForSuggestedActionsRef = useRef();
   const forceRender = useForceRender();
-  const sendTypingIndicator = useSendTypingIndicator();
   const suggestedActionsRef = useRef([]);
   const trackEvent = useTrackEvent();
 
-  const emitTypingIndicator = useCallback(() => {
-    sendTypingIndicator && dispatch(createEmitTypingIndicatorAction());
-  }, [dispatch, sendTypingIndicator]);
+  const sendEvent = useMemo(
+    () =>
+      postActivity &&
+      ((name, value) =>
+        postActivity({
+          name,
+          type: 'event',
+          value
+        })),
+    [postActivity]
+  );
 
-  const sendEvent = useCallback(
-    (name, value) =>
-      postActivity({
-        name,
-        type: 'event',
-        value
+  // TODO: We should move sendXxx to chat adapter.
+  const sendFiles = useMemo(
+    () =>
+      postActivity &&
+      (files => {
+        if (files && files.length) {
+          const result = postActivity({
+            attachments: [].map.call(files, ({ name, thumbnail, url }) => ({
+              contentType: mime.getType(name) || 'application/octet-stream',
+              contentUrl: url,
+              name,
+              thumbnailUrl: thumbnail
+            })),
+            channelData: {
+              attachmentSizes: [].map.call(files, ({ size }) => size)
+            },
+            type: 'message'
+          });
+
+          trackEvent('sendFiles', {
+            numFiles: files.length,
+            // eslint-disable-next-line no-magic-numbers
+            sumSizeInKB: Math.round(files.reduce((total, { size }) => total + size, 0) / 1024)
+          });
+
+          return result;
+        }
+      }),
+    [postActivity, trackEvent]
+  );
+
+  // TODO: We should move sendXxx to chat adapter.
+  // TODO: Consider deprecating "method" options, by asking end-dev to call setter of useInputMode() themselves.
+  // TODO: Why do we have channelData here?
+  const sendMessage = useMemo(
+    () =>
+      postActivity &&
+      ((text, method, { channelData } = {}) => {
+        debug(['Calling sendMessage()'], [{ method, text }]);
+
+        method && setInputMode(method);
+
+        return postActivity(
+          {
+            channelData,
+            text,
+            textFormat: 'plain',
+            type: 'message'
+          },
+          method
+        );
       }),
     [postActivity]
   );
 
-  const sendFiles = useCallback(
-    files => {
-      if (files && files.length) {
-        const result = postActivity({
-          attachments: [].map.call(files, ({ name, thumbnail, url }) => ({
-            contentType: mime.getType(name) || 'application/octet-stream',
-            contentUrl: url,
-            name,
-            thumbnailUrl: thumbnail
-          })),
-          channelData: {
-            attachmentSizes: [].map.call(files, ({ size }) => size)
-          },
-          type: 'message'
-        });
-
-        trackEvent('sendFiles', {
-          numFiles: files.length,
-          // eslint-disable-next-line no-magic-numbers
-          sumSizeInKB: Math.round(files.reduce((total, { size }) => total + size, 0) / 1024)
-        });
-
-        return result;
-      }
-    },
-    [postActivity, trackEvent]
-  );
-
-  // TODO: Consider deprecating "method" options, by asking end-dev to call setter of useInputMode() themselves.
-  // TODO: Why do we have channelData here?
-  const sendMessage = useCallback(
-    (text, method, { channelData } = {}) => {
-      debug(['Calling sendMessage()'], [{ method, text }]);
-
-      method && setInputMode(method);
-
-      return postActivity(
-        {
-          channelData,
-          text,
-          textFormat: 'plain',
-          type: 'message'
-        },
-        method
-      );
-    },
-    [postActivity]
-  );
-
-  const sendMessageBack = useCallback(
-    (value, text, displayText, method) =>
-      postActivity(
-        {
-          channelData: {
-            messageBack: {
-              displayText
-            }
-          },
-          text,
-          type: 'message',
-          value
-        },
-        method
-      ),
-    [postActivity]
-  );
-
-  const sendPostBack = useCallback(
-    (value, method) =>
-      postActivity(
-        {
-          channelData: {
-            postBack: true
-          },
-          text: typeof value === 'string' ? value : undefined,
-          type: 'message',
-          value: typeof value !== 'string' ? value : undefined
-        },
-        method
-      ),
-    [postActivity]
-  );
-
-  const submitSendBox = useCallback(
-    (method, { channelData } = {}) => {
-      if (sendBoxValue) {
-        sendBoxValue &&
-          postActivity(
-            {
-              channelData,
-              text: sendBoxValue.trim(),
-              textFormat: 'plain',
-              type: 'message'
+  // TODO: We should move sendXxx to chat adapter.
+  const sendMessageBack = useMemo(
+    () =>
+      postActivity &&
+      ((value, text, displayText, method) =>
+        postActivity(
+          {
+            channelData: {
+              messageBack: {
+                displayText
+              }
             },
-            method
-          );
+            text,
+            type: 'message',
+            value
+          },
+          method
+        )),
+    [postActivity]
+  );
 
-        setSendBoxValue('');
-      }
-    },
+  // TODO: We should move sendXxx to chat adapter.
+  const sendPostBack = useMemo(
+    () =>
+      postActivity &&
+      ((value, method) =>
+        postActivity(
+          {
+            channelData: {
+              postBack: true
+            },
+            text: typeof value === 'string' ? value : undefined,
+            type: 'message',
+            value: typeof value !== 'string' ? value : undefined
+          },
+          method
+        )),
+    [postActivity]
+  );
+
+  // TODO: Why we are not using sendMessage but postActivity?
+  const submitSendBox = useMemo(
+    () =>
+      postActivity &&
+      ((method, { channelData } = {}) => {
+        if (sendBoxValue) {
+          sendBoxValue &&
+            postActivity(
+              {
+                channelData,
+                text: sendBoxValue.trim(),
+                textFormat: 'plain',
+                type: 'message'
+              },
+              method
+            );
+
+          setSendBoxValue('');
+        }
+      }),
     [postActivity, sendBoxValue, setSendBoxValue]
   );
 
@@ -188,7 +198,6 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
   const inputContext = useMemo(
     () => ({
       clearSuggestedActions,
-      emitTypingIndicator,
       inputMode,
       postActivity,
       sendBoxValue,
@@ -204,7 +213,6 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
     }),
     [
       clearSuggestedActions,
-      emitTypingIndicator,
       inputMode,
       postActivity,
       sendBoxValue,
@@ -224,13 +232,13 @@ const InputComposer = ({ children, dispatch, postActivity }) => {
 };
 
 InputComposer.defaultProps = {
-  children: undefined
+  children: undefined,
+  postActivity: undefined
 };
 
 InputComposer.propTypes = {
   children: PropTypes.any,
-  dispatch: PropTypes.func.isRequired,
-  postActivity: PropTypes.func.isRequired
+  postActivity: PropTypes.func
 };
 
 export default InputComposer;
