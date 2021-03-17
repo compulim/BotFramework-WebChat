@@ -37,6 +37,9 @@ const SendStatus = ({ activity, sendState }) => {
   const [{ sendStatus: sendStatusStyleSet }] = useStyleSet();
   const focus = useFocus();
   const localize = useLocalizer();
+  // TODO: This is deprecated, we need to change it to send message.
+  //       event, messageBack, postBack are not retryable.
+  //       How about sendFiles?
   const postActivity = usePostActivity();
 
   const sendingText = localize('ACTIVITY_STATUS_SEND_STATUS_ALT_SENDING');

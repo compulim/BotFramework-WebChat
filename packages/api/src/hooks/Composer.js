@@ -91,9 +91,14 @@ const Composer = ({
   notifications,
   onTelemetry,
   overrideLocalizedStrings,
-  postActivity, // TODO: We should use sendXxx instead
+  postActivity,
   renderMarkdown,
   selectVoice,
+  sendEvent,
+  sendFiles,
+  sendMessage,
+  sendMessageBack,
+  sendPostBack,
   sendReadReceipt,
   sendTimeout,
   sendTypingIndicator,
@@ -391,7 +396,14 @@ const Composer = ({
             typingUsers={typingUsers}
           >
             {/* TODO: Move typing related props to <TypingComposer> */}
-            <InputComposer postActivity={postActivity}>
+            <InputComposer
+              postActivity={postActivity} // TODO: Deprecated, will remove in 2023
+              sendEvent={sendEvent}
+              sendFiles={sendFiles}
+              sendMessage={sendMessage}
+              sendMessageBack={sendMessageBack}
+              sendPostBack={sendPostBack}
+            >
               <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
                 <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
                   {typeof children === 'function' ? children(context) : children}
@@ -459,7 +471,6 @@ ComposeWithStore.propTypes = {
     }).isRequired,
     end: PropTypes.func,
     getSessionId: PropTypes.func,
-    postActivity: PropTypes.func.isRequired,
     referenceGrammarID: PropTypes.string,
     token: PropTypes.string
   }).isRequired,
@@ -505,9 +516,14 @@ Composer.defaultProps = {
   notifications: undefined,
   onTelemetry: undefined,
   overrideLocalizedStrings: undefined,
-  postActivity: undefined, // TODO: We should use sendXxx instead.
+  postActivity: undefined, // TODO: Deprecated, will remove in 2023
   renderMarkdown: undefined,
   selectVoice: undefined,
+  sendEvent: undefined,
+  sendFiles: undefined,
+  sendMessage: undefined,
+  sendMessageBack: undefined,
+  sendPostBack: undefined,
   sendReadReceipt: undefined,
   sendTimeout: undefined,
   sendTypingIndicator: true,
@@ -548,7 +564,6 @@ Composer.propTypes = {
     }).isRequired,
     end: PropTypes.func,
     getSessionId: PropTypes.func,
-    postActivity: PropTypes.func.isRequired,
     referenceGrammarID: PropTypes.string,
     token: PropTypes.string
   }).isRequired,
@@ -573,9 +588,14 @@ Composer.propTypes = {
   ),
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
-  postActivity: PropTypes.func, // TODO: We should use sendXxx instead.
+  postActivity: PropTypes.func, // TODO: Deprecated, will remove in 2023
   renderMarkdown: PropTypes.func,
   selectVoice: PropTypes.func,
+  sendEvent: PropTypes.func,
+  sendFiles: PropTypes.func,
+  sendMessage: PropTypes.func,
+  sendMessageBack: PropTypes.func,
+  sendPostBack: PropTypes.func,
   sendReadReceipt: PropTypes.func,
   sendTimeout: PropTypes.number,
   sendTypingIndicator: PropTypes.bool,

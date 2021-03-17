@@ -11,6 +11,7 @@ import {
 } from 'botframework-webchat-core';
 
 import { Provider } from 'react-redux';
+import mime from '../../utils/mime-wrapper';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
@@ -55,13 +56,84 @@ const InternalLegacyChatAdapterBridge = ({ children, directLine, userID, usernam
   }, [dispatch]);
 
   const postActivity = useCallback(
-    (activity, method = 'code') => {
+    activity => {
       // TODO: Convert to async function
       //       POST_ACTIVITY_REJECTED = reject
       //       POST_ACTIVITY_FULFILLED = resolve
-      dispatch(createPostActivityAction(activity, method));
+      dispatch(createPostActivityAction(activity));
     },
     [dispatch]
+  );
+
+  const sendEvent = useCallback(
+    (name, value) =>
+      postActivity({
+        name,
+        type: 'event',
+        value
+      }),
+    [postActivity]
+  );
+
+  const sendFiles = useCallback(
+    files => {
+      if (files && files.length) {
+        return postActivity({
+          attachments: [].map.call(files, ({ name, thumbnail, url }) => ({
+            contentType: mime.getType(name) || 'application/octet-stream',
+            contentUrl: url,
+            name,
+            thumbnailUrl: thumbnail
+          })),
+          channelData: {
+            // TODO: Rename to "webchat:attachment-sizes"
+            attachmentSizes: [].map.call(files, ({ size }) => size)
+          },
+          type: 'message'
+        });
+      }
+    },
+    [postActivity]
+  );
+
+  const sendMessage = useCallback(
+    text =>
+      postActivity({
+        text,
+        textFormat: 'plain',
+        type: 'message'
+      }),
+    [postActivity]
+  );
+
+  const sendMessageBack = useCallback(
+    (value, text, displayText) =>
+      postActivity({
+        channelData: {
+          // TODO: Rename to "webchat:message-back:display-text"
+          messageBack: {
+            displayText
+          }
+        },
+        text,
+        type: 'message',
+        value
+      }),
+    [postActivity]
+  );
+
+  const sendPostBack = useCallback(
+    value =>
+      postActivity({
+        channelData: {
+          // TODO: Rename to "webchat:post-back"
+          postBack: true
+        },
+        text: typeof value === 'string' ? value : undefined,
+        type: 'message',
+        value: typeof value !== 'string' ? value : undefined
+      }),
+    [postActivity]
   );
 
   // TODO: We probably have two notifications merged. One is from chat adapter, another from Web Chat (end-dev calling setNotification).
@@ -81,7 +153,11 @@ const InternalLegacyChatAdapterBridge = ({ children, directLine, userID, usernam
       emitTypingIndicator,
       lastTypingAt,
       notifications,
-      postActivity,
+      sendEvent,
+      sendFiles,
+      sendMessage,
+      sendMessageBack,
+      sendPostBack,
       setNotification,
       typingUsers
     })

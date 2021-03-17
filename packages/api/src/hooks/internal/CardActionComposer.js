@@ -63,7 +63,7 @@ const CardActionComposer = ({ cardActionMiddleware, children, directLine }) => {
   // debug || (debug = createDebug('CardActionComposer', { backgroundColor: 'red' }));
 
   const clearSuggestedActions = useClearSuggestedActions();
-  const postActivity = usePostActivity();
+  const postActivity = usePostActivity(); // Deprecated?
   const sendMessage = useSendMessage();
   const sendMessageBack = useSendMessageBack();
   const sendPostBack = useSendPostBack();
@@ -78,7 +78,7 @@ const CardActionComposer = ({ cardActionMiddleware, children, directLine }) => {
           dispatch: () => {
             throw new Error('not implemented');
           },
-          postActivity,
+          postActivity, // Deprecated?
           sendMessage,
           sendMessageBack,
           sendPostBack
