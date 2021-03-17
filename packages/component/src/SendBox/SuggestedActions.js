@@ -16,7 +16,7 @@ import useStyleToEmotionObject from '../hooks/internal/useStyleToEmotionObject';
 import useSuggestedActionsAccessKey from '../hooks/internal/useSuggestedActionsAccessKey';
 import useUniqueId from '../hooks/internal/useUniqueId';
 
-const { useDirection, useLocalizer, useStyleOptions } = hooks;
+const { useDirection, useLocalizer, useStyleOptions, useSuggestedActions } = hooks;
 
 const ROOT_STYLE = {
   '&.webchat__suggested-actions': {
@@ -206,9 +206,10 @@ SuggestedActionStackedContainer.propTypes = {
   screenReaderText: PropTypes.string.isRequired
 };
 
-const SuggestedActions = ({ className, suggestedActions }) => {
+const SuggestedActions = ({ className }) => {
   const [{ suggestedActionLayout, suggestedActionsStackedLayoutButtonTextWrap }] = useStyleOptions();
   const [accessKey] = useSuggestedActionsAccessKey();
+  const [suggestedActions] = useSuggestedActions();
   const localize = useLocalizer();
   const localizeAccessKey = useLocalizeAccessKey();
 
@@ -267,20 +268,9 @@ SuggestedActions.defaultProps = {
 };
 
 SuggestedActions.propTypes = {
-  className: PropTypes.string,
-  suggestedActions: PropTypes.arrayOf(
-    PropTypes.shape({
-      displayText: PropTypes.string,
-      image: PropTypes.string,
-      imageAltText: PropTypes.string,
-      text: PropTypes.string,
-      title: PropTypes.string,
-      type: PropTypes.string.isRequired,
-      value: PropTypes.any
-    })
-  ).isRequired
+  className: PropTypes.string
 };
 
-export default connectSuggestedActions()(SuggestedActions);
+export default SuggestedActions;
 
 export { connectSuggestedActions };

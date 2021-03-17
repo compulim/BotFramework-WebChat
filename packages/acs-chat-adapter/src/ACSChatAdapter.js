@@ -1,12 +1,10 @@
 import { ChatProvider } from '@azure/acs-ui-sdk';
 import { useUserId } from '@azure/acs-ui-sdk/dist/providers/ChatProvider';
 import PropTypes from 'prop-types';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import createChatAdapterStore from './createChatAdapterStore';
 import createDebug from './util/debug';
 import resolveFunction from './util/resolveFunction';
-import setUserId from './actions/internal/setUserId';
 import styleConsole from './util/styleConsole';
 import useACSSendMessageWithSendReceipt from './hooks/useACSSendMessageWithSendReceipt';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
@@ -24,21 +22,15 @@ const InternalACSChatAdapter = ({ children }) => {
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
   const activities = useWebChatActivities();
+  const emitTypingIndicator = useEmitTypingIndicator();
   const notifications = useNotifications();
+  const sendReadReceipt = useSendReadReceipt();
   const typingUsers = useWebChatTyping();
   const userId = useUserId();
 
-  // TODO: Remove store and use native chat adapter interface.
-  const store = useMemo(() => createChatAdapterStore({ userId }), [userId]);
-
-  const { dispatch } = store;
-
-  useMemo(() => dispatch(setUserId(userId)), [dispatch, userId]);
-
   const acsSendMessageWithSendReceipt = useACSSendMessageWithSendReceipt({ activities });
-  const emitTypingIndicator = useEmitTypingIndicator();
+
   const sendMessage = useCallback(content => acsSendMessageWithSendReceipt(content), [acsSendMessageWithSendReceipt]);
-  const sendReadReceipt = useSendReadReceipt();
 
   internalDebug(
     [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
@@ -52,8 +44,8 @@ const InternalACSChatAdapter = ({ children }) => {
     notifications,
     sendMessage,
     sendReadReceipt,
-    store,
-    typingUsers
+    typingUsers,
+    userId
   });
 };
 

@@ -16,6 +16,7 @@ import referenceGrammarID from './reducers/referenceGrammarID';
 // import shouldSpeakIncomingActivity from './reducers/shouldSpeakIncomingActivity';
 // import suggestedActions from './reducers/suggestedActions';
 import typing from './reducers/typing';
+import user from './reducers/user';
 
 export default combineReducers({
   activities,
@@ -33,6 +34,7 @@ export default combineReducers({
   // shouldSpeakIncomingActivity,
   // suggestedActions,
   typing,
+  user,
 
   // TODO: [P3] Take this deprecation code out when releasing on or after 2022-02-16
   lastTypingAt

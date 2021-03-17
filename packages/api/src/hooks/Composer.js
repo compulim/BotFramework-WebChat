@@ -109,7 +109,7 @@ const Composer = ({
   typingIndicatorMiddleware,
   typingIndicatorRenderer,
   typingUsers,
-  userID,
+  userId,
   username,
   webSpeechPonyfillFactory
 }) => {
@@ -376,7 +376,7 @@ const Composer = ({
       toastRenderer: patchedToastRenderer,
       trackDimension,
       typingIndicatorRenderer: patchedTypingIndicatorRenderer,
-      userID,
+      userId,
       username
     }),
     [
@@ -403,7 +403,7 @@ const Composer = ({
       sendTypingIndicator,
       telemetryDimensionsRef,
       trackDimension,
-      userID,
+      userId,
       username
     ]
   );
@@ -447,9 +447,9 @@ const Composer = ({
 };
 
 // We will create a Redux store if it was not passed in
-const ComposeWithStore = ({ internalRenderErrorBox, onTelemetry, store, ...props }) => {
+const ComposeWithStore = ({ store, userID, username, ...props }) => {
   // TODO: We should eventually not needing these props in Web Chat, but only in chat adapter.
-  const { directLine, userID, username } = props;
+  const { directLine, internalRenderErrorBox, onTelemetry } = props;
 
   const [error, setError] = useState();
 
@@ -467,21 +467,19 @@ const ComposeWithStore = ({ internalRenderErrorBox, onTelemetry, store, ...props
     !!internalRenderErrorBox && internalRenderErrorBox({ error, type: 'uncaught exception' })
   ) : (
     <ErrorBoundary onError={handleError}>
-      <LegacyChatAdapterBridge directLine={directLine} store={store} userID={userID} username={username}>
-        {chatAdapterProps => (
-          <Composer
-            internalRenderErrorBox={internalRenderErrorBox}
-            onTelemetry={onTelemetry}
-            {...chatAdapterProps}
-            {...props}
-          />
-        )}
-      </LegacyChatAdapterBridge>
+      {directLine ? (
+        <LegacyChatAdapterBridge directLine={directLine} store={store} userId={userID} username={username}>
+          {chatAdapterProps => <Composer {...chatAdapterProps} {...props} />}
+        </LegacyChatAdapterBridge>
+      ) : (
+        <Composer {...props} />
+      )}
     </ErrorBoundary>
   );
 };
 
 ComposeWithStore.defaultProps = {
+  directLine: undefined,
   internalRenderErrorBox: undefined,
   onTelemetry: undefined,
   store: undefined,
@@ -501,7 +499,7 @@ ComposeWithStore.propTypes = {
     getSessionId: PropTypes.func,
     referenceGrammarID: PropTypes.string,
     token: PropTypes.string
-  }).isRequired,
+  }),
   internalRenderErrorBox: PropTypes.any,
   onTelemetry: PropTypes.func,
   store: PropTypes.any,
@@ -531,6 +529,7 @@ Composer.defaultProps = {
   children: undefined,
   connectivityStatus: undefined,
   dir: 'auto',
+  directLine: undefined, // TODO: Should we remove this?
   disabled: false,
   dismissNotification: undefined,
   downscaleImageToDataURL: undefined,
@@ -562,7 +561,7 @@ Composer.defaultProps = {
   typingIndicatorMiddleware: undefined,
   typingIndicatorRenderer: undefined,
   typingUsers: undefined,
-  userID: '',
+  userId: '', // This is correct case, reading from the new chat adapter or LegacyChatAdapterBridge.
   username: '',
   webSpeechPonyfillFactory: undefined
 };
@@ -594,7 +593,7 @@ Composer.propTypes = {
     getSessionId: PropTypes.func,
     referenceGrammarID: PropTypes.string,
     token: PropTypes.string
-  }).isRequired,
+  }),
   disabled: PropTypes.bool,
   dismissNotification: PropTypes.func,
   downscaleImageToDataURL: PropTypes.func,
@@ -640,7 +639,7 @@ Composer.propTypes = {
   //   role: PropTypes.string,
   //   who: PropTypes.string
   // }),
-  userID: PropTypes.string,
+  userId: PropTypes.string,
   username: PropTypes.string,
   webSpeechPonyfillFactory: PropTypes.func
 };

@@ -1,7 +1,7 @@
 import './App.css';
 
 import { ACSChatAdapter } from 'botframework-webchat-chat-adapter-acs';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createCognitiveServicesSpeechServicesPonyfillFactory } from 'botframework-webchat';
 
 import ACSCredentials from './ui/ACSCredentials';
@@ -9,26 +9,12 @@ import createFetchSpeechServicesCredentials from './util/createFetchSpeechServic
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
 
-// TODO: Remove before flight
-const DUMMY_OBSERVABLE = {
-  subscribe: () => () => {}
-};
-
 const App = () => {
   const [endpointURL, setEndpointURL] = useSessionState('', 'ACS_ENDPOINT_URL');
   const [identity, setIdentity] = useSessionState('', 'ACS_IDENTITY');
   const [started, setStarted] = useState();
   const [threadId, setThreadId] = useSessionState('', 'ACS_THREAD_ID');
   const [token, setToken] = useSessionState('', 'ACS_TOKEN');
-  const dummyDirectLine = useMemo(
-    () => ({
-      activity$: DUMMY_OBSERVABLE,
-      connect: () => {},
-      connectionStatus$: DUMMY_OBSERVABLE,
-      postActivity: () => DUMMY_OBSERVABLE
-    }),
-    []
-  );
 
   const handleACSCredentialsChange = useCallback(
     ({ endpointURL, identity, threadId, token }) => {
@@ -80,7 +66,6 @@ const App = () => {
                 <WebChatWithDebug
                   {...chatAdapterProps}
                   className="app__webchat"
-                  directLine={dummyDirectLine}
                   webSpeechPonyfillFactory={webSpeechPonyfillFactory}
                 />
               ) : (

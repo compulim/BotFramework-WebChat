@@ -17,15 +17,20 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 
 import WebChatReduxContext, { useDispatch, useSelector } from './WebChatReduxContext';
 
-const InternalLegacyChatAdapterBridge = ({ children, directLine, userID, username }) => {
+const InternalLegacyChatAdapterBridge = ({
+  children,
+  directLine,
+  userId: userIdFromProps,
+  username: usernameFromProps
+}) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(
       createConnectAction({
         directLine,
-        userID,
-        username
+        userID: userIdFromProps,
+        username: usernameFromProps
       })
     );
 
@@ -35,8 +40,9 @@ const InternalLegacyChatAdapterBridge = ({ children, directLine, userID, usernam
        */
       dispatch(createDisconnectAction());
     };
-  }, [dispatch, directLine, userID, username]);
+  }, [dispatch, directLine, userIdFromProps, usernameFromProps]);
 
+  const { id: userId, name: username } = useSelector(({ user }) => user);
   const activities = useSelector(({ activities }) => activities);
   // TODO: Move connectivityStatus to notification
   const connectivityStatus = useSelector(({ connectivityStatus }) => connectivityStatus);
@@ -159,30 +165,32 @@ const InternalLegacyChatAdapterBridge = ({ children, directLine, userID, usernam
       sendMessageBack,
       sendPostBack,
       setNotification,
-      typingUsers
+      typingUsers,
+      userId,
+      username
     })
   );
 };
 
 InternalLegacyChatAdapterBridge.defaultProps = {
   children: undefined,
-  userID: undefined,
+  userId: undefined,
   username: undefined
 };
 
 InternalLegacyChatAdapterBridge.propTypes = {
   children: PropTypes.func,
   directLine: PropTypes.any.isRequired,
-  userID: PropTypes.string,
+  userId: PropTypes.string,
   username: PropTypes.string
 };
 
-const LegacyChatAdapterBridge = ({ children, directLine, store, userID, username }) => {
+const LegacyChatAdapterBridge = ({ children, directLine, store, userId, username }) => {
   const memoizedStore = useMemo(() => store || createStore(), [store]);
 
   return (
     <Provider context={WebChatReduxContext} store={memoizedStore}>
-      <InternalLegacyChatAdapterBridge directLine={directLine} userID={userID} username={username}>
+      <InternalLegacyChatAdapterBridge directLine={directLine} userId={userId} username={username}>
         {children}
       </InternalLegacyChatAdapterBridge>
     </Provider>
@@ -192,7 +200,7 @@ const LegacyChatAdapterBridge = ({ children, directLine, store, userID, username
 LegacyChatAdapterBridge.defaultProps = {
   children: undefined,
   store: undefined,
-  userID: undefined,
+  userId: undefined,
   username: undefined
 };
 
@@ -200,7 +208,7 @@ LegacyChatAdapterBridge.propTypes = {
   children: PropTypes.func,
   directLine: PropTypes.any.isRequired,
   store: PropTypes.any,
-  userID: PropTypes.string,
+  userId: PropTypes.string,
   username: PropTypes.string
 };
 

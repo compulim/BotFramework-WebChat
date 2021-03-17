@@ -208,17 +208,22 @@ const InputComposer = ({
 
 InputComposer.defaultProps = {
   children: undefined,
-  postActivity: undefined
+  postActivity: undefined,
+  sendEvent: undefined,
+  sendFiles: undefined,
+  sendMessage: undefined,
+  sendMessageBack: undefined,
+  sendPostBack: undefined
 };
 
 InputComposer.propTypes = {
   children: PropTypes.any,
   postActivity: PropTypes.func, // TODO: Deprecated, will remove in 2023
-  sendEvent: PropTypes.func.isRequired,
-  sendFiles: PropTypes.func.isRequired,
-  sendMessage: PropTypes.func.isRequired,
-  sendMessageBack: PropTypes.func.isRequired,
-  sendPostBack: PropTypes.func.isRequired
+  sendEvent: PropTypes.func,
+  sendFiles: PropTypes.func,
+  sendMessage: PropTypes.func,
+  sendMessageBack: PropTypes.func,
+  sendPostBack: PropTypes.func
 };
 
 export default InputComposer;
