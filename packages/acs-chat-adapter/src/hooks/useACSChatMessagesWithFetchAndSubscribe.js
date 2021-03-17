@@ -19,7 +19,7 @@ let PASSTHRU_FN;
 
 export default function useACSChatMessagesWithFetchAndSubscribe() {
   debug ||
-    (debug = createDebug('acs:useChatMessagesWithFetchAndSubscribe', { backgroundColor: 'yellow', color: 'black' }));
+    (debug = createDebug('acs:useACSChatMessagesWithFetchAndSubscribe', { backgroundColor: 'yellow', color: 'black' }));
   EMPTY_ARRAY || (EMPTY_ARRAY = []);
   PASSTHRU_FN || (PASSTHRU_FN = value => value);
 

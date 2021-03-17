@@ -127,15 +127,15 @@ const Composer = ({
     capabilities.push(`${activities ? '✔️' : '❌'} Transcript`);
 
     if (typingUsers) {
-      capabilities.push(`✔️ Typing indicator (receive)`);
+      capabilities.push('✔️ Typing indicator (receive)');
     }
 
     if (emitTypingIndicator) {
-      capabilities.push(`✔️ Typing indicator (send)`);
+      capabilities.push('✔️ Typing indicator (send)');
     }
 
     if (!emitTypingIndicator && !typingUsers) {
-      capabilities.push(`❌ Typing indicator`);
+      capabilities.push('❌ Typing indicator');
     }
 
     debug(`Chat adapter capabilities:\n\n${capabilities.join('\n')}`);
