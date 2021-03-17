@@ -10,6 +10,7 @@ import setUserId from './actions/internal/setUserId';
 import styleConsole from './util/styleConsole';
 import useACSSendMessageWithSendReceipt from './hooks/useACSSendMessageWithSendReceipt';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
+import useNotifications from './hooks/useNotifications';
 import useSendReadReceipt from './hooks/useSendReadReceipt';
 import useWebChatActivities from './hooks/useWebChatActivities';
 import useWebChatTyping from './hooks/useWebChatTyping';
@@ -23,6 +24,7 @@ const InternalACSChatAdapter = ({ children }) => {
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
   const activities = useWebChatActivities();
+  const notifications = useNotifications();
   const typingUsers = useWebChatTyping();
   const userId = useUserId();
 
@@ -47,6 +49,7 @@ const InternalACSChatAdapter = ({ children }) => {
     activities,
     connected: true,
     emitTypingIndicator,
+    notifications,
     sendMessage,
     sendReadReceipt,
     store,
