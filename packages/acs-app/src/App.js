@@ -99,6 +99,7 @@ const App = () => {
         token={token}
       >
         <div>
+          {/* eslint-disable-next-line jsx-a11y/no-access-key */}
           <button accessKey="s" onClick={handleStartClick} type="button">
             Start
           </button>
