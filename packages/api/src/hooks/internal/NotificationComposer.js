@@ -1,9 +1,15 @@
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
+import createDebug from '../../utils/debug';
+import styleConsole from '../../utils/styleConsole';
 import WebChatNotificationContext from './WebChatNotificationContext';
 
+let debug;
+
 const NotificationComposer = ({ chatAdapterNotifications, children }) => {
+  debug || (debug = createDebug('<NotificationComposer>', { backgroundColor: 'yellow', color: 'black' }));
+
   const [dismissedChatAdapterNotifications, setDismissedChatAdapterNotifications] = useState([]);
   const [localNotifications, setLocalNotifications] = useState([]);
 
@@ -66,6 +72,11 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
       ...localNotifications
     ],
     [chatAdapterNotifications, dismissedChatAdapterNotifications, localNotifications]
+  );
+
+  debug(
+    [`Render with %c${notifications.length} notifications%c`, ...styleConsole('purple')],
+    [{ chatAdapterNotifications, localNotifications, notifications }]
   );
 
   const context = useMemo(

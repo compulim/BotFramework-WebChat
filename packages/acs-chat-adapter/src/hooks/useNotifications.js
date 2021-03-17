@@ -1,23 +1,18 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
-import useACSConnected from './useACSConnected';
+import useConnectionNotification from './useConnectionNotification';
 
 export default function useNotifications() {
-  const [connected] = useACSConnected();
-  const wasConnectedRef = useRef();
-
-  if (connected) {
-    wasConnectedRef.current = true;
-  }
-
-  return useMemo(
-    () => [
-      {
-        data: connected ? 'connected' : wasConnectedRef.current ? 'reconnecting' : 'connecting',
-        id: 'connectivitystatus',
-        timestamp: Date.now()
-      }
-    ],
-    [connected, wasConnectedRef]
+  const [connectionNotification] = useConnectionNotification();
+  const customNotification = useMemo(
+    () => ({
+      id: 'acs:1',
+      level: 'success',
+      message: 'You have connected to Azure Communication Services.',
+      timestamp: Date.now()
+    }),
+    []
   );
+
+  return useMemo(() => [connectionNotification, customNotification], [connectionNotification, customNotification]);
 }

@@ -74,21 +74,22 @@ const App = () => {
           </ACSChatAdapter>
         </div>
       )}
-      <ACSCredentials
-        className="app__credentials"
-        endpointURL={endpointURL}
-        identity={identity}
-        onChange={handleACSCredentialsChange}
-        threadId={threadId}
-        token={token}
-      >
-        <div>
-          {/* eslint-disable-next-line jsx-a11y/no-access-key */}
-          <button accessKey="s" onClick={handleStartClick} type="button">
-            Start
-          </button>
-        </div>
-      </ACSCredentials>
+      <div className="app__credentials" hidden={!!started}>
+        <ACSCredentials
+          endpointURL={endpointURL}
+          identity={identity}
+          onChange={handleACSCredentialsChange}
+          threadId={threadId}
+          token={token}
+        >
+          <div>
+            {/* eslint-disable-next-line jsx-a11y/no-access-key */}
+            <button accessKey="s" onClick={handleStartClick} type="button">
+              Start
+            </button>
+          </div>
+        </ACSCredentials>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useWebChatNotificationContext from './internal/useWebChatNotificationContext';
 
 export default function useDismissNotification() {
-  return useWebChatAPIContext().dismissNotification;
+  return useWebChatNotificationContext().dismissNotification;
 }

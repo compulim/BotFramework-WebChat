@@ -31,12 +31,13 @@ const NotificationIcon = ({ className, level }) => {
 };
 
 NotificationIcon.defaultProps = {
-  className: undefined
+  className: undefined,
+  level: 'info'
 };
 
 NotificationIcon.propTypes = {
   className: PropTypes.string,
-  level: PropTypes.oneOf(['error', 'info', 'success', 'warn']).isRequired
+  level: PropTypes.oneOf(['error', 'info', 'success', 'warn'])
 };
 
 export default NotificationIcon;
