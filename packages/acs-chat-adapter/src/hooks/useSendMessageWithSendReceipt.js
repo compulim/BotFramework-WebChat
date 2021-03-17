@@ -16,8 +16,8 @@ function removeInline(array, element) {
   ~index && array.splice(index, 1);
 }
 
-export default function useACSSendMessageWithSendReceipt({ activities }) {
-  debug || (debug = createDebug('useACSSendMessageWithSendReceipt', { backgroundColor: 'yellow', color: 'black' }));
+export default function useSendMessageWithSendReceipt({ activities }) {
+  debug || (debug = createDebug('useSendMessageWithSendReceipt', { backgroundColor: 'yellow', color: 'black' }));
 
   const acsSendMessage = useACSSendMessage();
   const criticalSection = useMemo(() => createCriticalSection(), []);
