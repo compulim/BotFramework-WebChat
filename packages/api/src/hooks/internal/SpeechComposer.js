@@ -45,12 +45,12 @@ const SpeechComposer = ({
   const [synthesizeAfterActivityKey, setSynthesizeAfterActivityKey] = useState(false);
   const sendMessage = useSendMessage();
 
-  // This is for improving perf by decoupling some deps from callback.
-  const activitiesRef = useRef();
-  const inputModeRef = useRef();
+  // Perf: decoupling for callbacks
+  const activitiesForCallbacksRef = useRef();
+  const inputModeForCallbacksRef = useRef();
 
-  activitiesRef.current = activities;
-  inputModeRef.current = inputMode;
+  activitiesForCallbacksRef.current = activities;
+  inputModeForCallbacksRef.current = inputMode;
 
   const webSpeechPonyfill = useMemo(() => {
     const ponyfill = webSpeechPonyfillFactory && webSpeechPonyfillFactory({ referenceGrammarID: referenceGrammarId });
@@ -62,7 +62,7 @@ const SpeechComposer = ({
 
   const markActivityAsSpoken = useCallback(
     spokenActivity => {
-      const { current: activities } = activitiesRef;
+      const { current: activities } = activitiesForCallbacksRef;
 
       setSynthesizeAfterActivityKey(prevSpeakAfterActivityKey => {
         const prevIndex = activities.findIndex(activity => getActivityKey(activity) === prevSpeakAfterActivityKey);
@@ -79,7 +79,7 @@ const SpeechComposer = ({
           // Then: turn on the microphone
 
           if (
-            inputModeRef.current === 'speech' &&
+            inputModeForCallbacksRef.current === 'speech' &&
             index === activities.length - 1 &&
             spokenActivity.inputHint === 'expectinginput'
           ) {
@@ -102,16 +102,16 @@ const SpeechComposer = ({
         return speakAfterActivityKey;
       });
     },
-    [activitiesRef, inputModeRef, setRecognitionStartKey, setSynthesizeAfterActivityKey]
+    [activitiesForCallbacksRef, inputModeForCallbacksRef, setRecognitionStartKey, setSynthesizeAfterActivityKey]
   );
 
   const startSynthesizeActivityFromOthers = useCallback(() => {
-    const { current: activities } = activitiesRef;
+    const { current: activities } = activitiesForCallbacksRef;
 
     setSynthesizeAfterActivityKey(
       prevSpeakAfterActivityKey => prevSpeakAfterActivityKey || getActivityKey(activities[activities.length - 1])
     );
-  }, [activitiesRef, setSynthesizeAfterActivityKey]);
+  }, [activitiesForCallbacksRef, setSynthesizeAfterActivityKey]);
 
   const stopSynthesizeActivityFromOthers = useCallback(() => setSynthesizeAfterActivityKey(false), [
     setSynthesizeAfterActivityKey

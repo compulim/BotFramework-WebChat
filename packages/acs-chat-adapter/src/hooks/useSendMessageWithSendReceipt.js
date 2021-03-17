@@ -22,12 +22,8 @@ export default function useSendMessageWithSendReceipt({ activities }) {
   const acsSendMessage = useACSSendMessage();
   const criticalSection = useMemo(() => createCriticalSection(), []);
   const messages = useACSChatMessagesWithFetchAndSubscribe();
-  const messagesRef = useRef();
   const sendPendingsRef = useRef([]);
   const sendReceiptPendingsRef = useRef([]);
-
-  // Perf: for decoupling with useCallback()
-  messagesRef.current = messages;
 
   useMemoWithPrevious(
     (prevOutgoingMessages = []) => {
