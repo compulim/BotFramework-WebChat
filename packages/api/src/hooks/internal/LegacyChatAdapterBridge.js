@@ -4,10 +4,8 @@ import {
   connect as createConnectAction,
   createStore,
   disconnect as createDisconnectAction,
-  dismissNotification as createDismissNotificationAction,
   emitTypingIndicator as createEmitTypingIndicatorAction,
-  postActivity as createPostActivityAction,
-  setNotification as createSetNotificationAction
+  postActivity as createPostActivityAction
 } from 'botframework-webchat-core';
 
 import { Provider } from 'react-redux';
@@ -49,13 +47,6 @@ const InternalLegacyChatAdapterBridge = ({
   const lastTypingAt = useSelector(({ lastTypingAt }) => lastTypingAt);
   const notifications = useSelector(({ notifications }) => notifications);
   const typingUsers = useSelector(({ typing }) => typing);
-
-  const dismissNotification = useCallback(
-    notificationId => {
-      dispatch(createDismissNotificationAction(notificationId));
-    },
-    [dispatch]
-  );
 
   const emitTypingIndicator = useCallback(() => {
     dispatch(createEmitTypingIndicatorAction());
@@ -142,20 +133,11 @@ const InternalLegacyChatAdapterBridge = ({
     [postActivity]
   );
 
-  // TODO: We probably have two notifications merged. One is from chat adapter, another from Web Chat (end-dev calling setNotification).
-  const setNotification = useCallback(
-    ({ alt, data, id, level, message }) => {
-      dispatch(createSetNotificationAction({ alt, data, id, level, message }));
-    },
-    [dispatch]
-  );
-
   return (
     children &&
     children({
       activities,
       connectivityStatus,
-      dismissNotification,
       emitTypingIndicator,
       lastTypingAt,
       notifications,
@@ -164,7 +146,6 @@ const InternalLegacyChatAdapterBridge = ({
       sendMessage,
       sendMessageBack,
       sendPostBack,
-      setNotification,
       typingUsers,
       userId,
       username

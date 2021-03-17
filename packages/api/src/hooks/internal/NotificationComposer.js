@@ -3,6 +3,8 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import createDebug from '../../utils/debug';
 import styleConsole from '../../utils/styleConsole';
+import useForceRender from './useForceRender';
+import useMemoWithPrevious from './useMemoWithPrevious';
 import WebChatNotificationContext from './WebChatNotificationContext';
 
 let debug;
@@ -10,73 +12,104 @@ let debug;
 const NotificationComposer = ({ chatAdapterNotifications, children }) => {
   debug || (debug = createDebug('<NotificationComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const [dismissedChatAdapterNotifications, setDismissedChatAdapterNotifications] = useState([]);
-  const [localNotifications, setLocalNotifications] = useState([]);
+  const [localNotifications, setLocalNotifications] = useState({});
+  const ourChatAdapterNotificationsRef = useRef({});
+  const forceRender = useForceRender();
 
-  // Perf: decoupling for callback
-  const chatAdapterNotificationsForCallbacksRef = useRef();
+  useMemoWithPrevious(
+    (prevChatAdapterNotifications = []) => {
+      // Remove notifications that are deleted or modified.
+      prevChatAdapterNotifications
+        .filter(notification => !chatAdapterNotifications.includes(notification))
+        .forEach(({ id }) => {
+          const { [id]: _, ...ourChatAdapterNotifications } = ourChatAdapterNotificationsRef.current;
 
-  chatAdapterNotificationsForCallbacksRef.current = chatAdapterNotifications;
+          ourChatAdapterNotificationsRef.current = ourChatAdapterNotifications;
+        });
+
+      // Add notifications that are added or modified.
+      chatAdapterNotifications
+        .filter(notification => !prevChatAdapterNotifications.includes(notification))
+        .forEach(addedOrModifiedNotification => {
+          ourChatAdapterNotificationsRef.current = {
+            ...ourChatAdapterNotificationsRef.current,
+            [addedOrModifiedNotification.id]: addedOrModifiedNotification
+          };
+        });
+
+      return chatAdapterNotifications;
+    },
+    [chatAdapterNotifications, ourChatAdapterNotificationsRef]
+  );
 
   const dismissChatAdapterNotification = useCallback(
     id => {
-      const notification = chatAdapterNotificationsForCallbacksRef.current.find(notification => notification.id === id);
+      // Delete notification with key "id".
+      const { [id]: _, ...otherChatAdapterNotifications } = ourChatAdapterNotificationsRef.current;
 
-      notification &&
-        setDismissedChatAdapterNotifications(dismissedChatAdapterNotifications => [
-          ...dismissedChatAdapterNotifications.filter(dismissed =>
-            chatAdapterNotificationsForCallbacksRef.current.find(
-              chatAdapterNotification =>
-                chatAdapterNotification.id === dismissed.id && chatAdapterNotification.timestamp === dismissed.timestamp
-            )
-          ),
-          { id, timestamp: notification.timestamp }
-        ]);
+      ourChatAdapterNotificationsRef.current = otherChatAdapterNotifications;
+      forceRender();
     },
-    [chatAdapterNotificationsForCallbacksRef, setDismissedChatAdapterNotifications]
+    [forceRender, ourChatAdapterNotificationsRef]
   );
 
   const dismissNotification = useCallback(
     id => {
-      if (chatAdapterNotificationsForCallbacksRef.current.find(notification => notification.id === id)) {
-        return dismissChatAdapterNotification(id);
-      }
+      dismissChatAdapterNotification(id);
 
-      setLocalNotifications(localNotifications =>
-        localNotifications.filter(localNotification => localNotification.id !== id)
-      );
+      setLocalNotifications(localNotifications => {
+        // Delete notification with key "id".
+        const { [id]: _, ...otherLocalNotifications } = localNotifications;
+
+        return otherLocalNotifications;
+      });
     },
-    [chatAdapterNotificationsForCallbacksRef, dismissChatAdapterNotification, setLocalNotifications]
+    [dismissChatAdapterNotification, setLocalNotifications]
   );
 
   const setNotification = useCallback(
-    notification => {
-      setLocalNotifications(localNotifications => [
-        ...localNotifications.filter(localNotification => localNotification.id !== notification.id),
-        localNotifications
-      ]);
+    ({ alt, data, id, level, message }) => {
+      if (!id) {
+        throw new Error('"id" must be specified');
+      }
+
+      setLocalNotifications(localNotifications => {
+        const localNotification = localNotifications[id];
+
+        if (
+          !localNotification ||
+          alt !== localNotification.alt ||
+          !Object.is(data, localNotification.data) ||
+          level !== localNotification.level ||
+          message !== localNotification.message
+        ) {
+          localNotifications = {
+            ...localNotifications,
+            id: {
+              alt,
+              data,
+              id,
+              level,
+              message,
+              timestamp: Date.now()
+            }
+          };
+        }
+
+        return localNotifications;
+      });
     },
     [setLocalNotifications]
   );
 
-  const notifications = useMemo(
-    () => [
-      ...(chatAdapterNotifications || []).filter(
-        chatAdapterNotification =>
-          !dismissedChatAdapterNotifications.find(
-            dismissedChatAdapterNotification =>
-              chatAdapterNotification.id === dismissedChatAdapterNotification.id &&
-              chatAdapterNotification.timestamp === dismissedChatAdapterNotification.timestamp
-          )
-      ),
-      ...localNotifications
-    ],
-    [chatAdapterNotifications, dismissedChatAdapterNotifications, localNotifications]
-  );
+  const notifications = useMemo(() => ({ ...ourChatAdapterNotificationsRef.current, ...localNotifications }), [
+    localNotifications,
+    ourChatAdapterNotificationsRef.current
+  ]);
 
   debug(
-    [`Render with %c${notifications.length} notifications%c`, ...styleConsole('purple')],
-    [{ chatAdapterNotifications, localNotifications, notifications }]
+    [`Render with %c${Object.keys(notifications).length} notifications%c`, ...styleConsole('purple')],
+    [{ chatAdapterNotifications, localNotifications, notifications, ourChatAdapterNotificationsRef }]
   );
 
   const context = useMemo(

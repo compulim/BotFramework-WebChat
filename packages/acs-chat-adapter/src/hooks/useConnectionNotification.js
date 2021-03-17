@@ -12,8 +12,7 @@ export default function useConnectionNotification() {
 
   const [connectionNotification, setConnectionNotification] = useState({
     id: 'connectivitystatus',
-    data: 'connecting',
-    timestamp: Date.now()
+    data: 'connecting'
   });
 
   const fetchMessages = useFetchMessages();
@@ -30,8 +29,7 @@ export default function useConnectionNotification() {
           abortController.signal.aborted ||
           setConnectionNotification({
             id: 'connectivitystatus',
-            data: 'fatal',
-            timestamp: Date.now()
+            data: 'fatal'
           })
         );
       }
@@ -39,8 +37,7 @@ export default function useConnectionNotification() {
       abortController.signal.aborted ||
         setConnectionNotification({
           id: 'connectivitystatus',
-          data: 'connected',
-          timestamp: Date.now()
+          data: 'connected'
         });
     })();
 
