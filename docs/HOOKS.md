@@ -79,7 +79,6 @@ Following is the list of hooks supported by Web Chat API.
 -  [`useGrammars`](#usegrammars)
 -  [`useGroupTimestamp`](#usegrouptimestamp)
 -  [`useLanguage`](#uselanguage)
--  [`useLastTypingAt`](#uselasttypingat)
 -  [`useLastTypingAt`](#uselasttypingat) (Deprecated)
 -  [`useLocalize`](#uselocalize) (Deprecated)
 -  [`useLocalizer`](#useLocalizer)

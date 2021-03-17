@@ -26,12 +26,7 @@ let debug;
 
 // Potentially, we should move this <SpeechComposer> to the send box.
 // If the send box is not rendered, then there will be no way to turn on the microphone.
-const SpeechComposer = ({
-  children,
-  // We are (slowly) renaming typo: ID -> Id.
-  directLine: { referenceGrammarID: referenceGrammarId } = {},
-  webSpeechPonyfillFactory
-}) => {
+const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyfillFactory }) => {
   debug || (debug = createDebug('SpeechComposer', { backgroundColor: 'red' }));
 
   const [_, setSendBoxValue] = useSendBoxValue();
@@ -53,12 +48,13 @@ const SpeechComposer = ({
   inputModeForCallbacksRef.current = inputMode;
 
   const webSpeechPonyfill = useMemo(() => {
-    const ponyfill = webSpeechPonyfillFactory && webSpeechPonyfillFactory({ referenceGrammarID: referenceGrammarId });
+    const ponyfill =
+      webSpeechPonyfillFactory && webSpeechPonyfillFactory({ referenceGrammarID: directLineReferenceGrammarId });
 
     debug(`Create webSpeechPonyfill`, { ponyfill });
 
     return ponyfill;
-  }, [referenceGrammarId, webSpeechPonyfillFactory]);
+  }, [directLineReferenceGrammarId, webSpeechPonyfillFactory]);
 
   const markActivityAsSpoken = useCallback(
     spokenActivity => {
@@ -240,8 +236,8 @@ const SpeechComposer = ({
 
   const speechContext = useMemo(
     () => ({
+      directLineReferenceGrammarId,
       markActivityAsSpoken,
-      referenceGrammarId,
       shouldSynthesizeActivityFromOthers,
       speechRecognitionInterims,
       speechRecognitionState,
@@ -253,8 +249,8 @@ const SpeechComposer = ({
       webSpeechPonyfill
     }),
     [
+      directLineReferenceGrammarId,
       markActivityAsSpoken,
-      referenceGrammarId,
       shouldSynthesizeActivityFromOthers,
       speechRecognitionInterims,
       speechRecognitionState,
@@ -272,15 +268,13 @@ const SpeechComposer = ({
 
 SpeechComposer.defaultProps = {
   children: undefined,
-  directLine: undefined,
+  directLineReferenceGrammarId: undefined,
   webSpeechPonyfillFactory: undefined
 };
 
 SpeechComposer.propTypes = {
   children: PropTypes.any,
-  directLine: PropTypes.shape({
-    referenceGrammarID: PropTypes.string
-  }),
+  directLineReferenceGrammarId: PropTypes.string,
   webSpeechPonyfillFactory: PropTypes.func
 };
 

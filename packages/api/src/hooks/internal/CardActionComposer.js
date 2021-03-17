@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import applyMiddleware from '../middleware/applyMiddleware';
 // import createDebug from '../utils/debug';
 import createDefaultCardActionMiddleware from '../middleware/createDefaultCardActionMiddleware';
-import observableToPromise from '../utils/observableToPromise';
 import singleToArray from '../utils/singleToArray';
 import usePostActivity from '../usePostActivity';
 import useSendMessage from '../useSendMessage';
@@ -15,7 +14,12 @@ import useClearSuggestedActions from '../useClearSuggestedActions';
 
 // let debug;
 
-function createCardActionContext({ cardActionMiddleware, clearSuggestedActions, directLine, setup }) {
+function createCardActionContext({
+  cardActionMiddleware,
+  clearSuggestedActions,
+  getDirectLineOAuthCodeChallenge,
+  setup
+}) {
   const runMiddleware = applyMiddleware(
     'card action',
     ...singleToArray(cardActionMiddleware),
@@ -33,18 +37,18 @@ function createCardActionContext({ cardActionMiddleware, clearSuggestedActions, 
         cardAction,
         getSignInUrl:
           cardAction.type === 'signin'
-            ? () => {
+            ? async () => {
                 const { value } = cardAction;
 
-                if (directLine && directLine.getSessionId) {
+                if (getDirectLineOAuthCodeChallenge) {
                   /**
                    * @todo TODO: [P3] We should change this one to async/await.
                    *       This is the first place in this project to use async.
                    *       Thus, we need to add @babel/plugin-transform-runtime and @babel/runtime.
                    */
-                  return observableToPromise(directLine.getSessionId()).then(
-                    sessionId => `${value}${encodeURIComponent(`&code_challenge=${sessionId}`)}`
-                  );
+                  const oauthCodeChallenge = await getDirectLineOAuthCodeChallenge();
+
+                  return `${value}${encodeURIComponent(`&code_challenge=${oauthCodeChallenge}`)}`;
                 }
 
                 console.warn('botframework-webchat: OAuth is not supported on this Direct Line adapter.');
@@ -59,7 +63,7 @@ function createCardActionContext({ cardActionMiddleware, clearSuggestedActions, 
 }
 
 // TODO: How to replace directLine?
-const CardActionComposer = ({ cardActionMiddleware, children, directLine }) => {
+const CardActionComposer = ({ cardActionMiddleware, children, getDirectLineOAuthCodeChallenge }) => {
   // debug || (debug = createDebug('CardActionComposer', { backgroundColor: 'red' }));
 
   const clearSuggestedActions = useClearSuggestedActions();
@@ -73,7 +77,7 @@ const CardActionComposer = ({ cardActionMiddleware, children, directLine }) => {
       createCardActionContext({
         cardActionMiddleware,
         clearSuggestedActions,
-        directLine,
+        getDirectLineOAuthCodeChallenge,
         setup: {
           dispatch: () => {
             throw new Error('not implemented');
@@ -84,7 +88,15 @@ const CardActionComposer = ({ cardActionMiddleware, children, directLine }) => {
           sendPostBack
         }
       }),
-    [cardActionMiddleware, clearSuggestedActions, directLine, postActivity, sendMessage, sendMessageBack, sendPostBack]
+    [
+      cardActionMiddleware,
+      clearSuggestedActions,
+      getDirectLineOAuthCodeChallenge,
+      postActivity,
+      sendMessage,
+      sendMessageBack,
+      sendPostBack
+    ]
   );
 
   // debug(['Render'], [cardActionContext]);
@@ -95,15 +107,13 @@ const CardActionComposer = ({ cardActionMiddleware, children, directLine }) => {
 CardActionComposer.defaultProps = {
   cardActionMiddleware: undefined,
   children: undefined,
-  directLine: undefined
+  getDirectLineOAuthCodeChallenge: undefined
 };
 
 CardActionComposer.propTypes = {
   cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   children: PropTypes.any,
-  directLine: PropTypes.shape({
-    getSessionId: PropTypes.func
-  })
+  getDirectLineOAuthCodeChallenge: PropTypes.func
 };
 
 export default CardActionComposer;

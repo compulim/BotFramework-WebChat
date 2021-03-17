@@ -6,7 +6,6 @@ import WebChatTypingContext from './WebChatTypingContext';
 const TypingComposer = ({
   children,
   emitTypingIndicator: emitTypingIndicatorFromProps,
-  lastTypingAt,
   sendTypingIndicator,
   typingUsers
 }) => {
@@ -22,11 +21,10 @@ const TypingComposer = ({
   const context = useMemo(
     () => ({
       emitTypingIndicator,
-      lastTypingAt,
       sendTypingIndicator,
       typingUsers
     }),
-    [emitTypingIndicator, lastTypingAt, sendTypingIndicator, typingUsers]
+    [emitTypingIndicator, sendTypingIndicator, typingUsers]
   );
 
   return <WebChatTypingContext.Provider value={context}>{children}</WebChatTypingContext.Provider>;
@@ -35,7 +33,6 @@ const TypingComposer = ({
 TypingComposer.defaultProps = {
   children: undefined,
   emitTypingIndicator: undefined,
-  lastTypingAt: {},
   sendTypingIndicator: true,
   typingUsers: {}
 };
@@ -44,7 +41,6 @@ TypingComposer.defaultProps = {
 TypingComposer.propTypes = {
   children: PropTypes.any,
   emitTypingIndicator: PropTypes.func,
-  lastTypingAt: PropTypes.any,
   sendTypingIndicator: PropTypes.bool,
   typingUsers: PropTypes.any // TODO: Check why objectOf is not working on empty object.
   // typingUsers: PropTypes.objectOf({

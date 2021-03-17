@@ -32,11 +32,29 @@ function patchActivity(activity) {
   // Also, if the "contentURL" starts with "blob:", this means the user is uploading a file (the URL is constructed by URL.createObjectURL)
   // Although the copy/reference of the file is temporary in-memory, to make the UX consistent across page refresh, we do not allow the user to re-download the file either.
 
-  return updateIn(activity, ['attachments', () => true, 'contentUrl'], contentUrl => {
+  activity = updateIn(activity, ['attachments', () => true, 'contentUrl'], contentUrl => {
     if (contentUrl !== DIRECT_LINE_PLACEHOLDER_URL && !/^blob:/iu.test(contentUrl)) {
       return contentUrl;
     }
   });
+
+  // Add "channelData['webchat:who']" based on "activity.from.role".
+
+  const {
+    from: { role }
+  } = activity;
+
+  activity = updateIn(activity, ['channelData', 'webchat:who'], () =>
+    role === 'channel' ? role : role === 'user' ? 'self' : 'others'
+  );
+
+  // Add "channelData['webchat:key']" based on coalesce of "activity.channelData.clientActivityId" and "activity.id".
+
+  const { channelData: { clientActivityID } = {}, id } = activity;
+
+  activity = updateIn(activity, ['channelData', 'webchat:key'], () => clientActivityID || id);
+
+  return activity;
 }
 
 function upsertActivityWithSort(activities, nextActivity) {

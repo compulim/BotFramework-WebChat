@@ -2,11 +2,11 @@ import { combineReducers } from 'redux';
 
 import activities from './reducers/activities';
 import clockSkewAdjustment from './reducers/clockSkewAdjustment';
-import connectivityStatus from './reducers/connectivityStatus';
+// import connectivityStatus from './reducers/connectivityStatus';
 // import dictateInterims from './reducers/dictateInterims';
 // import dictateState from './reducers/dictateState';
 // import language from './reducers/language';
-import lastTypingAt from './reducers/lastTypingAt';
+// import lastTypingAt from './reducers/lastTypingAt';
 import notifications from './reducers/notifications';
 // import readyState from './reducers/readyState';
 import referenceGrammarID from './reducers/referenceGrammarID';
@@ -21,10 +21,11 @@ import user from './reducers/user';
 export default combineReducers({
   activities,
   clockSkewAdjustment,
-  connectivityStatus,
+  // connectivityStatus,
   // dictateInterims,
   // dictateState,
   // language,
+  // lastTypingAt,
   notifications,
   // readyState,
   referenceGrammarID,
@@ -34,8 +35,5 @@ export default combineReducers({
   // shouldSpeakIncomingActivity,
   // suggestedActions,
   typing,
-  user,
-
-  // TODO: [P3] Take this deprecation code out when releasing on or after 2022-02-16
-  lastTypingAt
+  user
 });

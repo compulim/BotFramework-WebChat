@@ -1,9 +1,9 @@
-import { combineReducers } from 'redux';
+// import { combineReducers } from 'redux';
 
-import userId from './reducers/userId';
+// import userId from './reducers/userId';
 
-export default function createReducer() {
-  return combineReducers({
-    userId
-  });
-}
+// export default function createReducer() {
+//   return combineReducers({
+//     userId
+//   });
+// }

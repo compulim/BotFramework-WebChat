@@ -76,15 +76,15 @@ const Composer = ({
   cardActionMiddleware,
   children,
   dir,
-  directLine,
+  directLineReferenceGrammarId,
   disabled,
   downscaleImageToDataURL,
   emitTypingIndicator,
+  getDirectLineOAuthCodeChallenge,
   grammars,
   groupActivitiesMiddleware,
   groupTimestamp,
   internalErrorBoxClass,
-  lastTypingAt, // Deprecated: removed on or after 2022-02-16.
   locale,
   notifications,
   onTelemetry,
@@ -411,7 +411,6 @@ const Composer = ({
         <NotificationComposer chatAdapterNotifications={notifications}>
           <TypingComposer
             emitTypingIndicator={emitTypingIndicator}
-            lastTypingAt={lastTypingAt}
             sendTypingIndicator={sendTypingIndicator}
             typingUsers={typingUsers}
           >
@@ -424,8 +423,14 @@ const Composer = ({
               sendMessageBack={sendMessageBack}
               sendPostBack={sendPostBack}
             >
-              <SpeechComposer directLine={directLine} webSpeechPonyfillFactory={webSpeechPonyfillFactory}>
-                <CardActionComposer cardActionMiddleware={cardActionMiddleware} directLine={directLine}>
+              <SpeechComposer
+                directLineReferenceGrammarId={directLineReferenceGrammarId}
+                webSpeechPonyfillFactory={webSpeechPonyfillFactory}
+              >
+                <CardActionComposer
+                  cardActionMiddleware={cardActionMiddleware}
+                  getDirectLineOAuthCodeChallenge={getDirectLineOAuthCodeChallenge}
+                >
                   {typeof children === 'function' ? children(context) : children}
                   {onTelemetry && <Tracker />}
                 </CardActionComposer>
@@ -514,15 +519,15 @@ Composer.defaultProps = {
   cardActionMiddleware: undefined,
   children: undefined,
   dir: 'auto',
-  directLine: undefined, // TODO: Should we remove this?
+  directLineReferenceGrammarId: undefined,
   disabled: false,
   downscaleImageToDataURL: undefined,
   emitTypingIndicator: undefined,
+  getDirectLineOAuthCodeChallenge: undefined,
   grammars: [],
   groupActivitiesMiddleware: undefined,
   groupTimestamp: undefined,
   internalErrorBoxClass: undefined,
-  lastTypingAt: undefined, // Deprecated: removed on or after 2022-02-16.
   locale: window.navigator.language || 'en-US',
   notifications: undefined,
   onTelemetry: undefined,
@@ -564,32 +569,21 @@ Composer.propTypes = {
   cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   children: PropTypes.any,
   dir: PropTypes.oneOf(['auto', 'ltr', 'rtl']),
-  directLine: PropTypes.shape({
-    activity$: PropTypes.shape({
-      subscribe: PropTypes.func.isRequired
-    }).isRequired,
-    connectionStatus$: PropTypes.shape({
-      subscribe: PropTypes.func.isRequired
-    }).isRequired,
-    end: PropTypes.func,
-    getSessionId: PropTypes.func,
-    referenceGrammarID: PropTypes.string,
-    token: PropTypes.string
-  }),
+  directLineReferenceGrammarId: PropTypes.string,
   disabled: PropTypes.bool,
   downscaleImageToDataURL: PropTypes.func,
   emitTypingIndicator: PropTypes.func,
+  getDirectLineOAuthCodeChallenge: PropTypes.func,
   grammars: PropTypes.arrayOf(PropTypes.string),
   groupActivitiesMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   groupTimestamp: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
   internalErrorBoxClass: PropTypes.func, // This is for internal use only. We don't allow customization of error box.
-  lastTypingAt: PropTypes.any, // Deprecated: removed on or after 2022-02-16.
   locale: PropTypes.string,
   notifications: PropTypes.arrayOf(
     PropTypes.shape({
       alt: PropTypes.string,
       data: PropTypes.any,
-      id: PropTypes.string,
+      id: PropTypes.string.isRequired,
       level: PropTypes.string,
       message: PropTypes.string
     })

@@ -9,10 +9,11 @@ import {
 } from 'botframework-webchat-core';
 
 import { Provider } from 'react-redux';
-import mime from '../../utils/mime-wrapper';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
+import mime from '../../utils/mime-wrapper';
+import observableToPromise from '../utils/observableToPromise';
 import WebChatReduxContext, { useDispatch, useSelector } from './WebChatReduxContext';
 
 const InternalLegacyChatAdapterBridge = ({
@@ -33,24 +34,25 @@ const InternalLegacyChatAdapterBridge = ({
     );
 
     return () => {
-      /**
-       * @todo TODO: [P3] disconnect() is an async call (pending -> fulfilled), we need to wait, or change it to reconnect()
-       */
+      // TODO: [P3] disconnect() is an async call (pending -> fulfilled), we need to wait, or change it to reconnect()
       dispatch(createDisconnectAction());
     };
   }, [dispatch, directLine, userIdFromProps, usernameFromProps]);
 
   const { id: userId, name: username } = useSelector(({ user }) => user);
   const activities = useSelector(({ activities }) => activities);
-  // TODO: Move connectivityStatus to notification
-  const connectivityStatus = useSelector(({ connectivityStatus }) => connectivityStatus);
-  const lastTypingAt = useSelector(({ lastTypingAt }) => lastTypingAt);
+  const directLineReferenceGrammarId = useSelector(({ referenceGrammarId }) => referenceGrammarId);
   const notifications = useSelector(({ notifications }) => notifications);
   const typingUsers = useSelector(({ typing }) => typing);
 
   const emitTypingIndicator = useCallback(() => {
     dispatch(createEmitTypingIndicatorAction());
   }, [dispatch]);
+
+  const getDirectLineOAuthCodeChallenge = useMemo(
+    () => directLine && directLine.getSessionId && (() => observableToPromise(directLine.getSessionId())),
+    [directLine]
+  );
 
   const postActivity = useCallback(
     activity => {
@@ -137,9 +139,9 @@ const InternalLegacyChatAdapterBridge = ({
     children &&
     children({
       activities,
-      connectivityStatus,
+      directLineReferenceGrammarId,
       emitTypingIndicator,
-      lastTypingAt,
+      getDirectLineOAuthCodeChallenge,
       notifications,
       sendEvent,
       sendFiles,

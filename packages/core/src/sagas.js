@@ -2,9 +2,9 @@ import { fork } from 'redux-saga/effects';
 
 // import clearSuggestedActionsOnPostActivitySaga from './sagas/clearSuggestedActionsOnPostActivitySaga';
 import connectionStatusToNotificationSaga from './sagas/connectionStatusToNotificationSaga';
-import connectionStatusUpdateSaga from './sagas/connectionStatusUpdateSaga';
+import connectionStatusToReferenceGrammarIdSaga from './sagas/connectionStatusToReferenceGrammarIdSaga';
 import connectSaga from './sagas/connectSaga';
-import detectSlowConnectionSaga from './sagas/detectSlowConnectionSaga';
+// import detectSlowConnectionSaga from './sagas/detectSlowConnectionSaga';
 // import emitTypingIndicatorToPostActivitySaga from './sagas/emitTypingIndicatorToPostActivitySaga';
 // import markAllAsSpokenOnStopSpeakActivitySaga from './sagas/markAllAsSpokenOnStopSpeakActivitySaga';
 import observeActivitySaga from './sagas/observeActivitySaga';
@@ -28,9 +28,9 @@ export default function* sagas() {
 
   // yield fork(clearSuggestedActionsOnPostActivitySaga);
   yield fork(connectionStatusToNotificationSaga);
-  yield fork(connectionStatusUpdateSaga);
+  yield fork(connectionStatusToReferenceGrammarIdSaga);
   yield fork(connectSaga);
-  yield fork(detectSlowConnectionSaga);
+  // yield fork(detectSlowConnectionSaga);
   // yield fork(emitTypingIndicatorToPostActivitySaga);
   // yield fork(markAllAsSpokenOnStopSpeakActivitySaga);
   yield fork(observeActivitySaga);
