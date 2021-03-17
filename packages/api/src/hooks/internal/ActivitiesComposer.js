@@ -24,12 +24,7 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
   // 3. Must have channelData['webchat:who'];
   // 4. TBD.
 
-  // Perf: decoupling activities from callback
-  const activitiesRef = useRef();
-
-  activitiesRef.current = activities;
-
-  const activityKeyMarkAsReadRef = useRef();
+  const lastReadActivityKeyRef = useRef();
 
   // TODO: Find a way to cache and only mark as read when activity key changed.
   // TODO: Add a flag to enable/disable auto mark as read, e.g. for DOM document.onvisibilitychange.
@@ -44,8 +39,8 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
       if (fromWho(activity) === 'others') {
         const activityKey = getActivityKey(activity);
 
-        if (!activity.channelData['webchat:read-at'][userId] && activityKeyMarkAsReadRef.current !== activityKey) {
-          activityKeyMarkAsReadRef.current = activityKey;
+        if (!activity.channelData['webchat:read-at'][userId] && lastReadActivityKeyRef.current !== activityKey) {
+          lastReadActivityKeyRef.current = activityKey;
 
           debug([`Sending read receipt for activity %c${activityKey}%c`, ...styleConsole('purple')], [{ activity }]);
 
@@ -55,7 +50,7 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
         return;
       }
     }
-  }, [activities, activityKeyMarkAsReadRef, autoSendReadReceipts, sendReadReceipt, userId]);
+  }, [activities, autoSendReadReceipts, lastReadActivityKeyRef, sendReadReceipt, userId]);
 
   const context = useMemo(
     () => ({
