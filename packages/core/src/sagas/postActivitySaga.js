@@ -47,6 +47,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
       ...deleteKey(activity.channelData, 'state'),
       clientActivityID,
       // This is unskewed local timestamp for estimating clock skew.
+      // TODO: Rename "clientTimestamp" to "webchat:client-timestamp".
       clientTimestamp: getTimestamp()
     },
     channelId: 'webchat',

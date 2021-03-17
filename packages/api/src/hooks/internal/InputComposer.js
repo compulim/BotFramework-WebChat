@@ -207,12 +207,13 @@ const InputComposer = ({
 };
 
 InputComposer.defaultProps = {
-  children: undefined
+  children: undefined,
+  postActivity: undefined
 };
 
 InputComposer.propTypes = {
   children: PropTypes.any,
-  postActivity: PropTypes.func.isRequired, // TODO: Deprecated, will remove in 2023
+  postActivity: PropTypes.func, // TODO: Deprecated, will remove in 2023
   sendEvent: PropTypes.func.isRequired,
   sendFiles: PropTypes.func.isRequired,
   sendMessage: PropTypes.func.isRequired,

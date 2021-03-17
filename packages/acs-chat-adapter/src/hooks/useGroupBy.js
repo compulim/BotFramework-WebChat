@@ -81,7 +81,7 @@ export default function useGroupBy(input, keyName) {
     } else {
       outputRef.current = nextOutput;
     }
-  }, [input, outputRef]);
+  }, [input, keyName, outputRef]);
 
   return outputRef.current;
 }

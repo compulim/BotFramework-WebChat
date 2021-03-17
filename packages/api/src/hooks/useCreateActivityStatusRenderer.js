@@ -18,6 +18,8 @@ const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity 
   // SEND_FAILED from the activity is ignored, and is instead based on styleOptions.sendTimeout.
   // Note that the derived state is time-sensitive. The useTimePassed() hook is used to make sure it changes over time.
   const {
+    // TODO: Rename "state" to "webchat:send-state"
+    // TODO: Rename "clientTimestamp" to "webchat:client-timestamp"
     channelData: { clientTimestamp = 0, state } = {},
     from: { role }
   } = activity;

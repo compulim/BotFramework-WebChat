@@ -36,8 +36,8 @@ const Timestamp = ({ activity, className }) => {
       >
         {timestampFormat === 'relative' ? <RelativeTime value={timestamp} /> : <AbsoluteTime value={timestamp} />}
         {/* TODO: Better icon and accessibility */}
-        {shouldShowReadReceipt && (
-          <span className="webchat__activity-status__read-receipt">{!!hasAtLeastOneReadReceipt && '✔️'}</span>
+        {shouldShowReadReceipt && !!hasAtLeastOneReadReceipt && (
+          <span className="webchat__activity-status__read-receipt">{'✔️'}</span>
         )}
       </span>
     )

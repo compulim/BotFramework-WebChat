@@ -14,7 +14,7 @@ import setActivities from './actions/internal/setActivities';
 import setTyping from './actions/internal/setTyping';
 import setUserId from './actions/internal/setUserId';
 import styleConsole from './util/styleConsole';
-import useACSSendMessage from './hooks/useACSSendMessage';
+import useACSSendMessageWithSendReceipt from './hooks/useACSSendMessageWithSendReceipt';
 import useWebChatActivities from './hooks/useWebChatActivities';
 import useWebChatTyping from './hooks/useWebChatTyping';
 
@@ -26,7 +26,6 @@ const InternalACSChatAdapter = ({ children }) => {
   internalDebug ||
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const acsSendMessage = useACSSendMessage();
   const acsSendReadReceipt = useACSSendReadReceipt();
   const acsSendTypingNotification = useACSSendTypingNotification();
 
@@ -34,11 +33,10 @@ const InternalACSChatAdapter = ({ children }) => {
   const store = useMemo(
     () =>
       createChatAdapterStore({
-        sendMessage: acsSendMessage,
         sendReadReceipt: acsSendReadReceipt,
         sendTypingNotification: acsSendTypingNotification
       }),
-    [acsSendMessage, acsSendReadReceipt, acsSendTypingNotification]
+    [acsSendReadReceipt, acsSendTypingNotification]
   );
 
   const { dispatch } = store;
@@ -50,10 +48,8 @@ const InternalACSChatAdapter = ({ children }) => {
   useMemo(() => dispatch(setTyping(typingUsers)), [dispatch, typingUsers]);
   useMemo(() => dispatch(setUserId(userId)), [dispatch, userId]);
 
-  internalDebug(
-    [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
-    [{ activities, typingUsers }]
-  );
+  const acsSendMessageWithSendReceipt = useACSSendMessageWithSendReceipt({ activities });
+  const sendMessage = useCallback(content => acsSendMessageWithSendReceipt(content), [acsSendMessageWithSendReceipt]);
 
   const sendReadReceipt = useCallback(
     activity => {
@@ -65,7 +61,12 @@ const InternalACSChatAdapter = ({ children }) => {
     [dispatch]
   );
 
-  return children({ connected: true, sendReadReceipt, store });
+  internalDebug(
+    [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
+    [{ activities, typingUsers }]
+  );
+
+  return children({ connected: true, sendMessage, sendReadReceipt, store });
 };
 
 InternalACSChatAdapter.defaultProps = {};

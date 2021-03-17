@@ -15,7 +15,7 @@ export default function useWebChatActivities() {
   // Lazy initializing constants to save loading speed and memory
   debug || (debug = createDebug('acs:useWebChatActivities', { backgroundColor: 'orange' }));
 
-  debug('%cStart%c', ...styleConsole('cyan', 'black'));
+  // debug('%cStart%c', ...styleConsole('cyan', 'black'));
 
   const acsChatMessages = useACSChatMessagesWithFetchAndSubscribe();
   const acsReadReceipts = useACSReadReceiptsWithFetchAndSubscribe();
@@ -165,7 +165,7 @@ export default function useWebChatActivities() {
     'useWebChatActivities:3'
   );
 
-  debug('%cFinish%c', ...styleConsole('cyan', 'black'));
+  // debug('%cFinish%c', ...styleConsole('cyan', 'black'));
 
   return activities;
 }

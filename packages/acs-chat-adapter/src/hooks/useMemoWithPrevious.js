@@ -12,5 +12,7 @@ export default function useMemoWithPrevious(callback, deps) {
     prevResultRef.current = result;
 
     return result;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callbackRef, prevResultRef, ...deps]);
 }

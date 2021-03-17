@@ -10,10 +10,12 @@ function updateRelativeTimestamp(now, activity) {
 
     ...(activity.from.role === 'user' &&
     activity.channelData &&
+    // TODO: Rename "clientTimestamp" to "webchat:client-timestamp".
     typeof activity.channelData.clientTimestamp === 'number'
       ? {
           channelData: {
             ...activity.channelData,
+            // TODO: Rename "clientTimestamp" to "webchat:client-timestamp".
             clientTimestamp: new Date(now + (activity.channelData.clientTimestamp || 0)).toISOString()
           }
         }
