@@ -6,7 +6,7 @@ import useACSUserId from './useACSUserId';
 import useDebugDeps from './useDebugDeps';
 import useMapper from './useMapper';
 
-export default function useWebChatTyping() {
+export default function useTypingUsers() {
   const typingUsers = useACSTypingUsers();
   const userId = useACSUserId();
 
@@ -20,7 +20,7 @@ export default function useWebChatTyping() {
       typingUsers,
       userId
     },
-    'useWebChatTyping'
+    'acs:useTypingUsers'
   );
 
   return useMemo(() => {

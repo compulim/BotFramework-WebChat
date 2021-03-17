@@ -6,12 +6,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import createDebug from './util/debug';
 import resolveFunction from './util/resolveFunction';
 import styleConsole from './util/styleConsole';
+import useActivities from './hooks/useActivities';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
 import useNotifications from './hooks/useNotifications';
 import useSendMessageWithSendReceipt from './hooks/useSendMessageWithSendReceipt';
 import useSendReadReceipt from './hooks/useSendReadReceipt';
-import useWebChatActivities from './hooks/useWebChatActivities';
-import useWebChatTyping from './hooks/useWebChatTyping';
+import useTypingUsers from './hooks/useTypingUsers';
 
 let debug;
 let internalDebug;
@@ -21,17 +21,17 @@ const InternalACSChatAdapter = ({ children }) => {
   internalDebug ||
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const activities = useWebChatActivities();
+  const activities = useActivities();
   const emitTypingIndicator = useEmitTypingIndicator();
   const notifications = useNotifications();
   const sendMessage = useSendMessageWithSendReceipt({ activities });
   const sendReadReceipt = useSendReadReceipt();
-  const typingUsers = useWebChatTyping();
+  const typingUsers = useTypingUsers();
   const userId = useUserId();
 
   internalDebug(
     [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
-    [{ activities, typingUsers }]
+    [{ activities, notifications, typingUsers, userId }]
   );
 
   return children({

@@ -11,9 +11,9 @@ import useMemoWithPrevious from './useMemoWithPrevious';
 
 let debug;
 
-export default function useWebChatActivities() {
+export default function useActivities() {
   // Lazy initializing constants to save loading speed and memory
-  debug || (debug = createDebug('acs:useWebChatActivities', { backgroundColor: 'orange' }));
+  debug || (debug = createDebug('acs:useActivities', { backgroundColor: 'orange' }));
 
   // debug('%cStart%c', ...styleConsole('cyan', 'black'));
 
@@ -21,7 +21,7 @@ export default function useWebChatActivities() {
   const acsReadReceipts = useACSReadReceiptsWithFetchAndSubscribe();
   const userId = useACSUserId();
 
-  useDebugDeps({ acsChatMessages, acsReadReceipts, userId }, 'useWebChatActivities:1');
+  useDebugDeps({ acsChatMessages, acsReadReceipts, userId }, 'useActivities:1');
 
   const acsMessageToWebChatActivity = useMemo(() => createACSMessageToWebChatActivityConverter({ identity: userId }), [
     userId
@@ -47,7 +47,7 @@ export default function useWebChatActivities() {
     [acsReadReceipts]
   );
 
-  useDebugDeps({ acsChatMessages, acsReadReceipts, readOnByUserIds }, 'useWebChatActivities:2');
+  useDebugDeps({ acsChatMessages, acsReadReceipts, readOnByUserIds }, 'useActivities:2');
 
   const { activities } = useMemoWithPrevious(
     ({ activities, activitiesCache } = { activities: [], activitiesCache: [] }) => {
@@ -162,7 +162,7 @@ export default function useWebChatActivities() {
       readOnByUserIds,
       userId
     },
-    'useWebChatActivities:3'
+    'useActivities:3'
   );
 
   // debug('%cFinish%c', ...styleConsole('cyan', 'black'));
