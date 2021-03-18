@@ -5,7 +5,6 @@ import applyMiddleware from '../middleware/applyMiddleware';
 // import createDebug from '../utils/debug';
 import createDefaultCardActionMiddleware from '../middleware/createDefaultCardActionMiddleware';
 import singleToArray from '../utils/singleToArray';
-import usePostActivity from '../usePostActivity';
 import useSendMessage from '../useSendMessage';
 import useSendMessageBack from '../useSendMessageBack';
 import useSendPostBack from '../useSendPostBack';
@@ -67,7 +66,6 @@ const CardActionComposer = ({ cardActionMiddleware, children, getDirectLineOAuth
   // debug || (debug = createDebug('CardActionComposer', { backgroundColor: 'red' }));
 
   const clearSuggestedActions = useClearSuggestedActions();
-  const postActivity = usePostActivity(); // Deprecated?
   const sendMessage = useSendMessage();
   const sendMessageBack = useSendMessageBack();
   const sendPostBack = useSendPostBack();
@@ -82,7 +80,6 @@ const CardActionComposer = ({ cardActionMiddleware, children, getDirectLineOAuth
           dispatch: () => {
             throw new Error('not implemented');
           },
-          postActivity, // Deprecated?
           sendMessage,
           sendMessageBack,
           sendPostBack
@@ -92,7 +89,6 @@ const CardActionComposer = ({ cardActionMiddleware, children, getDirectLineOAuth
       cardActionMiddleware,
       clearSuggestedActions,
       getDirectLineOAuthCodeChallenge,
-      postActivity,
       sendMessage,
       sendMessageBack,
       sendPostBack
@@ -105,13 +101,12 @@ const CardActionComposer = ({ cardActionMiddleware, children, getDirectLineOAuth
 };
 
 CardActionComposer.defaultProps = {
-  cardActionMiddleware: undefined,
   children: undefined,
   getDirectLineOAuthCodeChallenge: undefined
 };
 
 CardActionComposer.propTypes = {
-  cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
+  cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]).isRequired,
   children: PropTypes.any,
   getDirectLineOAuthCodeChallenge: PropTypes.func
 };
