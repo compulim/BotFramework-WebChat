@@ -13,12 +13,11 @@ const YouTubeContent = ({ alt, autoPlay, embedID, loop }) => {
   }).toString();
 
   return (
-    // TODO: We should encodeURI the URL
     <iframe
       allowFullScreen={true}
       aria-label={alt}
       className={youTubeContentStyleSet}
-      src={`https://youtube.com/embed/${embedID}?${search}`}
+      src={`https://youtube.com/embed/${encodeURI(embedID)}?${search}`}
     />
   );
 };
