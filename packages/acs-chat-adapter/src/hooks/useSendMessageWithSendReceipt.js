@@ -5,8 +5,10 @@ import createCriticalSection from '../util/createCriticalSection';
 import createDebug from '../util/debug';
 import styleConsole from '../util/styleConsole';
 import useACSChatMessagesWithFetchAndSubscribe from './useACSChatMessagesWithFetchAndSubscribe';
+import useACSFailedClientMessageIds from './useACSFailedClientMessageIds';
 import useACSSendMessage from './useACSSendMessage';
 import useMemoWithPrevious from './useMemoWithPrevious';
+import warn from '../util/warn';
 
 let debug;
 
@@ -19,6 +21,7 @@ function removeInline(array, element) {
 export default function useSendMessageWithSendReceipt({ activities }) {
   debug || (debug = createDebug('useSendMessageWithSendReceipt', { backgroundColor: 'yellow', color: 'black' }));
 
+  const [failedClientMessageIds] = useACSFailedClientMessageIds();
   const acsSendMessage = useACSSendMessage();
   const criticalSection = useMemo(() => createCriticalSection(), []);
   const messages = useACSChatMessagesWithFetchAndSubscribe();
@@ -52,6 +55,12 @@ export default function useSendMessageWithSendReceipt({ activities }) {
     }
   }, [activities]);
 
+  useMemo(() => {
+    for (const { clientMessageId, reject } of sendReceiptPendingsRef.current) {
+      failedClientMessageIds.includes(clientMessageId) || reject();
+    }
+  }, [failedClientMessageIds]);
+
   return useCallback(
     async content => {
       debug([`Pending critical section with message %c${content}%c`, ...styleConsole('purple')], [{ content }]);
@@ -79,9 +88,9 @@ export default function useSendMessageWithSendReceipt({ activities }) {
         ...styleConsole('purple')
       ]);
 
-      const { promise, resolve } = createDeferred();
+      const { promise, reject, resolve } = createDeferred();
 
-      const entry = { clientMessageId, resolve };
+      const entry = { clientMessageId, reject, resolve };
 
       sendReceiptPendingsRef.current.push(entry);
 
@@ -94,6 +103,10 @@ export default function useSendMessageWithSendReceipt({ activities }) {
         );
 
         return activity;
+      } catch (error) {
+        debug([`Message %c${content}%c was failed to send.`, ...styleConsole('purple')], [{ clientMessageId, error }]);
+
+        warn('Failed to send message', { error });
       } finally {
         removeInline(sendReceiptPendingsRef.current, entry);
       }
