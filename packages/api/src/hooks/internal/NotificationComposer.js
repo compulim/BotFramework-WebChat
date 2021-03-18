@@ -130,8 +130,12 @@ NotificationComposer.defaultProps = {
 NotificationComposer.propTypes = {
   chatAdapterNotifications: PropTypes.arrayOf(
     PropTypes.shape({
+      alt: PropTypes.string,
       data: PropTypes.any,
-      id: PropTypes.string,
+      id: PropTypes.string.isRequired,
+      level: PropTypes.oneOf(['error', 'info', 'success', 'warn']),
+      message: PropTypes.string,
+      // TODO: Should we remove "timestamp"? It was added by reducer on SET_NOTIFICATION.
       timestamp: PropTypes.number
     })
   ),
