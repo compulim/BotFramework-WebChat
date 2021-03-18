@@ -24,6 +24,7 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
   const patchedSendFiles = useMemo(
     () =>
       sendFiles &&
+      // TODO: We need channelData on all sendXxx functions.
       (files => {
         files &&
           files.length &&
@@ -38,12 +39,10 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
     [sendFiles, trackEvent]
   );
 
-  // TODO: We should move sendXxx to chat adapter.
-  // TODO: Consider deprecating "method" options, by asking end-dev to call setter of useInputMode() themselves.
   const patchedSendMessage = useMemo(
     () =>
       sendMessage &&
-      // TODO: Why do we have channelData here?
+      // TODO: We need channelData on all sendXxx functions.
       // ((text, method, { channelData } = {}) => {
       ((text, method) => {
         debug(['Calling sendMessage()'], [{ method, text }]);
@@ -62,6 +61,7 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
   const patchedSendMessageBack = useMemo(
     () =>
       sendMessageBack &&
+      // TODO: We need channelData on all sendXxx functions.
       ((value, text, displayText, method) => {
         debug(['Calling sendMessageBack()'], [{ displayText, method, text, value }]);
 
@@ -76,10 +76,10 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
     [sendMessageBack, setInputMode]
   );
 
-  // TODO: We should move sendXxx to chat adapter.
   const patchedSendPostBack = useMemo(
     () =>
       sendPostBack &&
+      // TODO: We need channelData on all sendXxx functions.
       ((value, method) => {
         debug(['Calling sendMessageBack()'], [{ method, value }]);
 
