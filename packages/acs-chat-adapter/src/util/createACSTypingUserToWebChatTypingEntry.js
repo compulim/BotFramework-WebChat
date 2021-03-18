@@ -1,10 +1,10 @@
-export default function createACSTypingUserToWebChatTypingEntry(identity) {
+export default function createACSTypingUserToWebChatTypingEntry(userId) {
   return acsTypingUser => {
     const {
       user: { communicationUserId }
     } = acsTypingUser;
 
-    const who = identity === communicationUserId ? 'self' : 'others';
+    const who = userId === communicationUserId ? 'self' : 'others';
 
     return [
       communicationUserId,

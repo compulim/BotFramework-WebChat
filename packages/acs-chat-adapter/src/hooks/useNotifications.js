@@ -13,5 +13,5 @@ export default function useNotifications() {
     []
   );
 
-  return useMemo(() => [connectionNotification, customNotification], [connectionNotification, customNotification]);
+  return useMemo(() => [[connectionNotification, customNotification]], [connectionNotification, customNotification]);
 }

@@ -10,9 +10,9 @@ export default function useACSTypingUsers() {
   EMPTY_ARRAY || (EMPTY_ARRAY = []);
   PASSTHRU_FN || (PASSTHRU_FN = value => value);
 
-  const threadMembers = useACSThreadMembersWithFetch();
+  const [threadMembers] = useACSThreadMembersWithFetch();
 
   const result = useTypingUsers(threadMembers);
 
-  return useMapper(result && result.length ? result : EMPTY_ARRAY, PASSTHRU_FN);
+  return [useMapper(result && result.length ? result : EMPTY_ARRAY, PASSTHRU_FN)];
 }

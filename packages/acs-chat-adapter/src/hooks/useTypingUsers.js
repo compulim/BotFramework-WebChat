@@ -7,8 +7,8 @@ import useDebugDeps from './useDebugDeps';
 import useMapper from './useMapper';
 
 export default function useTypingUsers() {
-  const typingUsers = useACSTypingUsers();
-  const userId = useACSUserId();
+  const [typingUsers] = useACSTypingUsers();
+  const [userId] = useACSUserId();
 
   const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntry(userId), [userId]);
 
@@ -26,14 +26,16 @@ export default function useTypingUsers() {
   return useMemo(() => {
     const now = Date.now();
 
-    return Object.fromEntries(
-      typingEntries.map(([id, typingEntry]) => [
-        id,
-        {
-          ...typingEntry,
-          at: now
-        }
-      ])
-    );
+    return [
+      Object.fromEntries(
+        typingEntries.map(([id, typingEntry]) => [
+          id,
+          {
+            ...typingEntry,
+            at: now
+          }
+        ])
+      )
+    ];
   }, [typingEntries]);
 }

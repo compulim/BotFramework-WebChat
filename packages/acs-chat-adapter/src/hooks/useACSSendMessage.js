@@ -5,9 +5,9 @@ import useACSDisplayName from './useACSDisplayName';
 import useACSUserId from './useACSUserId';
 
 export default function useACSSendMessage() {
-  const displayName = useACSDisplayName();
+  const [displayName] = useACSDisplayName();
+  const [userId] = useACSUserId();
   const sendMessage = useSendMessage();
-  const userId = useACSUserId();
 
   return useCallback(message => sendMessage(displayName, userId, message), [displayName, userId, sendMessage]);
 }

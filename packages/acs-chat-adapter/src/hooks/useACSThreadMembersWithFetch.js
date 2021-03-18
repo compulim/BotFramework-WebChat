@@ -23,5 +23,5 @@ export default function useACSThreadMembersWithFetch() {
 
   const result = useThreadMembers();
 
-  return result && result.length ? result : EMPTY_ARRAY;
+  return [result && result.length ? result : EMPTY_ARRAY];
 }

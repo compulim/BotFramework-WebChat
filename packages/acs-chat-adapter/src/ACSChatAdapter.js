@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import createDebug from './util/debug';
 import resolveFunction from './util/resolveFunction';
 import styleConsole from './util/styleConsole';
+import useACSDisplayName from './hooks/useACSDisplayName';
 import useActivities from './hooks/useActivities';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
 import useNotifications from './hooks/useNotifications';
@@ -21,13 +22,14 @@ const InternalACSChatAdapter = ({ children }) => {
   internalDebug ||
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const activities = useActivities();
+  const [activities] = useActivities();
+  const [notifications] = useNotifications();
+  const [typingUsers] = useTypingUsers();
+  const [userId] = useUserId();
+  const [username] = useACSDisplayName();
   const emitTypingIndicator = useEmitTypingIndicator();
-  const notifications = useNotifications();
   const sendMessage = useSendMessageWithSendReceipt({ activities });
   const sendReadReceipt = useSendReadReceipt();
-  const typingUsers = useTypingUsers();
-  const userId = useUserId();
 
   internalDebug(
     [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
@@ -41,7 +43,8 @@ const InternalACSChatAdapter = ({ children }) => {
     sendMessage,
     sendReadReceipt,
     typingUsers,
-    userId
+    userId,
+    username
   });
 };
 

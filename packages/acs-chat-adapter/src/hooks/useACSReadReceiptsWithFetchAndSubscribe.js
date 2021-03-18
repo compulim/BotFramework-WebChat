@@ -72,5 +72,5 @@ export default function useACSReadReceiptsWithFetchAndSubscribe() {
     return result.length ? result : EMPTY_ARRAY;
   }, [initialReadReceipts, newReceipts]);
 
-  return useMapper(result, PASSTHRU_FN);
+  return [useMapper(result, PASSTHRU_FN)];
 }

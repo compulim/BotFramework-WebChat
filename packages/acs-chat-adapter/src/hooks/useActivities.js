@@ -17,9 +17,9 @@ export default function useActivities() {
 
   // debug('%cStart%c', ...styleConsole('cyan', 'black'));
 
-  const acsChatMessages = useACSChatMessagesWithFetchAndSubscribe();
-  const acsReadReceipts = useACSReadReceiptsWithFetchAndSubscribe();
-  const userId = useACSUserId();
+  const [acsChatMessages] = useACSChatMessagesWithFetchAndSubscribe();
+  const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
+  const [userId] = useACSUserId();
 
   useDebugDeps({ acsChatMessages, acsReadReceipts, userId }, 'useActivities:1');
 
@@ -167,5 +167,5 @@ export default function useActivities() {
 
   // debug('%cFinish%c', ...styleConsole('cyan', 'black'));
 
-  return activities;
+  return [activities];
 }

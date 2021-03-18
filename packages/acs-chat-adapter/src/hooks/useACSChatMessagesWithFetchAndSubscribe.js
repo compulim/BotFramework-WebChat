@@ -60,5 +60,5 @@ export default function useACSChatMessagesWithFetchAndSubscribe() {
   const result = useChatMessages();
 
   // TODO: useChatMessages() did not cache the array correctly.
-  return useMapper(result && result.length ? result : EMPTY_ARRAY, PASSTHRU_FN);
+  return [useMapper(result && result.length ? result : EMPTY_ARRAY, PASSTHRU_FN)];
 }
