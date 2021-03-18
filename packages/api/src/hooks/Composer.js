@@ -114,7 +114,9 @@ const Composer = ({
   useMemo(() => {
     const capabilities = [];
 
-    capabilities.push(`${notifications ? '✔️' : '❌'} Notifications`);
+    capabilities.push(`${notifications ? '✔️' : '❌'} Notifications (includes connectivity status)`);
+    capabilities.push(`${userId ? '✔️' : '❌'} Provide user ID`);
+    capabilities.push(`${typeof username === 'string' ? '✔️' : '❌'} Provide username`);
     capabilities.push(`${sendEvent ? '✔️' : '❌'} Send event`);
     capabilities.push(`${sendFiles ? '✔️' : '❌'} Send file`);
     capabilities.push(`${sendMessage ? '✔️' : '❌'} Send text message`);
@@ -131,8 +133,11 @@ const Composer = ({
     }
 
     if (!emitTypingIndicator && !typingUsers) {
-      capabilities.push('❌ Typing indicator');
+      capabilities.push('❌ Typing indicator (send and receive)');
     }
+
+    directLineReferenceGrammarId && capabilities.push('✔️ Direct Line: Reference grammar ID');
+    getDirectLineOAuthCodeChallenge && capabilities.push('✔️ Direct Line: OAuth');
 
     debug(`Chat adapter capabilities:\n\n${capabilities.join('\n')}`);
 
