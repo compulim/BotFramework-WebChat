@@ -89,7 +89,6 @@ const Composer = ({
   notifications,
   onTelemetry,
   overrideLocalizedStrings,
-  postActivity,
   renderMarkdown,
   selectVoice,
   sendEvent,
@@ -414,9 +413,7 @@ const Composer = ({
             sendTypingIndicator={sendTypingIndicator}
             typingUsers={typingUsers}
           >
-            {/* TODO: Move typing related props to <TypingComposer> */}
             <InputComposer
-              postActivity={postActivity} // TODO: Deprecated, will remove in 2023
               sendEvent={sendEvent}
               sendFiles={sendFiles}
               sendMessage={sendMessage}
@@ -532,7 +529,6 @@ Composer.defaultProps = {
   notifications: undefined,
   onTelemetry: undefined,
   overrideLocalizedStrings: undefined,
-  postActivity: undefined, // TODO: Deprecated, will remove in 2023
   renderMarkdown: undefined,
   selectVoice: undefined,
   sendEvent: undefined,
@@ -549,7 +545,7 @@ Composer.defaultProps = {
   typingIndicatorMiddleware: undefined,
   typingIndicatorRenderer: undefined,
   typingUsers: undefined,
-  userId: '', // This is correct case, reading from the new chat adapter or LegacyChatAdapterBridge.
+  userId: '', // This is correct case, from the new chat adapter (or <LegacyChatAdapterBridge>).
   username: '',
   webSpeechPonyfillFactory: undefined
 };
@@ -590,7 +586,6 @@ Composer.propTypes = {
   ),
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
-  postActivity: PropTypes.func, // TODO: Deprecated, will remove in 2023
   renderMarkdown: PropTypes.func,
   selectVoice: PropTypes.func,
   sendEvent: PropTypes.func,

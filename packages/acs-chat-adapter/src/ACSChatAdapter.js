@@ -44,6 +44,7 @@ const InternalACSChatAdapter = ({ children }) => {
     sendReadReceipt,
     typingUsers,
     userId,
+    // TODO: Consider if we need "username" or could be derived from member list.
     username
   });
 };

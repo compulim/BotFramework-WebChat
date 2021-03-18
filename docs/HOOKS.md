@@ -767,7 +767,7 @@ usePostActivity(): (activity: Activity) => void | undefined
 ```
 <!-- prettier-ignore-end -->
 
-New in 4.13.0: If the chat adapter does not support emit typing indicator, it will return `undefined`.
+Deprecated in 4.13.0: This hook is deprecated to support hetereogenous chat adapters. Please use [`useSendEvent`](#usesendevent), [`useSendFiles`](#usesendfiles), [`useSendMessage`](#usesendmessage), [`useSendMessageBack`](#usesendmessageback), and [`#useSendPostBack`](#usesendpostback) instead.
 
 When called, this function will post the activity on behalf of the user, to the bot.
 
