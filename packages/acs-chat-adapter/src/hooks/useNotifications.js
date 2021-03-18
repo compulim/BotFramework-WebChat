@@ -8,7 +8,7 @@ export default function useNotifications() {
     () => ({
       id: 'acs:1',
       level: 'success',
-      message: 'You have connected to Azure Communication Services.'
+      message: 'You are connected to Azure Communication Services.'
     }),
     []
   );
