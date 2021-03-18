@@ -16,8 +16,8 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
   const [sendBoxValue, setSendBoxValue] = useState('');
   const [visibleActivities] = useActivities('visible');
-  const activityForSuggestedActionsRef = useRef();
   const forceRender = useForceRender();
+  const lastVisibleActivityRef = useRef();
   const suggestedActionsRef = useRef([]);
   const trackEvent = useTrackEvent();
 
@@ -119,22 +119,24 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
     [sendMessage, sendBoxValue, setInputMode, setSendBoxValue]
   );
 
-  const lastVisibleActivity = visibleActivities[visibleActivities.length - 1];
+  const nextLastVisibleActivity = visibleActivities[visibleActivities.length - 1];
 
-  if (lastVisibleActivity !== activityForSuggestedActionsRef.current) {
-    activityForSuggestedActionsRef.current = lastVisibleActivity;
+  useMemo(() => {
+    if (nextLastVisibleActivity !== lastVisibleActivityRef.current) {
+      lastVisibleActivityRef.current = nextLastVisibleActivity;
 
-    if (
-      lastVisibleActivity &&
-      lastVisibleActivity.suggestedActions &&
-      lastVisibleActivity.suggestedActions.actions &&
-      fromWho(lastVisibleActivity) === 'others'
-    ) {
-      suggestedActionsRef.current = lastVisibleActivity.suggestedActions.actions || [];
-    } else {
-      suggestedActionsRef.current = [];
+      if (
+        nextLastVisibleActivity &&
+        nextLastVisibleActivity.suggestedActions &&
+        nextLastVisibleActivity.suggestedActions.actions &&
+        fromWho(nextLastVisibleActivity) !== 'self'
+      ) {
+        suggestedActionsRef.current = nextLastVisibleActivity.suggestedActions.actions || [];
+      } else {
+        suggestedActionsRef.current = [];
+      }
     }
-  }
+  }, [nextLastVisibleActivity]);
 
   const clearSuggestedActions = useCallback(() => {
     suggestedActionsRef.current = undefined;
