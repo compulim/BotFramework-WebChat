@@ -145,7 +145,6 @@ const Composer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // const dispatch = useDispatch();
   const telemetryDimensionsRef = useRef({});
 
   const patchedDir = useMemo(() => (dir === 'ltr' || dir === 'rtl' ? dir : 'auto'), [dir]);
@@ -342,17 +341,6 @@ const Composer = ({
     );
   }, [typingIndicatorMiddleware, typingIndicatorRenderer]);
 
-  /**
-   * This is a heavy function, and it is expected to be only called when there is a need to recreate business logic, e.g.
-   * - User ID changed, causing all send* functions to be updated
-   * - send
-   * @todo TODO: [P3] We should think about if we allow the user to change onSendBoxValueChanged/sendBoxValue, e.g.
-   * 1. Turns text into UPPERCASE
-   * 2. Filter out profanity
-   * @todo TODO: [P4] Revisit all members of context
-   *       This context should consist of members that are not in the Redux store
-   *       i.e. members that are not interested in other types of UIs
-   */
   const context = useMemo(
     () => ({
       ...groupActivitiesContext,
