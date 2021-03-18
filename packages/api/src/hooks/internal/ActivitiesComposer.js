@@ -13,7 +13,7 @@ let debug;
 const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const [autoSendReadReceipts, setAutoSendReadReceipts] = useState(true);
+  const [autoReturnReadReceipts, setAutoReturnReadReceipts] = useState(!!sendReadReceipt);
   const [userId] = useUserId();
 
   // Validate "userId" must be set.
@@ -29,7 +29,7 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
   // TODO: Find a way to cache and only mark as read when activity key changed.
   // TODO: Add a flag to enable/disable auto mark as read, e.g. for DOM document.onvisibilitychange.
   useMemo(() => {
-    if (!autoSendReadReceipts || !sendReadReceipt) {
+    if (!autoReturnReadReceipts || !sendReadReceipt) {
       return;
     }
 
@@ -50,15 +50,15 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
         return;
       }
     }
-  }, [activities, autoSendReadReceipts, lastReadActivityKeyRef, sendReadReceipt, userId]);
+  }, [activities, autoReturnReadReceipts, lastReadActivityKeyRef, sendReadReceipt, userId]);
 
   const context = useMemo(
     () => ({
       activities,
-      autoSendReadReceipts,
-      setAutoSendReadReceipts
+      autoReturnReadReceipts,
+      setAutoReturnReadReceipts: sendReadReceipt ? setAutoReturnReadReceipts : undefined
     }),
-    [activities, autoSendReadReceipts, setAutoSendReadReceipts]
+    [activities, autoReturnReadReceipts, setAutoReturnReadReceipts]
   );
 
   return <WebChatActivitiesContext.Provider value={context}>{children}</WebChatActivitiesContext.Provider>;

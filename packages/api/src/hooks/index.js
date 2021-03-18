@@ -1,6 +1,6 @@
 import useActiveTyping from './useActiveTyping';
 import useActivities from './useActivities';
-import useAutoSendReadReceipts from './useAutoSendReadReceipts';
+import useAutoReturnReadReceipts from './useAutoReturnReadReceipts';
 import useAvatarForBot from './useAvatarForBot';
 import useAvatarForUser from './useAvatarForUser';
 import useByteFormatter from './useByteFormatter';
@@ -67,7 +67,7 @@ import useWebSpeechPonyfill from './useWebSpeechPonyfill';
 export {
   useActiveTyping,
   useActivities,
-  useAutoSendReadReceipts,
+  useAutoReturnReadReceipts,
   useAvatarForBot,
   useAvatarForUser,
   useByteFormatter,

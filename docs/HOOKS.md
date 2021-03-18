@@ -55,6 +55,7 @@ Following is the list of hooks supported by Web Chat API.
 -  [`useActivities`](#useactivities)
 -  [`useAdaptiveCardsHostConfig`](#useadaptivecardshostconfig)
 -  [`useAdaptiveCardsPackage`](#useadaptivecardspackage)
+-  [`useAutoReturnReadReceipts`](#useautoreturnreadreceipts)
 -  [`useAvatarForBot`](#useavatarforbot)
 -  [`useAvatarForUser`](#useavatarforuser)
 -  [`useByteFormatter`](#useByteFormatter)
@@ -183,6 +184,18 @@ useAdaptiveCardsPackage(): [AdaptiveCards]
 This function is only available in full bundle. The function will return the Adaptive Cards package used for building and rendering Adaptive Cards.
 
 To modify this value, change the value in the style options prop passed to Web Chat.
+
+## `useAutoReturnReadReceipts`
+
+<!-- prettier-ignore-start -->
+```js
+useAutoReturnReadReceipts(): [false] | [boolean, (autoReturnReadReceipts: boolean) => void];
+```
+<!-- prettier-ignore-end -->
+
+This hook will return the current value of the auto-return read receipts feature. If the chat adapter does not support returning read receipts, it will always return `false` without a setter function.
+
+In HTML version of Web Chat, the UI will set this hook automatically based on [`document.visibilityState`](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState) and [`document.visibilitychange` event](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event).
 
 ## `useAvatarForBot`
 
