@@ -425,7 +425,6 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         scrollToBottomScrollTo(scrollTop, { behavior });
       } else if (typeof activityID !== 'undefined' || typeof activityKey !== 'undefined') {
         if (typeof activityID !== 'undefined') {
-          // TODO: Add deprecation warning for activityID
           console.warn(
             'botframework-webchat: passing "activityID" to scrollTo() has been deprecated, please use "activityKey" instead. This function will be deprecated by 2023-03-17.'
           );
