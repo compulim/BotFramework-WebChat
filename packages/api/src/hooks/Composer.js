@@ -117,6 +117,7 @@ const Composer = ({
     capabilities.push(`${notifications ? '✔️' : '❌'} Notifications (includes connectivity status)`);
     capabilities.push(`${userId ? '✔️' : '❌'} Provide user ID`);
     capabilities.push(`${typeof username === 'string' ? '✔️' : '❌'} Provide username`);
+    capabilities.push(`${sendReadReceipt ? '✔️' : '❌'} Return read receipts`);
     capabilities.push(`${sendEvent ? '✔️' : '❌'} Send event`);
     capabilities.push(`${sendFiles ? '✔️' : '❌'} Send file`);
     capabilities.push(`${sendMessage ? '✔️' : '❌'} Send text message`);
