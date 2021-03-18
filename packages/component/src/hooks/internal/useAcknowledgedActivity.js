@@ -1,4 +1,4 @@
-import { hooks } from 'botframework-webchat-api';
+import { fromWho, hooks } from 'botframework-webchat-api';
 import { useMemo, useRef } from 'react';
 import { useSticky } from 'react-scroll-to-bottom';
 
@@ -31,8 +31,8 @@ const { useActivities } = hooks;
 //          a. true, if there are no egress activities yet
 //          b. Otherwise, false
 export default function useAcknowledgedActivity() {
-  const [renderedActivities] = useActivities('render');
   const [sticky] = useSticky();
+  const [visibleActivities] = useActivities('visible');
   const lastStickyActivityKeyRef = useRef();
 
   const stickyChanged = useChanged(sticky);
@@ -40,26 +40,26 @@ export default function useAcknowledgedActivity() {
 
   const lastStickyActivityKey = useMemo(() => {
     if (stickyChangedToSticky) {
-      lastStickyActivityKeyRef.current = getActivityKey(renderedActivities[renderedActivities.length - 1] || {});
+      lastStickyActivityKeyRef.current = getActivityKey(visibleActivities[visibleActivities.length - 1] || {});
     }
 
     return lastStickyActivityKeyRef.current;
-  }, [renderedActivities, lastStickyActivityKeyRef, stickyChangedToSticky]);
+  }, [lastStickyActivityKeyRef, stickyChangedToSticky, visibleActivities]);
 
   return useMemo(() => {
-    const lastStickyActivityIndex = renderedActivities.findIndex(
+    const lastStickyActivityIndex = visibleActivities.findIndex(
       activity => getActivityKey(activity) === lastStickyActivityKey
     );
 
-    const lastEgressActivityIndex = findLastIndex(renderedActivities, ({ from: { role } = {} }) => role === 'user');
+    const lastEgressActivityIndex = findLastIndex(visibleActivities, activity => fromWho(activity) === 'self');
 
     // As described above, if no activities were acknowledged through egress activity, we will assume everything is acknowledged.
     const lastAcknowledgedActivityIndex = !~lastEgressActivityIndex
-      ? renderedActivities.length - 1
+      ? visibleActivities.length - 1
       : Math.max(lastStickyActivityIndex, lastEgressActivityIndex);
 
-    const lastAcknowledgedActivity = renderedActivities[lastAcknowledgedActivityIndex];
+    const lastAcknowledgedActivity = visibleActivities[lastAcknowledgedActivityIndex];
 
     return [lastAcknowledgedActivity];
-  }, [renderedActivities, lastStickyActivityKey]);
+  }, [lastStickyActivityKey, visibleActivities]);
 }

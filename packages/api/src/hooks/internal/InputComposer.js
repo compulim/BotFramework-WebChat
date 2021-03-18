@@ -14,8 +14,8 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
   debug || (debug = createDebug('<InputComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
-  const [renderedActivities] = useActivities('render');
   const [sendBoxValue, setSendBoxValue] = useState('');
+  const [visibleActivities] = useActivities('visible');
   const activityForSuggestedActionsRef = useRef();
   const forceRender = useForceRender();
   const suggestedActionsRef = useRef([]);
@@ -119,27 +119,18 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
     [sendMessage, sendBoxValue, setInputMode, setSendBoxValue]
   );
 
-  // TODO: This is not a good way to see if the activity should be rendered or not.
-  const lastRenderedActivity = useMemo(() => {
-    for (let index = renderedActivities.length - 1; index >= 0; index--) {
-      const activity = renderedActivities[index];
+  const lastVisibleActivity = visibleActivities[visibleActivities.length - 1];
 
-      if (activity.type === 'message') {
-        return activity;
-      }
-    }
-  }, [renderedActivities]);
-
-  if (lastRenderedActivity !== activityForSuggestedActionsRef.current) {
-    activityForSuggestedActionsRef.current = lastRenderedActivity;
+  if (lastVisibleActivity !== activityForSuggestedActionsRef.current) {
+    activityForSuggestedActionsRef.current = lastVisibleActivity;
 
     if (
-      lastRenderedActivity &&
-      lastRenderedActivity.suggestedActions &&
-      lastRenderedActivity.suggestedActions.actions &&
-      fromWho(lastRenderedActivity) === 'others'
+      lastVisibleActivity &&
+      lastVisibleActivity.suggestedActions &&
+      lastVisibleActivity.suggestedActions.actions &&
+      fromWho(lastVisibleActivity) === 'others'
     ) {
-      suggestedActionsRef.current = lastRenderedActivity.suggestedActions.actions || [];
+      suggestedActionsRef.current = lastVisibleActivity.suggestedActions.actions || [];
     } else {
       suggestedActionsRef.current = [];
     }

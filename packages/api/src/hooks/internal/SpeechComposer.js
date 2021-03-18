@@ -12,6 +12,7 @@ import useLanguage from '../useLanguage';
 import useSendBoxValue from '../useSendBoxValue';
 import useSendMessage from '../useSendMessage';
 import useSpeechRecognition from './useSpeechRecognition';
+import warn from '../../utils/warn';
 import WebChatSpeechContext from './WebChatSpeechContext';
 
 const {
@@ -30,22 +31,22 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
   debug || (debug = createDebug('SpeechComposer', { backgroundColor: 'red' }));
 
   const [_, setSendBoxValue] = useSendBoxValue();
-  const [inputMode, setInputMode] = useInputMode();
-  const [renderedActivities] = useActivities('render');
-  const [speechRecognitionInterims, setSpeechRecognitionInterims] = useState();
-  const [speechRecognitionState, setSpeechRecognitionState] = useState(IDLE);
   // const [grammars] = useGrammars();
+  const [inputMode, setInputMode] = useInputMode();
   const [lang] = useLanguage();
   const [recognitionStartKey, setRecognitionStartKey] = useState(false);
+  const [speechRecognitionInterims, setSpeechRecognitionInterims] = useState();
+  const [speechRecognitionState, setSpeechRecognitionState] = useState(IDLE);
   const [synthesizeAfterActivityKey, setSynthesizeAfterActivityKey] = useState(false);
+  const [visibleActivities] = useActivities('visible');
   const sendMessage = useSendMessage();
 
   // Perf: decoupling for callbacks
   const inputModeForCallbacksRef = useRef();
-  const renderedActivitiesForCallbacksRef = useRef();
+  const visibleActivitiesForCallbacksRef = useRef();
 
   inputModeForCallbacksRef.current = inputMode;
-  renderedActivitiesForCallbacksRef.current = renderedActivities;
+  visibleActivitiesForCallbacksRef.current = visibleActivities;
 
   const webSpeechPonyfill = useMemo(() => {
     const ponyfill =
@@ -58,18 +59,15 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
 
   const markActivityAsSpoken = useCallback(
     spokenActivity => {
-      const { current: renderedActivities } = renderedActivitiesForCallbacksRef;
-
       setSynthesizeAfterActivityKey(prevSpeakAfterActivityKey => {
-        const prevIndex = renderedActivities.findIndex(
+        const { current: visibleActivities } = visibleActivitiesForCallbacksRef;
+
+        const prevIndex = visibleActivities.findIndex(
           activity => getActivityKey(activity) === prevSpeakAfterActivityKey
         );
-        let index = renderedActivities.indexOf(spokenActivity);
-        let speakAfterActivityKey = prevSpeakAfterActivityKey;
+        let index = visibleActivities.indexOf(spokenActivity);
 
         if (index > prevIndex) {
-          speakAfterActivityKey = getActivityKey(spokenActivity);
-
           // If:
           // - We are in speech input mode, and;
           // - There are no more activities to be spoken, and;
@@ -78,39 +76,38 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
 
           if (
             inputModeForCallbacksRef.current === 'speech' &&
-            index === renderedActivities.length - 1 &&
+            index === visibleActivities.length - 1 &&
             spokenActivity.inputHint === 'expectinginput'
           ) {
             setRecognitionStartKey(Date.now());
           }
-        } else {
-          index = prevIndex;
 
-          if (!~index) {
-            console.warn(
-              'botframework-webchat: Cannot mark an activity as spoken because it is not in the transcript.'
-            );
-          } else if (index <= prevIndex) {
-            console.warn(
-              `botframework-webchat: Cannot mark an activity that were already spoken, it must be after activity with key of "${prevSpeakAfterActivityKey}".`
-            );
-          }
+          return getActivityKey(spokenActivity);
         }
 
-        return speakAfterActivityKey;
+        index = prevIndex;
+
+        if (!~index) {
+          warn('Cannot mark an activity as spoken because it is not in the transcript.');
+        } else if (index <= prevIndex) {
+          warn(
+            `Cannot mark an activity that were already spoken, it must be after activity with key of "${prevSpeakAfterActivityKey}".`
+          );
+        }
+
+        return prevSpeakAfterActivityKey;
       });
     },
-    [inputModeForCallbacksRef, renderedActivitiesForCallbacksRef, setRecognitionStartKey, setSynthesizeAfterActivityKey]
+    [inputModeForCallbacksRef, setRecognitionStartKey, setSynthesizeAfterActivityKey, visibleActivitiesForCallbacksRef]
   );
 
   const startSynthesizeActivityFromOthers = useCallback(() => {
-    const { current: renderedActivities } = renderedActivitiesForCallbacksRef;
+    setSynthesizeAfterActivityKey(prevSpeakAfterActivityKey => {
+      const { current: visibleActivities } = visibleActivitiesForCallbacksRef;
 
-    setSynthesizeAfterActivityKey(
-      prevSpeakAfterActivityKey =>
-        prevSpeakAfterActivityKey || getActivityKey(renderedActivities[renderedActivities.length - 1])
-    );
-  }, [renderedActivitiesForCallbacksRef, setSynthesizeAfterActivityKey]);
+      return prevSpeakAfterActivityKey || getActivityKey(visibleActivities[visibleActivities.length - 1]);
+    });
+  }, [setSynthesizeAfterActivityKey, visibleActivitiesForCallbacksRef]);
 
   const stopSynthesizeActivityFromOthers = useCallback(() => setSynthesizeAfterActivityKey(false), [
     setSynthesizeAfterActivityKey
@@ -213,14 +210,14 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
       return [];
     }
 
-    const index = renderedActivities.findIndex(activity => getActivityKey(activity) === synthesizeAfterActivityKey);
+    const index = visibleActivities.findIndex(activity => getActivityKey(activity) === synthesizeAfterActivityKey);
 
     if (!~index) {
       return [];
     }
 
-    return renderedActivities.slice(index + 1).filter(activity => fromWho(activity) !== 'self');
-  }, [renderedActivities, inputMode, recognitionStartKey, supportSpeechSynthesis, synthesizeAfterActivityKey]);
+    return visibleActivities.slice(index + 1).filter(activity => fromWho(activity) !== 'self');
+  }, [inputMode, recognitionStartKey, supportSpeechSynthesis, synthesizeAfterActivityKey, visibleActivities]);
 
   const shouldSynthesizeActivityFromOthers = !!synthesizeAfterActivityKey;
 

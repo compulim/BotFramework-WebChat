@@ -1,6 +1,5 @@
 /* eslint no-magic-numbers: ["error", { "ignore": [-1, 0, 1, 2, 5, 36] }] */
 
-import { hooks } from 'botframework-webchat-api';
 import {
   Composer as ReactScrollToBottomComposer,
   Panel as ReactScrollToBottomPanel,
@@ -10,6 +9,7 @@ import {
   useScrollToEnd,
   useSticky
 } from 'react-scroll-to-bottom';
+import { fromWho, hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import random from 'math-random';
@@ -35,7 +35,6 @@ import useAcknowledgedActivity from './hooks/internal/useAcknowledgedActivity';
 import useDispatchScrollPosition from './hooks/internal/useDispatchScrollPosition';
 import useDispatchTranscriptFocus from './hooks/internal/useDispatchTranscriptFocus';
 import useFocus from './hooks/useFocus';
-import useMemoize from './hooks/internal/useMemoize';
 import useRegisterFocusTranscript from './hooks/internal/useRegisterFocusTranscript';
 import useRegisterScrollRelative from './hooks/internal/useRegisterScrollRelative';
 import useRegisterScrollTo from './hooks/internal/useRegisterScrollTo';
@@ -47,8 +46,6 @@ import useUniqueId from './hooks/internal/useUniqueId';
 const {
   useActivities,
   useAutoReturnReadReceipts,
-  useCreateActivityRenderer,
-  useCreateActivityStatusRenderer,
   useCreateAvatarRenderer,
   useDirection,
   useGroupActivities,
@@ -94,12 +91,10 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   const [
     { bubbleFromUserNubOffset, bubbleNubOffset, groupTimestamp, internalLiveRegionFadeAfter, showAvatarInGroup }
   ] = useStyleOptions();
-  const [activities] = useActivities();
+  const [activitiesWithRenderer] = useActivities('with renderer');
   const [direction] = useDirection();
   const [focusedActivityKey, setFocusedActivityKey] = useState();
   const [synthesizingActivities] = useActivities('speechsynthesis');
-  const createActivityRenderer = useCreateActivityRenderer();
-  const createActivityStatusRenderer = useCreateActivityStatusRenderer();
   const createAvatarRenderer = useCreateAvatarRenderer();
   const focus = useFocus();
   const groupActivities = useGroupActivities();
@@ -109,53 +104,10 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   const terminatorRef = useRef();
 
   const activityInteractiveAlt = localize('ACTIVITY_INTERACTIVE_LABEL_ALT');
+  const hideAllTimestamps = groupTimestamp === false;
   const terminatorText = localize('TRANSCRIPT_TERMINATOR_TEXT');
   const transcriptAriaLabel = localize('TRANSCRIPT_ARIA_LABEL_ALT');
   const transcriptRoleDescription = localize('TRANSCRIPT_ARIA_ROLE_ALT');
-
-  const hideAllTimestamps = groupTimestamp === false;
-
-  // Gets renderer for every activity.
-  // Activities that are not visible will return a falsy renderer.
-
-  // Converted from createActivityRenderer({ activity, nextVisibleActivity }) to createActivityRenderer(activity, nextVisibleActivity).
-  // This is for the memoization function to cache the arguments. Memoizer can only cache literal arguments.
-  const createActivityRendererWithLiteralArgs = useCallback(
-    (activity, nextVisibleActivity) => createActivityRenderer({ activity, nextVisibleActivity }),
-    [createActivityRenderer]
-  );
-
-  // Create a memoized context of the createActivityRenderer function.
-  const activitiesWithRenderer = useMemoize(
-    createActivityRendererWithLiteralArgs,
-    createActivityRendererWithLiteralArgsMemoized => {
-      // All calls to createActivityRendererWithLiteralArgsMemoized() in this function will be memoized (LRU = 1).
-      // In the next render cycle, calls to createActivityRendererWithLiteralArgsMemoized() might return the memoized result instead.
-      // This is an improvement to React useMemo(), because it only allows 1 memoization.
-      // useMemoize() allows any number of memoization.
-
-      const activitiesWithRenderer = [];
-      let nextVisibleActivity;
-
-      for (let index = activities.length - 1; index >= 0; index--) {
-        const activity = activities[index];
-        const renderActivity = createActivityRendererWithLiteralArgsMemoized(activity, nextVisibleActivity);
-
-        if (renderActivity) {
-          activitiesWithRenderer.splice(0, 0, {
-            activity,
-            renderActivity
-          });
-
-          nextVisibleActivity = activity;
-        }
-      }
-
-      return activitiesWithRenderer;
-    },
-    [activities]
-  );
-
   const visibleActivities = useMemo(() => activitiesWithRenderer.map(({ activity }) => activity), [
     activitiesWithRenderer
   ]);
@@ -251,23 +203,19 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
         activitiesWithSameSenderAndStatus.forEach((activity, indexWithinSenderAndStatusGroup) => {
           // We only show the timestamp at the end of the sender group. But we always show the "Send failed, retry" prompt.
-          const renderActivityStatus = createActivityStatusRenderer({
-            activity
-          });
-
           const firstInSenderAndStatusGroup = !indexWithinSenderAndStatusGroup;
           const lastInSenderAndStatusGroup =
             indexWithinSenderAndStatusGroup === activitiesWithSameSenderAndStatus.length - 1;
 
-          const { renderActivity } = activitiesWithRenderer.find(entry => entry.activity === activity);
-          const key = getActivityKey(activity) || renderingElements.length;
-          const {
-            channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-            from: { role },
-            text
-          } = activity;
+          const { renderActivity, renderActivityStatus } = activitiesWithRenderer.find(
+            entry => entry.activity === activity
+          );
 
-          const topSideNub = role === 'user' ? topSideUserNub : topSideBotNub;
+          const key = getActivityKey(activity);
+          const who = fromWho(activity);
+          const { channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {}, text } = activity;
+
+          const topSideNub = who === 'self' ? topSideUserNub : topSideBotNub;
 
           let showCallout;
 
@@ -289,7 +237,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
           }
 
           const focusActivity = () => {
-            setFocusedActivityKey(getActivityKey(activity));
+            setFocusedActivityKey(key);
 
             // IE11 need to manually focus on the transcript.
             const { current: rootElement } = rootElementRef;
@@ -297,14 +245,12 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             rootElement && rootElement.focus();
           };
 
-          const activityKey = getActivityKey(activity);
-
           renderingElements.push({
             activity,
 
             // After the element is mounted, set it to activityElementsRef.
             callbackRef: activityElement => {
-              const entry = activityElementsRef.current.find(entry => entry.activityKey === activityKey);
+              const entry = activityElementsRef.current.find(entry => entry.activityKey === key);
 
               if (entry) {
                 entry.element = activityElement;
@@ -355,9 +301,9 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             renderActivity,
             renderActivityStatus,
             renderAvatar,
-            role,
             shouldSpeak: synthesizingActivities.includes(activity),
-            showCallout
+            showCallout,
+            who
           });
         });
       });
@@ -366,15 +312,14 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     const { current: activityElements } = activityElementsRef;
 
     // Update activityElementRef with new sets of activity, while retaining the existing referencing element if exists.
-    activityElementsRef.current = renderingElements.map(({ activity, activity: { id }, elementId, key }) => {
+    activityElementsRef.current = renderingElements.map(({ activity, elementId, key }) => {
       const existingEntry = activityElements.find(entry => entry.key === key);
 
       return {
         activity,
-        activityID: id,
         activityKey: getActivityKey(activity),
-        ariaLabelID: existingEntry
-          ? existingEntry.ariaLabelID
+        ariaLabelId: existingEntry
+          ? existingEntry.ariaLabelId
           : `webchat__basic-transcript__activity-label-${random().toString(36).substr(2, 5)}`,
         element: existingEntry && existingEntry.element,
         elementId,
@@ -398,15 +343,12 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     activityTree,
     bubbleFromUserNubOffset,
     bubbleNubOffset,
-    createActivityStatusRenderer,
     createAvatarRenderer,
     hideAllTimestamps,
     rootElementRef,
     showAvatarInGroup,
     synthesizingActivities
   ]);
-
-  const renderingActivities = useMemo(() => renderingElements.map(({ activity }) => activity), [renderingElements]);
 
   const scrollToBottomScrollTo = useScrollTo();
   const scrollToBottomScrollToEnd = useScrollToEnd();
@@ -434,7 +376,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         const { element: activityElement } =
           typeof activityKey !== 'undefined'
             ? activityElementsRef.current.find(entry => entry.activityKey === activityKey) || {}
-            : activityElementsRef.current.find(entry => entry.activityID === activityID) || {};
+            : activityElementsRef.current.find(entry => entry.activity.id === activityID) || {};
 
         const scrollableElement = rootElement.querySelector('.webchat__basic-transcript__scrollable');
 
@@ -528,9 +470,10 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
   useObserveScrollPosition(patchedDispatchScrollPosition);
 
+  // TOOD: This is a heavy hook because it call useSticky. Optimize the position for this hook.
   const [lastInteractedActivity] = useAcknowledgedActivity();
 
-  const indexOfLastInteractedActivity = activities.indexOf(lastInteractedActivity);
+  const indexOfLastInteractedActivity = visibleActivities.indexOf(lastInteractedActivity);
 
   // Create a new ID for aria-activedescendant every time the active descendant change.
   // In our design, the transcript will only have 1 focused activity and it has an ID. Other blurred activities will not have ID assigned.
@@ -543,7 +486,14 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     [focusedActivityKey]
   );
 
+  // Perf: decouple from calllbacks
+  const activeDescendantElementIdFromCallbacksRef = useRef();
+
+  activeDescendantElementIdFromCallbacksRef.current = activeDescendantElementId;
+
   const scrollActiveDescendantIntoView = useCallback(() => {
+    const { current: activeDescendantElementId } = activeDescendantElementIdFromCallbacksRef;
+
     const activeDescendant = activeDescendantElementId && document.getElementById(activeDescendantElementId);
 
     // Don't scroll active descendant into view if the focus is already inside it.
@@ -568,7 +518,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         }
       }
     }
-  }, [activeDescendantElementId, rootElementRef]);
+  }, [activeDescendantElementIdFromCallbacksRef, rootElementRef]);
 
   const handleTranscriptFocus = useCallback(
     event => {
@@ -586,28 +536,40 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   useEffect(() => scrollActiveDescendantIntoView(), [scrollActiveDescendantIntoView]);
 
   // If any activities has changed, reset the active descendant.
-  useEffect(() => setFocusedActivityKey(undefined), [activities, setFocusedActivityKey]);
+  useEffect(() => setFocusedActivityKey(undefined), [setFocusedActivityKey, visibleActivities]);
+
+  // Perf: decouple from callbacks
+
+  const renderingElementsForCallbacksRef = useRef();
+
+  renderingElementsForCallbacksRef.current = renderingElements;
 
   const focusRelativeActivity = useCallback(
     delta => {
-      if (isNaN(delta) || !renderingElements.length) {
+      if (isNaN(delta) || !renderingElementsForCallbacksRef.current.length) {
         return setFocusedActivityKey(undefined);
       }
 
-      const index = renderingElements.findIndex(({ key }) => key === focusedActivityKey);
-      const nextIndex = ~index
-        ? Math.max(0, Math.min(renderingElements.length - 1, index + delta))
-        : renderingElements.length - 1;
-      const nextFocusedActivity = renderingElements[nextIndex];
-
-      setFocusedActivityKey(nextFocusedActivity.key);
       rootElementRef.current && rootElementRef.current.focus();
+
+      setFocusedActivityKey(focusedActivityKey => {
+        const { current: renderingElements } = renderingElementsForCallbacksRef;
+
+        const index = renderingElements.findIndex(({ key }) => key === focusedActivityKey);
+
+        const nextIndex = ~index
+          ? Math.max(0, Math.min(renderingElements.length - 1, index + delta))
+          : renderingElements.length - 1;
+
+        return (renderingElements[nextIndex] || {}).key;
+      });
     },
-    [focusedActivityKey, renderingElements, rootElementRef, setFocusedActivityKey]
+    [renderingElementsForCallbacksRef, rootElementRef, setFocusedActivityKey]
   );
 
   const handleTranscriptKeyDown = useCallback(
     event => {
+      const { current: renderingElements } = renderingElementsForCallbacksRef;
       const { target } = event;
 
       const fromEndOfTranscriptIndicator = target === terminatorRef.current;
@@ -672,19 +634,30 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         event.stopPropagation();
       }
     },
-    [focusedActivityKey, activityElementsRef, focusRelativeActivity, focus, terminatorRef, renderingElements]
+    [
+      activityElementsRef,
+      focus,
+      focusedActivityKey,
+      focusRelativeActivity,
+      renderingElementsForCallbacksRef,
+      terminatorRef
+    ]
   );
 
   const labelId = useUniqueId('webchat__basic-transcript__label');
 
   // If SHIFT-TAB from "End of transcript" indicator, if focusedActivityKey is not set (or no longer exists), set it the the bottommost activity.
   const setBottommostFocusedActivityKeyIfNeeded = useCallback(() => {
-    if (!~renderingElements.findIndex(({ key }) => key === focusedActivityKey)) {
-      const { key: lastActivityKey } = renderingElements[renderingElements.length - 1] || {};
+    setFocusedActivityKey(focusedActivityKey => {
+      const { current: renderingElements } = renderingElementsForCallbacksRef;
 
-      setFocusedActivityKey(lastActivityKey);
-    }
-  }, [focusedActivityKey, renderingElements, setFocusedActivityKey]);
+      if (!~renderingElements.findIndex(({ key }) => key === focusedActivityKey)) {
+        return (renderingElements[renderingElements.length - 1] || {}).key;
+      }
+
+      return focusedActivityKey;
+    });
+  }, [renderingElementsForCallbacksRef, setFocusedActivityKey]);
 
   const handleTranscriptKeyDownCapture = useCallback(
     event => {
@@ -724,10 +697,10 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   // When the focusing activity has changed, dispatch an event to observers of "useObserveTranscriptFocus".
   const dispatchTranscriptFocus = useDispatchTranscriptFocus();
   const focusedActivity = useMemo(() => {
-    const { activity } = renderingElements.find(({ key }) => key === focusedActivityKey) || {};
+    const { activity } = renderingElementsForCallbacksRef.current.find(({ key }) => key === focusedActivityKey) || {};
 
     return activity;
-  }, [focusedActivityKey, renderingElements]);
+  }, [focusedActivityKey, renderingElementsForCallbacksRef]);
 
   useMemo(() => dispatchTranscriptFocus && dispatchTranscriptFocus({ activity: focusedActivity }), [
     dispatchTranscriptFocus,
@@ -783,10 +756,10 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         ))}
       </section>
       <InternalTranscriptScrollable
-        activities={renderingActivities}
         onFocusActivity={handleFocusActivity}
         onFocusFiller={handleFocusFiller}
         terminatorRef={terminatorRef}
+        visibleActivities={visibleActivities}
       >
         {renderingElements.map(
           (
@@ -802,13 +775,13 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
               renderActivity,
               renderActivityStatus,
               renderAvatar,
-              role,
               shouldSpeak,
-              showCallout
+              showCallout,
+              who
             },
             index
           ) => {
-            const { ariaLabelID, element } =
+            const { ariaLabelId, element } =
               activityElementsRef.current.find(entry => entry.activity === activity) || {};
             const activeDescendant = focusedActivityKey === key;
             const isContentInteractive = !!(element
@@ -817,11 +790,11 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
             return (
               <li
-                aria-labelledby={ariaLabelID}
+                aria-labelledby={ariaLabelId}
                 className={classNames('webchat__basic-transcript__activity', {
                   'webchat__basic-transcript__activity--acknowledged': index <= indexOfLastInteractedActivity,
-                  'webchat__basic-transcript__activity--from-bot': role !== 'user',
-                  'webchat__basic-transcript__activity--from-user': role === 'user'
+                  'webchat__basic-transcript__activity--from-bot': who !== 'self',
+                  'webchat__basic-transcript__activity--from-user': who === 'self'
                 })}
                 // Set "id" for valid for accessibility.
                 /* eslint-disable-next-line react/forbid-dom-props */
@@ -832,7 +805,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
                 onMouseDownCapture={handleMouseDownCapture}
                 ref={callbackRef}
               >
-                <ScreenReaderActivity activity={activity} id={ariaLabelID} renderAttachments={false}>
+                <ScreenReaderActivity activity={activity} id={ariaLabelId} renderAttachments={false}>
                   {!!isContentInteractive && <p>{activityInteractiveAlt}</p>}
                 </ScreenReaderActivity>
                 <FocusRedirector
@@ -928,12 +901,18 @@ InternalScreenReaderTranscript.propTypes = {
 };
 
 // Separating high-frequency hooks to improve performance.
-const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, onFocusFiller, terminatorRef }) => {
+const InternalTranscriptScrollable = ({
+  children,
+  onFocusActivity,
+  onFocusFiller,
+  terminatorRef,
+  visibleActivities
+}) => {
   const [{ activities: activitiesStyleSet }] = useStyleSet();
   const [{ hideScrollToEndButton }] = useStyleOptions();
   const [animatingToEnd] = useAnimatingToEnd();
   const [sticky] = useSticky();
-  const lastVisibleActivityKey = getActivityKey(activities[activities.length - 1] || {}); // Activity ID of the last visible activity in the list.
+  const lastVisibleActivityKey = getActivityKey(visibleActivities[visibleActivities.length - 1]); // Activity ID of the last visible activity in the list.
   const localize = useLocalizer();
   const scrollToEndButtonRef = useRef();
 
@@ -942,12 +921,19 @@ const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, o
 
   const allActivitiesRead = lastVisibleActivityKey === lastReadActivityKeyRef.current;
 
+  // Perf: decouple from callbacks
+  const visibleActivitiesForCallbacksRef = useRef();
+
+  visibleActivitiesForCallbacksRef.current = visibleActivities;
+
   const handleScrollToEndButtonClick = useCallback(() => {
+    const { current: visibleActivities } = visibleActivitiesForCallbacksRef;
+
     // After the "New message" button is clicked, focus on the first unread activity.
-    const index = activities.findIndex(({ id }) => id === lastReadActivityKeyRef.current);
+    const index = visibleActivities.findIndex(activity => getActivityKey(activity) === lastReadActivityKeyRef.current);
 
     if (~index) {
-      const firstUnreadActivity = activities[index + 1];
+      const firstUnreadActivity = visibleActivities[index + 1];
 
       if (firstUnreadActivity) {
         return onFocusActivity(getActivityKey(firstUnreadActivity));
@@ -957,7 +943,7 @@ const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, o
     const { current } = terminatorRef;
 
     current && current.focus();
-  }, [activities, lastReadActivityKeyRef, onFocusActivity, terminatorRef]);
+  }, [lastReadActivityKeyRef, onFocusActivity, terminatorRef, visibleActivitiesForCallbacksRef]);
 
   if (sticky) {
     // If it is sticky, the user is at the bottom of the transcript, everything is read.
@@ -992,8 +978,8 @@ const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, o
       return -1;
     }
 
-    return activities.findIndex(activity => getActivityKey(activity) === lastReadActivityKeyRef.current);
-  }, [activities, allActivitiesRead, animatingToEnd, hideScrollToEndButton, lastReadActivityKeyRef, sticky]);
+    return visibleActivities.findIndex(activity => getActivityKey(activity) === lastReadActivityKeyRef.current);
+  }, [allActivitiesRead, animatingToEnd, hideScrollToEndButton, lastReadActivityKeyRef, sticky, visibleActivities]);
 
   return (
     <React.Fragment>
@@ -1019,17 +1005,18 @@ const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, o
 };
 
 InternalTranscriptScrollable.propTypes = {
-  activities: PropTypes.array.isRequired,
   children: PropTypes.any.isRequired,
   onFocusActivity: PropTypes.func.isRequired,
   onFocusFiller: PropTypes.func.isRequired,
-  terminatorRef: PropTypes.any.isRequired
+  terminatorRef: PropTypes.any.isRequired,
+  visibleActivities: PropTypes.array.isRequired
 };
 
 const SetScroller = ({ activityElementsRef, scrollerRef }) => {
   const [
     { autoScrollSnapOnActivity, autoScrollSnapOnActivityOffset, autoScrollSnapOnPage, autoScrollSnapOnPageOffset }
   ] = useStyleOptions();
+  // TOOD: This is a heavy hook because it call useSticky. Optimize the position for this hook.
   const [lastAcknowledgedActivity] = useAcknowledgedActivity();
 
   const lastAcknowledgedActivityRef = useRef(lastAcknowledgedActivity);

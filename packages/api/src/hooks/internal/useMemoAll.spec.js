@@ -1,3 +1,5 @@
+/* eslint no-magic-numbers: ["off"] */
+
 import useMemoAll from './useMemoAll';
 
 jest.mock('react', () => {

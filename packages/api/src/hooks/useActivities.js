@@ -1,11 +1,12 @@
 import { useContext } from 'react';
 
 import useWebChatActivitiesContext from './internal/useWebChatActivitiesContext';
+import warn from '../utils/warn';
 import WebChatSpeechContext from './internal/WebChatSpeechContext';
 
 export default function useActivities(options = 'all') {
   // TODO: Verify all activities are valid, e.g. contains channelData, etc.
-  const { activities: allActivities } = useWebChatActivitiesContext();
+  const { activities: allActivities, activitiesWithRenderer } = useWebChatActivitiesContext();
   const speechContext = useContext(WebChatSpeechContext);
 
   if (options === 'speechsynthesis') {
@@ -14,11 +15,12 @@ export default function useActivities(options = 'all') {
     }
 
     return [speechContext.synthesizingActivities];
-  } else if (options === 'render') {
-    // TODO: Support "render" options
-    console.warn(
-      'botframework-webchat: useActivities() currently does not support "render", falling back to all activities.'
-    );
+  } else if (options === 'visible') {
+    return [activitiesWithRenderer.map(({ activity }) => activity)];
+  } else if (options === 'with renderer') {
+    return [activitiesWithRenderer];
+  } else if (options !== 'all') {
+    warn(`unknown options "${options}", will return all activities`);
   }
 
   return [allActivities];

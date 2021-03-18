@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import fromWho from '../utils/fromWho';
 import useStyleOptions from './useStyleOptions';
 import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
@@ -9,11 +10,11 @@ export default function useCreateAvatarRenderer() {
 
   return useMemo(
     () => ({ activity }) => {
-      const { from: { role } = {} } = activity;
+      const who = fromWho(activity);
 
       const result = avatarRenderer({
         activity,
-        fromUser: role === 'user',
+        fromUser: who === 'self',
         styleOptions
       });
 
