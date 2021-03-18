@@ -142,6 +142,7 @@ const Composer = ({
 
     debug(`Chat adapter capabilities:\n\n${capabilities.join('\n')}`);
 
+    // Regardless if the chat adapter changed, we only publish the capability list once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
