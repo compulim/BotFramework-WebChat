@@ -18,14 +18,7 @@ const {
   DictateState: { DICTATING, STARTING }
 } = Constants;
 
-const {
-  useActivities,
-  useDirection,
-  useDictateState,
-  useStyleOptions,
-  useSuggestedActions,
-  useWebSpeechPonyfill
-} = hooks;
+const { useDirection, useDictateState, useStyleOptions, useSuggestedActions, useWebSpeechPonyfill } = hooks;
 
 let debug;
 
@@ -39,19 +32,10 @@ const ROOT_STYLE = {
   }
 };
 
-// TODO: [P3] We should consider exposing core/src/definitions and use it instead
-function activityIsSpeakingOrQueuedToSpeak({ channelData: { speak } = {} }) {
-  return !!speak;
-}
-
 function useSendBoxSpeechInterimsVisible() {
-  const [activities] = useActivities();
   const [dictateState] = useDictateState();
 
-  return [
-    (dictateState === STARTING || dictateState === DICTATING) &&
-      !activities.filter(activityIsSpeakingOrQueuedToSpeak).length
-  ];
+  return [dictateState === STARTING || dictateState === DICTATING];
 }
 
 const BasicSendBox = ({ className }) => {

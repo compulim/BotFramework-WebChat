@@ -22,9 +22,9 @@ export default function useSendMessageWithSendReceipt({ activities }) {
   debug || (debug = createDebug('useSendMessageWithSendReceipt', { backgroundColor: 'yellow', color: 'black' }));
 
   const [failedClientMessageIds] = useACSFailedClientMessageIds();
+  const [messages] = useACSChatMessagesWithFetchAndSubscribe();
   const acsSendMessage = useACSSendMessage();
   const criticalSection = useMemo(() => createCriticalSection(), []);
-  const messages = useACSChatMessagesWithFetchAndSubscribe();
   const sendPendingsRef = useRef([]);
   const sendReceiptPendingsRef = useRef([]);
 

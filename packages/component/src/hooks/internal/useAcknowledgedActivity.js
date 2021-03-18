@@ -3,7 +3,7 @@ import { useMemo, useRef } from 'react';
 import { useSticky } from 'react-scroll-to-bottom';
 
 import findLastIndex from '../../Utils/findLastIndex';
-import getActivityUniqueId from '../../Utils/getActivityUniqueId';
+import getActivityKey from '../../Utils/getActivityKey';
 import useChanged from './useChanged';
 
 const { useActivities } = hooks;
@@ -31,35 +31,35 @@ const { useActivities } = hooks;
 //          a. true, if there are no egress activities yet
 //          b. Otherwise, false
 export default function useAcknowledgedActivity() {
-  const [activities] = useActivities();
+  const [renderedActivities] = useActivities('render');
   const [sticky] = useSticky();
-  const lastStickyActivityIDRef = useRef();
+  const lastStickyActivityKeyRef = useRef();
 
   const stickyChanged = useChanged(sticky);
   const stickyChangedToSticky = stickyChanged && sticky;
 
-  const lastStickyActivityID = useMemo(() => {
+  const lastStickyActivityKey = useMemo(() => {
     if (stickyChangedToSticky) {
-      lastStickyActivityIDRef.current = getActivityUniqueId(activities[activities.length - 1] || {});
+      lastStickyActivityKeyRef.current = getActivityKey(renderedActivities[renderedActivities.length - 1] || {});
     }
 
-    return lastStickyActivityIDRef.current;
-  }, [activities, lastStickyActivityIDRef, stickyChangedToSticky]);
+    return lastStickyActivityKeyRef.current;
+  }, [renderedActivities, lastStickyActivityKeyRef, stickyChangedToSticky]);
 
   return useMemo(() => {
-    const lastStickyActivityIndex = activities.findIndex(
-      activity => getActivityUniqueId(activity) === lastStickyActivityID
+    const lastStickyActivityIndex = renderedActivities.findIndex(
+      activity => getActivityKey(activity) === lastStickyActivityKey
     );
 
-    const lastEgressActivityIndex = findLastIndex(activities, ({ from: { role } = {} }) => role === 'user');
+    const lastEgressActivityIndex = findLastIndex(renderedActivities, ({ from: { role } = {} }) => role === 'user');
 
     // As described above, if no activities were acknowledged through egress activity, we will assume everything is acknowledged.
     const lastAcknowledgedActivityIndex = !~lastEgressActivityIndex
-      ? activities.length - 1
+      ? renderedActivities.length - 1
       : Math.max(lastStickyActivityIndex, lastEgressActivityIndex);
 
-    const lastAcknowledgedActivity = activities[lastAcknowledgedActivityIndex];
+    const lastAcknowledgedActivity = renderedActivities[lastAcknowledgedActivityIndex];
 
     return [lastAcknowledgedActivity];
-  }, [activities, lastStickyActivityID]);
+  }, [renderedActivities, lastStickyActivityKey]);
 }

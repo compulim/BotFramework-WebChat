@@ -19,7 +19,7 @@ import BasicTypingIndicator from './BasicTypingIndicator';
 import createDebug from './Utils/debug';
 import Fade from './Utils/Fade';
 import FocusRedirector from './Utils/FocusRedirector';
-import getActivityUniqueId from './Utils/getActivityUniqueId';
+import getActivityKey from './Utils/getActivityKey';
 import getTabIndex from './Utils/TypeFocusSink/getTabIndex';
 import inputtableKey from './Utils/TypeFocusSink/inputtableKey';
 import intersectionOf from './Utils/intersectionOf';
@@ -260,7 +260,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             indexWithinSenderAndStatusGroup === activitiesWithSameSenderAndStatus.length - 1;
 
           const { renderActivity } = activitiesWithRenderer.find(entry => entry.activity === activity);
-          const key = getActivityUniqueId(activity) || renderingElements.length;
+          const key = getActivityKey(activity) || renderingElements.length;
           const {
             channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
             from: { role },
@@ -289,7 +289,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
           }
 
           const focusActivity = () => {
-            setFocusedActivityKey(getActivityUniqueId(activity));
+            setFocusedActivityKey(getActivityKey(activity));
 
             // IE11 need to manually focus on the transcript.
             const { current: rootElement } = rootElementRef;
@@ -297,12 +297,14 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             rootElement && rootElement.focus();
           };
 
+          const activityKey = getActivityKey(activity);
+
           renderingElements.push({
             activity,
 
             // After the element is mounted, set it to activityElementsRef.
             callbackRef: activityElement => {
-              const entry = activityElementsRef.current.find(({ activityID }) => activityID === activity.id);
+              const entry = activityElementsRef.current.find(entry => entry.activityKey === activityKey);
 
               if (entry) {
                 entry.element = activityElement;
@@ -314,7 +316,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
             // When a child of the activity receives focus, notify the transcript to set the aria-activedescendant to this activity.
             handleFocus: () => {
-              setFocusedActivityKey(getActivityUniqueId(activity));
+              setFocusedActivityKey(getActivityKey(activity));
             },
 
             handleKeyDown: event => {
@@ -322,7 +324,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
                 event.preventDefault();
                 event.stopPropagation();
 
-                setFocusedActivityKey(getActivityUniqueId(activity));
+                setFocusedActivityKey(getActivityKey(activity));
 
                 const { current } = rootElementRef;
 
@@ -370,6 +372,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
       return {
         activity,
         activityID: id,
+        activityKey: getActivityKey(activity),
         ariaLabelID: existingEntry
           ? existingEntry.ariaLabelID
           : `webchat__basic-transcript__activity-label-${random().toString(36).substr(2, 5)}`,
@@ -416,14 +419,23 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         );
       }
 
-      const { activityID, scrollTop } = position;
+      const { activityID, activityKey, scrollTop } = position;
 
       if (typeof scrollTop !== 'undefined') {
         scrollToBottomScrollTo(scrollTop, { behavior });
-      } else if (typeof activityID !== 'undefined') {
+      } else if (typeof activityID !== 'undefined' || typeof activityKey !== 'undefined') {
+        if (typeof activityID !== 'undefined') {
+          // TODO: Add deprecation warning for activityID
+          console.warn(
+            'botframework-webchat: passing "activityID" to scrollTo() has been deprecated, please use "activityKey" instead. This function will be deprecated by 2023-03-17.'
+          );
+        }
+
         const { current: rootElement } = rootElementRef;
         const { element: activityElement } =
-          activityElementsRef.current.find(entry => entry.activityID === activityID) || {};
+          typeof activityKey !== 'undefined'
+            ? activityElementsRef.current.find(entry => entry.activityKey === activityKey) || {}
+            : activityElementsRef.current.find(entry => entry.activityID === activityID) || {};
 
         const scrollableElement = rootElement.querySelector('.webchat__basic-transcript__scrollable');
 
@@ -509,9 +521,9 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
           })
         : activityElementsRef.current[0];
 
-      const { activityID } = entry || {};
+      const { activityKey } = entry || {};
 
-      dispatchScrollPosition({ ...(activityID ? { activityID } : {}), scrollTop });
+      dispatchScrollPosition({ ...(activityKey ? { activityKey } : {}), scrollTop });
     };
   }, [activityElementsRef, dispatchScrollPosition, rootElementRef]);
 
@@ -922,36 +934,36 @@ const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, o
   const [{ hideScrollToEndButton }] = useStyleOptions();
   const [animatingToEnd] = useAnimatingToEnd();
   const [sticky] = useSticky();
-  const lastVisibleActivityId = getActivityUniqueId(activities[activities.length - 1] || {}); // Activity ID of the last visible activity in the list.
+  const lastVisibleActivityKey = getActivityKey(activities[activities.length - 1] || {}); // Activity ID of the last visible activity in the list.
   const localize = useLocalizer();
   const scrollToEndButtonRef = useRef();
 
-  const lastReadActivityIdRef = useRef(lastVisibleActivityId);
+  const lastReadActivityKeyRef = useRef(lastVisibleActivityKey);
   const transcriptRoleDescription = localize('TRANSCRIPT_ARIA_ROLE_ALT');
 
-  const allActivitiesRead = lastVisibleActivityId === lastReadActivityIdRef.current;
+  const allActivitiesRead = lastVisibleActivityKey === lastReadActivityKeyRef.current;
 
   const handleScrollToEndButtonClick = useCallback(() => {
     // After the "New message" button is clicked, focus on the first unread activity.
-    const index = activities.findIndex(({ id }) => id === lastReadActivityIdRef.current);
+    const index = activities.findIndex(({ id }) => id === lastReadActivityKeyRef.current);
 
     if (~index) {
       const firstUnreadActivity = activities[index + 1];
 
       if (firstUnreadActivity) {
-        return onFocusActivity(getActivityUniqueId(firstUnreadActivity));
+        return onFocusActivity(getActivityKey(firstUnreadActivity));
       }
     }
 
     const { current } = terminatorRef;
 
     current && current.focus();
-  }, [activities, lastReadActivityIdRef, onFocusActivity, terminatorRef]);
+  }, [activities, lastReadActivityKeyRef, onFocusActivity, terminatorRef]);
 
   if (sticky) {
     // If it is sticky, the user is at the bottom of the transcript, everything is read.
     // So mark the activity ID as read.
-    lastReadActivityIdRef.current = lastVisibleActivityId;
+    lastReadActivityKeyRef.current = lastVisibleActivityKey;
   }
 
   // Finds where we should render the "New messages" button, in index. Returns -1 to hide the button.
@@ -981,8 +993,8 @@ const InternalTranscriptScrollable = ({ activities, children, onFocusActivity, o
       return -1;
     }
 
-    return activities.findIndex(activity => getActivityUniqueId(activity) === lastReadActivityIdRef.current);
-  }, [activities, allActivitiesRead, animatingToEnd, hideScrollToEndButton, lastReadActivityIdRef, sticky]);
+    return activities.findIndex(activity => getActivityKey(activity) === lastReadActivityKeyRef.current);
+  }, [activities, allActivitiesRead, animatingToEnd, hideScrollToEndButton, lastReadActivityKeyRef, sticky]);
 
   return (
     <React.Fragment>

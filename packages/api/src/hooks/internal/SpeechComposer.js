@@ -30,8 +30,8 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
   debug || (debug = createDebug('SpeechComposer', { backgroundColor: 'red' }));
 
   const [_, setSendBoxValue] = useSendBoxValue();
-  const [activities] = useActivities();
   const [inputMode, setInputMode] = useInputMode();
+  const [renderedActivities] = useActivities('render');
   const [speechRecognitionInterims, setSpeechRecognitionInterims] = useState();
   const [speechRecognitionState, setSpeechRecognitionState] = useState(IDLE);
   // const [grammars] = useGrammars();
@@ -41,11 +41,11 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
   const sendMessage = useSendMessage();
 
   // Perf: decoupling for callbacks
-  const activitiesForCallbacksRef = useRef();
   const inputModeForCallbacksRef = useRef();
+  const renderedActivitiesForCallbacksRef = useRef();
 
-  activitiesForCallbacksRef.current = activities;
   inputModeForCallbacksRef.current = inputMode;
+  renderedActivitiesForCallbacksRef.current = renderedActivities;
 
   const webSpeechPonyfill = useMemo(() => {
     const ponyfill =
@@ -58,11 +58,13 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
 
   const markActivityAsSpoken = useCallback(
     spokenActivity => {
-      const { current: activities } = activitiesForCallbacksRef;
+      const { current: renderedActivities } = renderedActivitiesForCallbacksRef;
 
       setSynthesizeAfterActivityKey(prevSpeakAfterActivityKey => {
-        const prevIndex = activities.findIndex(activity => getActivityKey(activity) === prevSpeakAfterActivityKey);
-        let index = activities.indexOf(spokenActivity);
+        const prevIndex = renderedActivities.findIndex(
+          activity => getActivityKey(activity) === prevSpeakAfterActivityKey
+        );
+        let index = renderedActivities.indexOf(spokenActivity);
         let speakAfterActivityKey = prevSpeakAfterActivityKey;
 
         if (index > prevIndex) {
@@ -76,7 +78,7 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
 
           if (
             inputModeForCallbacksRef.current === 'speech' &&
-            index === activities.length - 1 &&
+            index === renderedActivities.length - 1 &&
             spokenActivity.inputHint === 'expectinginput'
           ) {
             setRecognitionStartKey(Date.now());
@@ -98,16 +100,17 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
         return speakAfterActivityKey;
       });
     },
-    [activitiesForCallbacksRef, inputModeForCallbacksRef, setRecognitionStartKey, setSynthesizeAfterActivityKey]
+    [inputModeForCallbacksRef, renderedActivitiesForCallbacksRef, setRecognitionStartKey, setSynthesizeAfterActivityKey]
   );
 
   const startSynthesizeActivityFromOthers = useCallback(() => {
-    const { current: activities } = activitiesForCallbacksRef;
+    const { current: renderedActivities } = renderedActivitiesForCallbacksRef;
 
     setSynthesizeAfterActivityKey(
-      prevSpeakAfterActivityKey => prevSpeakAfterActivityKey || getActivityKey(activities[activities.length - 1])
+      prevSpeakAfterActivityKey =>
+        prevSpeakAfterActivityKey || getActivityKey(renderedActivities[renderedActivities.length - 1])
     );
-  }, [activitiesForCallbacksRef, setSynthesizeAfterActivityKey]);
+  }, [renderedActivitiesForCallbacksRef, setSynthesizeAfterActivityKey]);
 
   const stopSynthesizeActivityFromOthers = useCallback(() => setSynthesizeAfterActivityKey(false), [
     setSynthesizeAfterActivityKey
@@ -210,14 +213,14 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
       return [];
     }
 
-    const index = activities.findIndex(activity => getActivityKey(activity) === synthesizeAfterActivityKey);
+    const index = renderedActivities.findIndex(activity => getActivityKey(activity) === synthesizeAfterActivityKey);
 
     if (!~index) {
       return [];
     }
 
-    return activities.slice(index + 1).filter(activity => fromWho(activity) !== 'self');
-  }, [activities, inputMode, recognitionStartKey, supportSpeechSynthesis, synthesizeAfterActivityKey]);
+    return renderedActivities.slice(index + 1).filter(activity => fromWho(activity) !== 'self');
+  }, [renderedActivities, inputMode, recognitionStartKey, supportSpeechSynthesis, synthesizeAfterActivityKey]);
 
   const shouldSynthesizeActivityFromOthers = !!synthesizeAfterActivityKey;
 
