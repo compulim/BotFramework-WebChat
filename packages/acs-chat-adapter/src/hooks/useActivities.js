@@ -5,6 +5,7 @@ import createDebug from '../util/debug';
 import styleConsole from '../util/styleConsole';
 import useACSChatMessagesWithFetchAndSubscribe from './useACSChatMessagesWithFetchAndSubscribe';
 import useACSReadReceiptsWithFetchAndSubscribe from './useACSReadReceiptsWithFetchAndSubscribe';
+import useACSThreadId from './useACSThreadId';
 import useACSUserId from './useACSUserId';
 import useDebugDeps from './useDebugDeps';
 import useMemoWithPrevious from './useMemoWithPrevious';
@@ -19,11 +20,13 @@ export default function useActivities() {
 
   const [acsChatMessages] = useACSChatMessagesWithFetchAndSubscribe();
   const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
+  const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
 
   useDebugDeps({ acsChatMessages, acsReadReceipts, userId }, 'useActivities:1');
 
-  const acsMessageToWebChatActivity = useMemo(() => createACSMessageToWebChatActivityConverter({ identity: userId }), [
+  const acsMessageToWebChatActivity = useMemo(() => createACSMessageToWebChatActivityConverter({ threadId, userId }), [
+    threadId,
     userId
   ]);
 
