@@ -94,7 +94,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   const [activitiesWithRenderer] = useActivities('with renderer');
   const [direction] = useDirection();
   const [focusedActivityKey, setFocusedActivityKey] = useState();
-  const [synthesizingActivities] = useActivities('speechsynthesis');
+  const [synthesizingActivities] = useActivities('speech synthesis');
   const createAvatarRenderer = useCreateAvatarRenderer();
   const focus = useFocus();
   const groupActivities = useGroupActivities();
@@ -301,7 +301,6 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             renderActivity,
             renderActivityStatus,
             renderAvatar,
-            shouldSpeak: synthesizingActivities.includes(activity),
             showCallout,
             who
           });
@@ -346,8 +345,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     createAvatarRenderer,
     hideAllTimestamps,
     rootElementRef,
-    showAvatarInGroup,
-    synthesizingActivities
+    showAvatarInGroup
   ]);
 
   const scrollToBottomScrollTo = useScrollTo();
@@ -775,7 +773,6 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
               renderActivity,
               renderActivityStatus,
               renderAvatar,
-              shouldSpeak,
               showCallout,
               who
             },
@@ -787,6 +784,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             const isContentInteractive = !!(element
               ? tabbableElements(element.querySelector('.webchat__basic-transcript__activity-box')).length
               : 0);
+            const shouldSpeak = synthesizingActivities.includes(activity);
 
             return (
               <li

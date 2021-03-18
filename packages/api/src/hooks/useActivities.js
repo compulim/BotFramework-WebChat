@@ -9,7 +9,7 @@ export default function useActivities(options = 'all') {
   const { activities: allActivities, activitiesWithRenderer } = useWebChatActivitiesContext();
   const speechContext = useContext(WebChatSpeechContext);
 
-  if (options === 'speechsynthesis') {
+  if (options === 'speech synthesis') {
     if (!speechContext) {
       throw new Error('This hook can only be used on a component that is a descendant of <Composer>');
     }
