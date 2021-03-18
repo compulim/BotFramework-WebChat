@@ -33,22 +33,20 @@ const TypingComposer = ({
 TypingComposer.defaultProps = {
   children: undefined,
   emitTypingIndicator: undefined,
-  sendTypingIndicator: true,
-  typingUsers: {}
+  typingUsers: undefined
 };
 
-// TODO: Add isRequired to all props and set defaults in root <Composer> instead.
 TypingComposer.propTypes = {
   children: PropTypes.any,
   emitTypingIndicator: PropTypes.func,
-  sendTypingIndicator: PropTypes.bool,
+  sendTypingIndicator: PropTypes.bool.isRequired,
   typingUsers: PropTypes.any // TODO: Check why objectOf is not working on empty object.
   // typingUsers: PropTypes.objectOf({
   //   at: PropTypes.number,
   //   name: PropTypes.string,
   //   role: PropTypes.string,
   //   who: PropTypes.string
-  // })
+  // }).isRequired
 };
 
 export default TypingComposer;
