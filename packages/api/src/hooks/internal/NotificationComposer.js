@@ -42,20 +42,18 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
     [chatAdapterNotifications, ourChatAdapterNotificationsRef]
   );
 
-  const dismissChatAdapterNotification = useCallback(
-    id => {
-      // Delete notification with key "id".
-      const { [id]: _, ...otherChatAdapterNotifications } = ourChatAdapterNotificationsRef.current;
-
-      ourChatAdapterNotificationsRef.current = otherChatAdapterNotifications;
-      forceRender();
-    },
-    [forceRender, ourChatAdapterNotificationsRef]
-  );
-
   const dismissNotification = useCallback(
     id => {
-      dismissChatAdapterNotification(id);
+      // Delete notification with key "id".
+      const {
+        [id]: deletedChatAdapterNotification,
+        ...otherChatAdapterNotifications
+      } = ourChatAdapterNotificationsRef.current;
+
+      if (deletedChatAdapterNotification) {
+        ourChatAdapterNotificationsRef.current = otherChatAdapterNotifications;
+        forceRender();
+      }
 
       setLocalNotifications(localNotifications => {
         // Delete notification with key "id".
@@ -64,7 +62,7 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
         return otherLocalNotifications;
       });
     },
-    [dismissChatAdapterNotification, setLocalNotifications]
+    [forceRender, ourChatAdapterNotificationsRef, setLocalNotifications]
   );
 
   const setNotification = useCallback(
