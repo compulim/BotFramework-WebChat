@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
-import DeliveryReportsContext from '../contexts/DeliveryReportsContext';
+import SendMessageContext from '../contexts/SendMessageContext';
 
-export default function useSendMessageWithTrackingNumber(): (message: string) => void {
-  return useContext(DeliveryReportsContext).sendMessageWithTrackingNumber;
+export default function useSendMessageWithTrackingNumber(): (message: string) => string {
+  return useContext(SendMessageContext);
 }

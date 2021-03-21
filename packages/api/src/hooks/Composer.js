@@ -75,7 +75,6 @@ const Composer = ({
   avatarRenderer,
   cardActionMiddleware,
   children,
-  deliveryReports,
   dir,
   directLineReferenceGrammarId,
   disabled,
@@ -91,7 +90,7 @@ const Composer = ({
   onTelemetry,
   overrideLocalizedStrings,
   renderMarkdown,
-  resendActivity,
+  resend,
   returnReadReceipt,
   selectVoice,
   sendEvent,
@@ -116,11 +115,10 @@ const Composer = ({
   useMemo(() => {
     const capabilities = [];
 
-    capabilities.push(`${deliveryReports ? '✔️' : '❌'} Delivery reports`);
     capabilities.push(`${notifications ? '✔️' : '❌'} Notifications (includes connectivity status)`);
     capabilities.push(`${userId ? '✔️' : '❌'} Provide user ID`);
     capabilities.push(`${typeof username === 'string' ? '✔️' : '❌'} Provide username`);
-    capabilities.push(`${resendActivity ? '✔️' : '❌'} Resend activity`);
+    capabilities.push(`${resend ? '✔️' : '❌'} Resend activity`);
     capabilities.push(`${returnReadReceipt ? '✔️' : '❌'} Return read receipts`);
     capabilities.push(`${sendEvent ? '✔️' : '❌'} Send event`);
     capabilities.push(`${sendFiles ? '✔️' : '❌'} Send file`);
@@ -405,11 +403,7 @@ const Composer = ({
 
   return (
     <WebChatAPIContext.Provider value={context}>
-      <ActivitiesComposer
-        activities={activities}
-        deliveryReports={deliveryReports}
-        returnReadReceipt={returnReadReceipt}
-      >
+      <ActivitiesComposer activities={activities} returnReadReceipt={returnReadReceipt}>
         <NotificationComposer chatAdapterNotifications={notifications}>
           <TypingComposer
             emitTypingIndicator={emitTypingIndicator}
@@ -417,7 +411,7 @@ const Composer = ({
             typingUsers={typingUsers}
           >
             <InputComposer
-              resendActivity={resendActivity}
+              resend={resend}
               sendEvent={sendEvent}
               sendFiles={sendFiles}
               sendMessage={sendMessage}
@@ -519,7 +513,6 @@ Composer.defaultProps = {
   avatarRenderer: undefined,
   cardActionMiddleware: undefined,
   children: undefined,
-  deliveryReports: undefined,
   dir: 'auto',
   directLineReferenceGrammarId: undefined,
   disabled: false,
@@ -535,7 +528,7 @@ Composer.defaultProps = {
   onTelemetry: undefined,
   overrideLocalizedStrings: undefined,
   renderMarkdown: undefined,
-  resendActivity: undefined,
+  resend: undefined,
   returnReadReceipt: undefined,
   selectVoice: undefined,
   sendEvent: undefined,
@@ -570,11 +563,6 @@ Composer.propTypes = {
   avatarRenderer: PropTypes.func,
   cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   children: PropTypes.any,
-  deliveryReports: PropTypes.objectOf(
-    PropTypes.shape({
-      status: PropTypes.oneOf(['error', 'sending', 'sent'])
-    })
-  ),
   dir: PropTypes.oneOf(['auto', 'ltr', 'rtl']),
   directLineReferenceGrammarId: PropTypes.string,
   disabled: PropTypes.bool,
@@ -598,7 +586,7 @@ Composer.propTypes = {
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
   renderMarkdown: PropTypes.func,
-  resendActivity: PropTypes.func,
+  resend: PropTypes.func,
   returnReadReceipt: PropTypes.func,
   selectVoice: PropTypes.func,
   sendEvent: PropTypes.func,

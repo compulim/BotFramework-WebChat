@@ -1,12 +1,12 @@
-import { createContext } from 'react';
+// import { createContext } from 'react';
 
-import { WebChatDeliveryReports } from '../types/WebChatDeliveryReports';
+// import { WebChatDeliveryReports } from '../types/WebChatDeliveryReports';
 
-const context = createContext<{
-  deliveryReports: WebChatDeliveryReports;
-  sendMessageWithTrackingNumber: (message: string) => string;
-}>(undefined);
+// const context = createContext<{
+//   deliveryReports: WebChatDeliveryReports;
+//   sendMessageWithTrackingNumber: (message: string) => string;
+// }>(undefined);
 
-context.displayName = 'ACSChatAdapter.DeliveryReportsContext';
+// context.displayName = 'ACSChatAdapter.DeliveryReportsContext';
 
-export default context;
+// export default context;

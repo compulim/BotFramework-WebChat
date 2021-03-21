@@ -9,17 +9,18 @@ import useCreateActivityRenderer from '../useCreateActivityRenderer';
 import useCreateActivityStatusRenderer from '../useCreateActivityStatusRenderer';
 import useMemoAll from './useMemoAll';
 import useMemoWithPrevious from './useMemoWithPrevious';
-import useUserId from '../useUserID';
 import warn from '../../utils/warn';
 import WebChatActivitiesContext from './WebChatActivitiesContext';
 
 let debug;
 
-const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipts, returnReadReceipt }) => {
+const ActivitiesComposer = ({ activities, children, returnReadReceipt }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   // Validate every activity
   useMemoWithPrevious(() => {
+    activities.every(activity => activity) || warn('🔥🔥🔥 All activities must be present, no falsies.');
+
     activities.every(activity => activity.channelData) ||
       warn('🔥🔥🔥 All activities must have a property bag named "channelData".');
 
@@ -27,6 +28,20 @@ const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipt
       warn(`🔥🔥🔥 All activities must have "channelData['webchat:who']" set.`);
 
     activities.every(getActivityKey) || warn('🔥🔥🔥 All activities must have a key.');
+
+    activities.every(
+      ({ channelData }) => !channelData['webchat:delivery-status'] || channelData['webchat:tracking-number']
+    ) ||
+      warn(
+        `🔥🔥🔥 Activities which has "channelData['webchat:delivery-status']" must also set "channelData['webchat:tracking-number']".`
+      );
+
+    activities.every(
+      ({ channelData }) => !channelData['webchat:tracking-number'] || channelData['webchat:delivery-status']
+    ) ||
+      warn(
+        `🔥🔥🔥 Activities which has "channelData['webchat:tracking-number']" must also set "channelData['webchat:delivery-status']".`
+      );
 
     // TODO: For accessibility, no activities can be inserted at start or in the midway
 
@@ -36,14 +51,12 @@ const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipt
   }, [activities]);
 
   const [autoReturnReadReceipts, setAutoReturnReadReceipts] = useState(!!returnReadReceipt);
-  const [userId] = useUserId();
 
   // Validate "userId" must be set.
 
   const lastReadActivityKeyRef = useRef();
 
   // TODO: Find a way to cache and only mark as read when activity key changed.
-  // TODO: Add a flag to enable/disable auto mark as read, e.g. for DOM document.onvisibilitychange.
   useMemo(() => {
     if (!autoReturnReadReceipts || !returnReadReceipt) {
       return;
@@ -55,14 +68,15 @@ const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipt
       if (fromWho(activity) === 'others') {
         const activityKey = getActivityKey(activity);
 
-        // If support read receipts report, return read receipt if we have not returned it yet.
-        // If don't support read receipts report, just return the read receipt.
-        (readReceipts && (readReceipts[activityKey] || {})[userId]) || returnReadReceipt(activity);
+        if (lastReadActivityKeyRef.current !== activityKey) {
+          returnReadReceipt(activity);
+          lastReadActivityKeyRef.current = activityKey;
+        }
 
         return;
       }
     }
-  }, [activities, autoReturnReadReceipts, lastReadActivityKeyRef, returnReadReceipt, userId]);
+  }, [activities, autoReturnReadReceipts, lastReadActivityKeyRef, returnReadReceipt]);
 
   // Gets renderer for every activity.
   // Activities that are not visible will return a falsy renderer.
@@ -115,17 +129,9 @@ const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipt
       activities,
       activitiesWithRenderer,
       autoReturnReadReceipts,
-      deliveryReports,
       setAutoReturnReadReceipts: returnReadReceipt && setAutoReturnReadReceipts
     }),
-    [
-      activities,
-      activitiesWithRenderer,
-      autoReturnReadReceipts,
-      deliveryReports,
-      returnReadReceipt,
-      setAutoReturnReadReceipts
-    ]
+    [activities, activitiesWithRenderer, autoReturnReadReceipts, returnReadReceipt, setAutoReturnReadReceipts]
   );
 
   return <WebChatActivitiesContext.Provider value={context}>{children}</WebChatActivitiesContext.Provider>;
@@ -134,21 +140,12 @@ const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipt
 ActivitiesComposer.defaultProps = {
   activities: undefined,
   children: undefined,
-  deliveryReports: undefined,
-  readReceipts: undefined,
   returnReadReceipt: undefined
 };
 
 ActivitiesComposer.propTypes = {
   activities: PropTypes.array,
   children: PropTypes.any,
-  deliveryReports: PropTypes.objectOf(
-    PropTypes.shape({
-      activityKey: PropTypes.string,
-      status: PropTypes.oneOf(['error', 'sending', 'sent'])
-    })
-  ),
-  readReceipts: PropTypes.objectOf(PropTypes.objectOf(PropTypes.bool)),
   returnReadReceipt: PropTypes.func
 };
 

@@ -9,14 +9,12 @@ import { Credentials } from './types/Credentials';
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
-import DeliveryReportsComposer from './composers/DeliveryReportsComposer';
 import ReadReceiptsComposer from './composers/ReadReceiptsComposer';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
 import useACSDisplayName from './hooks/useACSDisplayName';
 import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
-import useDeliveryReports from './hooks/useDeliveryReports';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
 import useNotifications from './hooks/useNotifications';
 import useReadReceipts from './hooks/useReadReceipts';
@@ -33,7 +31,6 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [activities] = useActivities();
-  const [deliveryReports] = useDeliveryReports();
   const [notifications] = useNotifications();
   const [readReceipts] = useReadReceipts();
   const [typingUsers] = useTypingUsers();
@@ -54,12 +51,11 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
 
   internalDebug(
     [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
-    [{ activities, deliveryReports, readReceipts }]
+    [{ activities, readReceipts }]
   );
 
   return children({
     activities,
-    deliveryReports,
     emitTypingIndicator,
     notifications,
     readReceipts,
@@ -137,11 +133,9 @@ const ACSChatAdapter: FC<{
       {/* <ChatThreadProvider> */}
       <ACSChatMessagesComposer>
         <ActivitiesComposer>
-          <DeliveryReportsComposer>
-            <ReadReceiptsComposer>
-              <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
-            </ReadReceiptsComposer>
-          </DeliveryReportsComposer>
+          <ReadReceiptsComposer>
+            <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
+          </ReadReceiptsComposer>
         </ActivitiesComposer>
       </ACSChatMessagesComposer>
       {/* </ChatThreadProvider> */}

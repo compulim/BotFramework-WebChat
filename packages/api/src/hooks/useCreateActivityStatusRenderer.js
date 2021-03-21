@@ -3,8 +3,8 @@
 import { Constants } from 'botframework-webchat-core';
 import React, { useMemo } from 'react';
 
-import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
-import useTimePassed from './internal/useTimePassed';
+// import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
+// import useTimePassed from './internal/useTimePassed';
 import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
 const {
@@ -13,22 +13,28 @@ const {
 
 const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity }) => {
   const { activityStatusRenderer: createActivityStatusRenderer } = useWebChatAPIContext();
-  const getSendTimeoutForActivity = useGetSendTimeoutForActivity();
+  // const getSendTimeoutForActivity = useGetSendTimeoutForActivity();
 
   // SEND_FAILED from the activity is ignored, and is instead based on styleOptions.sendTimeout.
   // Note that the derived state is time-sensitive. The useTimePassed() hook is used to make sure it changes over time.
   const {
     // TODO: Rename "state" to "webchat:send-state"
     // TODO: Rename "clientTimestamp" to "webchat:client-timestamp"
-    channelData: { clientTimestamp = 0, state } = {},
+    // channelData: { clientTimestamp = 0, state, 'webchat:delivery-status': deliveryStatus } = {},
+    channelData: { 'webchat:delivery-status': deliveryStatus } = {},
     from: { role }
   } = activity;
 
-  const activitySent = state !== SENDING && state !== SEND_FAILED;
+  // const activitySent = typeof deliveryStatus === 'string' ? deliveryStatus === 'sent' : state !== SENDING && state !== SEND_FAILED;
+  const activitySent = deliveryStatus === 'sent';
   const fromUser = role === 'user';
-  const sendTimeout = getSendTimeoutForActivity({ activity });
 
-  const pastTimeout = useTimePassed(fromUser && !activitySent ? new Date(clientTimestamp).getTime() + sendTimeout : 0);
+  // TODO: We should move "sendTimeout" to chat adapter
+  // const sendTimeout = getSendTimeoutForActivity({ activity });
+
+  // const pastTimeout = useTimePassed(fromUser && !activitySent ? new Date(clientTimestamp).getTime() + sendTimeout : 0);
+
+  const pastTimeout = false;
 
   const sendState = activitySent || !fromUser ? SENT : pastTimeout ? SEND_FAILED : SENDING;
 

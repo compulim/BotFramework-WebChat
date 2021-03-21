@@ -19,6 +19,8 @@ import WebChatReduxContext, { useDispatch, useSelector } from './WebChatReduxCon
 const InternalLegacyChatAdapterBridge = ({
   children,
   directLine,
+  // TODO: Move "sendTimeout" to chat adapter.
+  // sendTimeout,
   userId: userIdFromProps,
   username: usernameFromProps
 }) => {
