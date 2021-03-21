@@ -10,7 +10,7 @@ function format(
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   ...args: any[]
 ): string[] {
-  const [arg0, argN] = args;
+  const [arg0, ...argN] = args;
 
   return [`%c${category}%c ${arg0}`, ...styleConsole(backgroundColor, color), ...argN];
 }
