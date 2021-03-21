@@ -10,7 +10,7 @@ import SendFailedRetry from './SendFailedRetry';
 import useFocus from '../../../hooks/useFocus';
 import useStyleSet from '../../../hooks/useStyleSet';
 
-const { useLocalizer, useResendActivity } = hooks;
+const { useLocalizer, useResend } = hooks;
 
 const {
   ActivityClientState: { SEND_FAILED, SENDING }
@@ -37,7 +37,7 @@ const SendStatus = ({ activity, sendState }) => {
   const [{ sendStatus: sendStatusStyleSet }] = useStyleSet();
   const focus = useFocus();
   const localize = useLocalizer();
-  const resendActivity = useResendActivity();
+  const resendActivity = useResend();
 
   const sendingText = localize('ACTIVITY_STATUS_SEND_STATUS_ALT_SENDING');
 
