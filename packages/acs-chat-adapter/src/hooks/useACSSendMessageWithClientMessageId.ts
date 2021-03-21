@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useRef } from 'react';
 import createDeferred from 'p-defer';
 
-import createCriticalSection from '../util/createCriticalSection';
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import createCriticalSection from '../utils/createCriticalSection';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from './useACSChatMessages';
 import useACSSendMessage from './useACSSendMessage';
 import usePrevious from './usePrevious';

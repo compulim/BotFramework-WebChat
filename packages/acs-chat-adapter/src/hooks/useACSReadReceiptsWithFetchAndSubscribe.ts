@@ -5,8 +5,8 @@ import AbortController from 'abort-controller-es5';
 
 import { ACSReadReceipt } from '../types/ACSReadReceipt';
 
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 import useDebugDeps from './useDebugDeps';
 import useMapper from './useMapper';
 

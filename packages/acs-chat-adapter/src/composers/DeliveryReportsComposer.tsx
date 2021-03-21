@@ -9,12 +9,12 @@ import updateIn from 'simple-update-in';
 import { WebChatActivity } from '../types/WebChatActivity';
 import { WebChatDeliveryReports } from '../types/WebChatDeliveryReports';
 
-import createDebug from '../util/debug';
-import DeliveryReportsContext from '../context/DeliveryReportsContext';
-import getActivityKey from '../util/getActivityKey';
-import styleConsole from '../util/styleConsole';
+import createDebug from '../utils/debug';
+import DeliveryReportsContext from '../contexts/DeliveryReportsContext';
+import getActivityKey from '../utils/getActivityKey';
+import styleConsole from '../utils/styleConsole';
 import useACSSendMessageWithClientMessageId from '../hooks/useACSSendMessageWithClientMessageId';
-import useActivities2 from '../hooks/useActivities2';
+import useActivities from '../hooks/useActivities';
 
 let debug;
 
@@ -35,7 +35,7 @@ const DeliveryReportsComposer: FC = ({ children }) => {
 
   useEffect(() => () => abortController.abort(), [abortController]);
 
-  const [activities] = useActivities2();
+  const [activities] = useActivities();
   const acsSendMessageWithClientMessageId = useACSSendMessageWithClientMessageId();
   const clientMessageIdsPendingActivitiesRef = useRef<{ [clientMessageId: string]: string }>({});
   const deliveryReportsRef = useRef<WebChatDeliveryReports>({});

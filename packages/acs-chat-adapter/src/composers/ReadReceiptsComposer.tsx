@@ -4,10 +4,10 @@ import React, { FC, useCallback, useMemo } from 'react';
 import { WebChatActivity } from '../types/WebChatActivity';
 import { WebChatReadReceipts } from '../types/WebChatReadReceipts';
 
-import { default as ReadReceiptsContext } from '../context/ReadReceiptsContext';
-import getActivityKey from '../util/getActivityKey';
+import { default as ReadReceiptsContext } from '../contexts/ReadReceiptsContext';
+import getActivityKey from '../utils/getActivityKey';
 import useACSReadReceiptsWithFetchAndSubscribe from '../hooks/useACSReadReceiptsWithFetchAndSubscribe';
-import useActivities2 from '../hooks/useActivities2';
+import useActivities from '../hooks/useActivities';
 import useMapper from '../hooks/useMapper';
 
 type WebChatReadReceiptEntry = {
@@ -16,7 +16,7 @@ type WebChatReadReceiptEntry = {
 
 const ReadReceiptsComposer: FC = ({ children }) => {
   const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
-  const [activities] = useActivities2();
+  const [activities] = useActivities();
 
   // {
   //   chatMessageId: string;

@@ -8,7 +8,7 @@ export type ChatAdapter = {
   deliveryReports?: WebChatDeliveryReports;
   emitTypingIndicator?: () => void;
   notifications?: WebChatNotification[];
-  resendActivity?: (trackingNumber: string) => string;
+  resend?: (trackingNumber: string) => string;
   returnReadReceipt?: () => void;
   sendMessage?: (message: string) => string;
   typingUsers?: WebChatTypingUsers;

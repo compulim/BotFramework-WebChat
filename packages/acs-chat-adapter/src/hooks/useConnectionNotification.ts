@@ -4,7 +4,7 @@ import AbortController from 'abort-controller-es5';
 
 import { WebChatNotification } from '../types/WebChatNotification';
 
-import createDebug from '../util/debug';
+import createDebug from '../utils/debug';
 
 let debug;
 

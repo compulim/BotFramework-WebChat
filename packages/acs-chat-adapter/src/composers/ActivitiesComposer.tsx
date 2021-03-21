@@ -5,10 +5,10 @@ import updateIn from 'simple-update-in';
 import { ACSChatMessage } from '../types/ACSChatMessage';
 import { WebChatActivity } from '../types/WebChatActivity';
 
-import ActivitiesContext from '../context/ActivitiesContext';
-import createACSMessageToWebChatActivityConverter from '../util/createACSMessageToWebChatActivityConverter';
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import ActivitiesContext from '../contexts/ActivitiesContext';
+import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSReadReceiptsWithFetchAndSubscribe from '../hooks/useACSReadReceiptsWithFetchAndSubscribe';
 import useACSThreadId from '../hooks/useACSThreadId';

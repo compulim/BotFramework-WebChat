@@ -4,9 +4,9 @@
 // TODO: Maybe not used.
 import { useMemo, useRef } from 'react';
 
-import arrayEqualsWithAnyOrder from '../util/arrayEqualsWithAnyOrder';
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import arrayEqualsWithAnyOrder from '../utils/arrayEqualsWithAnyOrder';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 
 let debug;
 let EMPTY_ARRAY;

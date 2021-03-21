@@ -1,13 +1,13 @@
 // TODO: Write tests
 
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 import useMemoWithPrevious from './useMemoWithPrevious';
 
 let debug;
 
 export default function useMapper<T, U>(nextArray: T[], mapper: (value: T) => U): U[] {
-  debug || (debug = createDebug('util:useMapper', { backgroundColor: 'lightgray', color: 'black' }));
+  debug || (debug = createDebug('useMapper', { backgroundColor: 'lightgray', color: 'black' }));
 
   const { result } = useMemoWithPrevious<{ array: T[]; result: U[] }>(
     ({ array, result } = { array: [], result: [] }) => {

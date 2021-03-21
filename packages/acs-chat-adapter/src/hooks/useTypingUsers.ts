@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { WebChatTypingUsers } from '../types/WebChatTypingUsers';
 
-import createACSTypingUserToWebChatTypingEntry from '../util/createACSTypingUserToWebChatTypingEntry';
+import createACSTypingUserToWebChatTypingEntryConverter from '../converters/createACSTypingUserToWebChatTypingEntryConverter';
 import useACSTypingUsers from './useACSTypingUsers';
 import useACSUserId from './useACSUserId';
 import useDebugDeps from './useDebugDeps';
@@ -12,7 +12,7 @@ export default function useTypingUsers(): [WebChatTypingUsers] {
   const [typingUsers] = useACSTypingUsers();
   const [userId] = useACSUserId();
 
-  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntry(userId), [userId]);
+  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntryConverter(userId), [userId]);
 
   const typingEntries = useMapper(typingUsers, acsTypingUserToWebChatTypingEntry);
 

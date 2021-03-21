@@ -6,16 +6,16 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 're
 import { ChatAdapter } from './types/ChatAdapter';
 import { Credentials } from './types/Credentials';
 
-import ACSChatMessagesComposer from './composer/ACSChatMessagesComposer';
-import ActivitiesComposer from './composer/ActivitiesComposer';
-import createDebug from './util/debug';
-import DeliveryReportsComposer from './composer/DeliveryReportsComposer';
-import ReadReceiptsComposer from './composer/ReadReceiptsComposer';
-import resolveFunction from './util/resolveFunction';
-import styleConsole from './util/styleConsole';
+import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
+import ActivitiesComposer from './composers/ActivitiesComposer';
+import createDebug from './utils/debug';
+import DeliveryReportsComposer from './composers/DeliveryReportsComposer';
+import ReadReceiptsComposer from './composers/ReadReceiptsComposer';
+import resolveFunction from './utils/resolveFunction';
+import styleConsole from './utils/styleConsole';
 import useACSDisplayName from './hooks/useACSDisplayName';
 import useACSUserId from './hooks/useACSUserId';
-import useActivities from './hooks/useActivities2';
+import useActivities from './hooks/useActivities';
 import useDeliveryReports from './hooks/useDeliveryReports';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
 import useNotifications from './hooks/useNotifications';
@@ -42,7 +42,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
   const emitTypingIndicator = useEmitTypingIndicator();
 
   // TODO: Check if ACS support resending failed messages.
-  const resendActivity = useMemo(
+  const resend = useMemo(
     () => () => {
       throw new Error('not implemented');
     },
@@ -63,7 +63,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
     emitTypingIndicator,
     notifications,
     readReceipts,
-    resendActivity,
+    resend,
     returnReadReceipt,
     sendMessage,
     typingUsers,

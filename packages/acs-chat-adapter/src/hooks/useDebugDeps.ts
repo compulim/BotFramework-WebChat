@@ -2,8 +2,8 @@
 
 import { useMemo, useRef } from 'react';
 
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 
 function repeat(array, count) {
   const result = [];

@@ -2,10 +2,10 @@ import { useCallback } from 'react';
 
 import { WebChatActivity } from '../types/WebChatActivity';
 
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 import useACSSendReadReceipt from './useACSSendReadReceipt';
-import warn from '../util/warn';
+import warn from '../utils/warn';
 
 let debug;
 

@@ -6,9 +6,9 @@ import React, { FC, useEffect } from 'react';
 
 import { ACSChatMessage } from '../types/ACSChatMessage';
 
-import ACSChatMessagesContext from '../context/ACSChatMessagesContext';
-import createDebug from '../util/debug';
-import styleConsole from '../util/styleConsole';
+import ACSChatMessagesContext from '../contexts/ACSChatMessagesContext';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 import useMapper from '../hooks/useMapper';
 
 // This helper is needed because:
