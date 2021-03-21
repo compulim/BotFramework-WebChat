@@ -4,12 +4,10 @@ import PropTypes from 'prop-types';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChatAdapter } from './types/ChatAdapter';
-import { Credentials } from './types/Credentials';
 
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
-import ReadReceiptsComposer from './composers/ReadReceiptsComposer';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
 import useACSDisplayName from './hooks/useACSDisplayName';
@@ -17,7 +15,6 @@ import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
 import useNotifications from './hooks/useNotifications';
-import useReadReceipts from './hooks/useReadReceipts';
 import useReturnReadReceipt from './hooks/useReturnReadReceipt';
 import useSendMessageWithTrackingNumber from './hooks/useSendMessageWithTrackingNumber';
 import useTypingUsers from './hooks/useTypingUsers';
@@ -32,7 +29,6 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
 
   const [activities] = useActivities();
   const [notifications] = useNotifications();
-  const [readReceipts] = useReadReceipts();
   const [typingUsers] = useTypingUsers();
   const [userId] = useACSUserId();
   const [username] = useACSDisplayName();
@@ -49,16 +45,12 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
   const returnReadReceipt = useReturnReadReceipt();
   const sendMessage = useSendMessageWithTrackingNumber();
 
-  internalDebug(
-    [`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')],
-    [{ activities, readReceipts }]
-  );
+  internalDebug([`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')], [{ activities }]);
 
   return children({
     activities,
     emitTypingIndicator,
     notifications,
-    readReceipts,
     resend,
     returnReadReceipt,
     sendMessage,
@@ -79,7 +71,6 @@ type ResolvableToken = string | Promise<string> | (() => string) | (() => Promis
 
 const ACSChatAdapter: FC<{
   children: (adapter?: ChatAdapter) => any;
-  credentials: Credentials;
   endpointURL: string;
   threadId: string;
   token: ResolvableToken;
@@ -133,9 +124,7 @@ const ACSChatAdapter: FC<{
       {/* <ChatThreadProvider> */}
       <ACSChatMessagesComposer>
         <ActivitiesComposer>
-          <ReadReceiptsComposer>
-            <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
-          </ReadReceiptsComposer>
+          <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
         </ActivitiesComposer>
       </ACSChatMessagesComposer>
       {/* </ChatThreadProvider> */}

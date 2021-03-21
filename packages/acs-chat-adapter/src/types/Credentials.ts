@@ -1,4 +1,4 @@
-export type Credentials = {
-  endpointURL: string;
-  token: string;
-};
+// export type Credentials = {
+//   endpointURL: string;
+//   token: string;
+// };

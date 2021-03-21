@@ -1,3 +1,3 @@
-export type WebChatReadReceipt = {
-  [userId: string]: boolean;
-};
+// export type WebChatReadReceipt = {
+//   [userId: string]: boolean;
+// };

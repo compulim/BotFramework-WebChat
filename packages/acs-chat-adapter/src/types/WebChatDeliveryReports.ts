@@ -1,5 +1,5 @@
-import { WebChatDeliveryReport } from './WebChatDeliveryReport';
+// import { WebChatDeliveryReport } from './WebChatDeliveryReport';
 
-export type WebChatDeliveryReports = {
-  [trackingNumber: string]: WebChatDeliveryReport;
-};
+// export type WebChatDeliveryReports = {
+//   [trackingNumber: string]: WebChatDeliveryReport;
+// };

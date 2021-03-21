@@ -1,9 +1,9 @@
-import { createContext } from 'react';
+// import { createContext } from 'react';
 
-import { WebChatReadReceipts } from '../types/WebChatReadReceipts';
+// import { WebChatReadReceipts } from '../types/WebChatReadReceipts';
 
-const context = createContext<WebChatReadReceipts>(undefined);
+// const context = createContext<WebChatReadReceipts>(undefined);
 
-context.displayName = 'ACSChatAdapter.ReadReceiptsContext';
+// context.displayName = 'ACSChatAdapter.ReadReceiptsContext';
 
-export default context;
+// export default context;
