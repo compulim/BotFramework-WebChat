@@ -24,6 +24,15 @@ import useMemoAll from '../hooks/useMemoAll';
 
 let debug;
 
+type DeliveryReports = {
+  [trackingNumber: string]: {
+    clientMessageId: string;
+    deliveryStatus: WebChatDeliveryStatus;
+    message: string;
+    resent?: true;
+  };
+};
+
 function generateTrackingNumber(): string {
   return `t-${random().toString(36).substr(2, 10)}`;
 }
@@ -60,16 +69,13 @@ const ActivitiesComposer: FC = ({ children }) => {
 
   useEffect(() => () => abortController.abort(), [abortController]);
 
-  const [deliveryReports, setDeliveryReports] = useState<{
-    [trackingNumber: string]: {
-      clientMessageId: string;
-      deliveryStatus: WebChatDeliveryStatus;
-    };
-  }>({});
+  const [deliveryReports, setDeliveryReports] = useState<DeliveryReports>({});
 
   const sendMessageWithTrackingNumber = useCallback(
     (message: string) => {
       const trackingNumber = generateTrackingNumber();
+
+      setDeliveryReports(deliveryReports => updateIn(deliveryReports, [trackingNumber, 'message'], () => message));
 
       (async function () {
         let clientMessageId: string;
@@ -122,12 +128,35 @@ const ActivitiesComposer: FC = ({ children }) => {
 
         setDeliveryReports(deliveryReports =>
           updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'sent')
+          // TODO: When testing retry, use the line below to inject error artificially.
+          // updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'error')
         );
       })();
 
       return trackingNumber;
     },
     [acsSendMessageWithDelivery, setDeliveryReports]
+  );
+
+  // Perf: decouple for callbacks
+  const deliveryReportsForCallbacksRef = useRef<DeliveryReports>();
+
+  deliveryReportsForCallbacksRef.current = deliveryReports;
+
+  const resend = useCallback(
+    (trackingNumber: string) => {
+      const deliveryReport = deliveryReportsForCallbacksRef.current[trackingNumber];
+
+      if (!deliveryReport) {
+        throw new Error(`Failed to resend, cannot find delivery with tracking number "${trackingNumber}".`);
+      }
+
+      // TODO: ACS should have a way to do resend. The resend should overwrite/remove the message that failed to send, while keeping the same "clientMessageId".
+      setDeliveryReports(deliveryReports => updateIn(deliveryReports, [trackingNumber, 'resent'], () => true));
+
+      return sendMessageWithTrackingNumber(deliveryReport.message);
+    },
+    [deliveryReportsForCallbacksRef, sendMessageWithTrackingNumber, setDeliveryReports]
   );
 
   const makeTuple = useCallback(
@@ -150,7 +179,7 @@ const ActivitiesComposer: FC = ({ children }) => {
       // Instead of "numTotalReaders", use "numThreadMembers".
       const numTotalReaders = readOnEntries.length;
 
-      return chatMessages.map(chatMessage => {
+      return chatMessages.reduce((entries, chatMessage) => {
         const { clientMessageId, createdOn } = chatMessage;
         const numReaders = readOnEntries.reduce((count, readOn) => (readOn >= +createdOn ? count + 1 : count), 0);
         const readBy: WebChatReadBy = !numReaders ? undefined : numTotalReaders === numReaders ? 'all' : 'some';
@@ -159,17 +188,23 @@ const ActivitiesComposer: FC = ({ children }) => {
         // A message could have sender same as current user, but the message could be from another session (e.g. page navigation).
 
         let deliveryStatus;
+        let resent;
         let trackingNumber;
 
         if (!!clientMessageId) {
-          [trackingNumber, { deliveryStatus } = { deliveryStatus: undefined }] =
+          [trackingNumber, { deliveryStatus, resent } = { deliveryStatus: undefined, resent: undefined }] =
             Object.entries(deliveryReports).find(
               ([_, deliveryReport]) => deliveryReport.clientMessageId === clientMessageId
             ) || [];
         }
 
-        return tuple(chatMessage, readBy, deliveryStatus, trackingNumber);
-      });
+        // TODO: ACS should do resend internally so it don't create a new message on resend.
+        //       Since ACS didn't implement it yet, internally, we will hide the one that is marked as resent.
+        //       Since we hid the failed message, the resend message is a new one and will be appended to the transcript and may reorder it wrongly.
+        resent || entries.push(tuple(chatMessage, readBy, deliveryStatus, trackingNumber));
+
+        return entries;
+      }, []);
     },
     [chatMessages, deliveryReports, readOnEntries]
   );
@@ -231,9 +266,17 @@ const ActivitiesComposer: FC = ({ children }) => {
       [{ conversions: debugConversionsRef.current }]
     );
 
+  const sendMessageContext = useMemo(
+    () => ({
+      resend,
+      sendMessage: sendMessageWithTrackingNumber
+    }),
+    [resend, sendMessageWithTrackingNumber]
+  );
+
   return (
     <ActivitiesContext.Provider value={activities}>
-      <SendMessageContext.Provider value={sendMessageWithTrackingNumber}>{children}</SendMessageContext.Provider>
+      <SendMessageContext.Provider value={sendMessageContext}>{children}</SendMessageContext.Provider>
     </ActivitiesContext.Provider>
   );
 };

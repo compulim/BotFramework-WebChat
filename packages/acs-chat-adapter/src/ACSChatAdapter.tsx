@@ -15,6 +15,7 @@ import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
 import useNotifications from './hooks/useNotifications';
+import useResend from './hooks/useResend';
 import useReturnReadReceipt from './hooks/useReturnReadReceipt';
 import useSendMessageWithTrackingNumber from './hooks/useSendMessageWithTrackingNumber';
 import useTypingUsers from './hooks/useTypingUsers';
@@ -33,15 +34,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
   const [userId] = useACSUserId();
   const [username] = useACSDisplayName();
   const emitTypingIndicator = useEmitTypingIndicator();
-
-  // TODO: Check if ACS support resending failed messages.
-  const resend = useMemo(
-    () => () => {
-      throw new Error('not implemented');
-    },
-    []
-  );
-
+  const resend = useResend();
   const returnReadReceipt = useReturnReadReceipt();
   const sendMessage = useSendMessageWithTrackingNumber();
 

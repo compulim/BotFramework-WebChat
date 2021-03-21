@@ -3,6 +3,7 @@
 import { Constants } from 'botframework-webchat-core';
 import React, { useMemo } from 'react';
 
+import fromWho from '../utils/fromWho';
 // import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
 // import useTimePassed from './internal/useTimePassed';
 import useWebChatAPIContext from './internal/useWebChatAPIContext';
@@ -21,22 +22,32 @@ const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity 
     // TODO: Rename "state" to "webchat:send-state"
     // TODO: Rename "clientTimestamp" to "webchat:client-timestamp"
     // channelData: { clientTimestamp = 0, state, 'webchat:delivery-status': deliveryStatus } = {},
-    channelData: { 'webchat:delivery-status': deliveryStatus } = {},
-    from: { role }
+    channelData: { 'webchat:delivery-status': deliveryStatus } = {}
+    // from: { role }
   } = activity;
 
+  const who = fromWho(activity);
+
   // const activitySent = typeof deliveryStatus === 'string' ? deliveryStatus === 'sent' : state !== SENDING && state !== SEND_FAILED;
-  const activitySent = deliveryStatus === 'sent';
-  const fromUser = role === 'user';
+  // const fromUser = role === 'user';
+  const fromUser = who === 'self';
 
   // TODO: We should move "sendTimeout" to chat adapter
   // const sendTimeout = getSendTimeoutForActivity({ activity });
 
   // const pastTimeout = useTimePassed(fromUser && !activitySent ? new Date(clientTimestamp).getTime() + sendTimeout : 0);
 
-  const pastTimeout = false;
+  // const pastTimeout = false;
 
-  const sendState = activitySent || !fromUser ? SENT : pastTimeout ? SEND_FAILED : SENDING;
+  // const sendState = activitySent || !fromUser ? SENT : pastTimeout ? SEND_FAILED : SENDING;
+
+  const sendState = !fromUser
+    ? SENT
+    : deliveryStatus === 'sent'
+    ? SENT
+    : deliveryStatus === 'error'
+    ? SEND_FAILED
+    : SENDING;
 
   return useMemo(
     () =>
