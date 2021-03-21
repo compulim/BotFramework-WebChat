@@ -29,7 +29,7 @@ import ScreenReaderActivity from './ScreenReaderActivity';
 import ScreenReaderText from './ScreenReaderText';
 import ScrollToEndButton from './Activity/ScrollToEndButton';
 import SpeakActivity from './Activity/Speak';
-import styleConsole from '../../acs-chat-adapter/src/util/styleConsole';
+import styleConsole from './Utils/styleConsole';
 import tabbableElements from './Utils/tabbableElements';
 import useAcknowledgedActivity from './hooks/internal/useAcknowledgedActivity';
 import useDispatchScrollPosition from './hooks/internal/useDispatchScrollPosition';
@@ -484,13 +484,13 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     [focusedActivityKey]
   );
 
-  // Perf: decouple from calllbacks
-  const activeDescendantElementIdFromCallbacksRef = useRef();
+  // Perf: decouple from callbacks
+  const activeDescendantElementIdForCallbacksRef = useRef();
 
-  activeDescendantElementIdFromCallbacksRef.current = activeDescendantElementId;
+  activeDescendantElementIdForCallbacksRef.current = activeDescendantElementId;
 
   const scrollActiveDescendantIntoView = useCallback(() => {
-    const { current: activeDescendantElementId } = activeDescendantElementIdFromCallbacksRef;
+    const { current: activeDescendantElementId } = activeDescendantElementIdForCallbacksRef;
 
     const activeDescendant = activeDescendantElementId && document.getElementById(activeDescendantElementId);
 
@@ -516,7 +516,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
         }
       }
     }
-  }, [activeDescendantElementIdFromCallbacksRef, rootElementRef]);
+  }, [activeDescendantElementIdForCallbacksRef, rootElementRef]);
 
   const handleTranscriptFocus = useCallback(
     event => {

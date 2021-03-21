@@ -1,3 +1,0 @@
-// const POST_ACTIVITY = 'CHAT_ADAPTER/POST_ACTIVITY';
-
-// export { POST_ACTIVITY };

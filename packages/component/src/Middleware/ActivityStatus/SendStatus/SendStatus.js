@@ -2,7 +2,7 @@ import { Constants } from 'botframework-webchat-core';
 import { hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React, { useCallback } from 'react';
+import React, { useMemo } from 'react';
 
 import connectToWebChat from '../../../connectToWebChat';
 import ScreenReaderText from '../../../ScreenReaderText';
@@ -10,7 +10,7 @@ import SendFailedRetry from './SendFailedRetry';
 import useFocus from '../../../hooks/useFocus';
 import useStyleSet from '../../../hooks/useStyleSet';
 
-const { useLocalizer, usePostActivity } = hooks;
+const { useLocalizer, useResendActivity } = hooks;
 
 const {
   ActivityClientState: { SEND_FAILED, SENDING }
@@ -37,22 +37,31 @@ const SendStatus = ({ activity, sendState }) => {
   const [{ sendStatus: sendStatusStyleSet }] = useStyleSet();
   const focus = useFocus();
   const localize = useLocalizer();
-  // TODO: This is deprecated, we need to change it to send message.
-  //       event, messageBack, postBack are not retryable.
-  //       How about sendFiles?
-  const postActivity = usePostActivity();
+  const resendActivity = useResendActivity();
 
   const sendingText = localize('ACTIVITY_STATUS_SEND_STATUS_ALT_SENDING');
 
   const label = localize('ACTIVITY_STATUS_SEND_STATUS_ALT', sendingText);
 
-  const handleRetryClick = useCallback(() => {
-    postActivity(activity);
+  const {
+    channelData: { 'webchat:tracking-number': trackingNumber }
+  } = activity;
 
-    // After clicking on "retry", the button will be gone and focus will be lost (back to document.body)
-    // We want to make sure the user stay inside Web Chat
-    focus('sendBoxWithoutKeyboard');
-  }, [activity, focus, postActivity]);
+  // If no tracking number is provided, resend is disabled. And "handleRetryClick" will be falsy.
+  const handleRetryClick = useMemo(
+    () =>
+      trackingNumber &&
+      (() => {
+        if (trackingNumber) {
+          resendActivity(trackingNumber);
+
+          // After clicking on "retry", the button will be gone and focus will be lost (back to document.body)
+          // We want to make sure the user stay inside Web Chat
+          focus('sendBoxWithoutKeyboard');
+        }
+      }),
+    [focus, resendActivity, trackingNumber]
+  );
 
   return (
     <span className={classNames('webchat__activity-status', sendStatusStyleSet + '')}>
@@ -77,7 +86,8 @@ SendStatus.propTypes = {
       clientTimestamp: PropTypes.string,
 
       // TODO: Rename "state" to "webchat:send-state".
-      state: PropTypes.string
+      state: PropTypes.string,
+      'webchat:tracking-number': PropTypes.resetWarningCache
     })
   }).isRequired,
   sendState: PropTypes.oneOf([SENDING, SEND_FAILED]).isRequired

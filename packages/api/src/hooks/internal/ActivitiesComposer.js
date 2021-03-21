@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import createDebug from '../../utils/debug';
 import fromWho from '../../utils/fromWho';
 import getActivityKey from '../../utils/getActivityKey';
-import styleConsole from '../../utils/styleConsole';
+// import styleConsole from '../../utils/styleConsole';
 import useCreateActivityRenderer from '../useCreateActivityRenderer';
 import useCreateActivityStatusRenderer from '../useCreateActivityStatusRenderer';
 import useMemoAll from './useMemoAll';
@@ -15,7 +15,7 @@ import WebChatActivitiesContext from './WebChatActivitiesContext';
 
 let debug;
 
-const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
+const ActivitiesComposer = ({ activities, children, deliveryReports, readReceipts, returnReadReceipt }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   // Validate every activity
@@ -35,7 +35,7 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
     return activities;
   }, [activities]);
 
-  const [autoReturnReadReceipts, setAutoReturnReadReceipts] = useState(!!sendReadReceipt);
+  const [autoReturnReadReceipts, setAutoReturnReadReceipts] = useState(!!returnReadReceipt);
   const [userId] = useUserId();
 
   // Validate "userId" must be set.
@@ -45,7 +45,7 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
   // TODO: Find a way to cache and only mark as read when activity key changed.
   // TODO: Add a flag to enable/disable auto mark as read, e.g. for DOM document.onvisibilitychange.
   useMemo(() => {
-    if (!autoReturnReadReceipts || !sendReadReceipt) {
+    if (!autoReturnReadReceipts || !returnReadReceipt) {
       return;
     }
 
@@ -55,18 +55,14 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
       if (fromWho(activity) === 'others') {
         const activityKey = getActivityKey(activity);
 
-        if (!activity.channelData['webchat:read-at'][userId] && lastReadActivityKeyRef.current !== activityKey) {
-          lastReadActivityKeyRef.current = activityKey;
-
-          debug([`Sending read receipt for activity %c${activityKey}%c`, ...styleConsole('purple')], [{ activity }]);
-
-          sendReadReceipt(activity);
-        }
+        // If support read receipts report, return read receipt if we have not returned it yet.
+        // If don't support read receipts report, just return the read receipt.
+        (readReceipts && (readReceipts[activityKey] || {})[userId]) || returnReadReceipt(activity);
 
         return;
       }
     }
-  }, [activities, autoReturnReadReceipts, lastReadActivityKeyRef, sendReadReceipt, userId]);
+  }, [activities, autoReturnReadReceipts, lastReadActivityKeyRef, returnReadReceipt, userId]);
 
   // Gets renderer for every activity.
   // Activities that are not visible will return a falsy renderer.
@@ -119,9 +115,17 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
       activities,
       activitiesWithRenderer,
       autoReturnReadReceipts,
-      setAutoReturnReadReceipts: sendReadReceipt && setAutoReturnReadReceipts
+      deliveryReports,
+      setAutoReturnReadReceipts: returnReadReceipt && setAutoReturnReadReceipts
     }),
-    [activities, activitiesWithRenderer, autoReturnReadReceipts, sendReadReceipt, setAutoReturnReadReceipts]
+    [
+      activities,
+      activitiesWithRenderer,
+      autoReturnReadReceipts,
+      deliveryReports,
+      returnReadReceipt,
+      setAutoReturnReadReceipts
+    ]
   );
 
   return <WebChatActivitiesContext.Provider value={context}>{children}</WebChatActivitiesContext.Provider>;
@@ -130,19 +134,22 @@ const ActivitiesComposer = ({ activities, children, sendReadReceipt }) => {
 ActivitiesComposer.defaultProps = {
   activities: undefined,
   children: undefined,
-  sendReadReceipt: undefined
+  deliveryReports: undefined,
+  readReceipts: undefined,
+  returnReadReceipt: undefined
 };
 
 ActivitiesComposer.propTypes = {
-  activities: PropTypes.arrayOf(
+  activities: PropTypes.array,
+  children: PropTypes.any,
+  deliveryReports: PropTypes.objectOf(
     PropTypes.shape({
-      channelData: PropTypes.shape({
-        'webchat:read-at': PropTypes.objectOf(PropTypes.oneOfType([PropTypes.bool, PropTypes.number]))
-      })
+      activityKey: PropTypes.string,
+      status: PropTypes.oneOf(['error', 'sending', 'sent'])
     })
   ),
-  children: PropTypes.any,
-  sendReadReceipt: PropTypes.func
+  readReceipts: PropTypes.objectOf(PropTypes.objectOf(PropTypes.bool)),
+  returnReadReceipt: PropTypes.func
 };
 
 export default ActivitiesComposer;

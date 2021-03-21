@@ -1,3 +1,6 @@
+// Disable eslint because maybe not used.
+/* eslint @typescript-eslint/explicit-module-boundary-types: "off" */
+
 // TODO: Maybe not used.
 import { useMemo, useRef } from 'react';
 

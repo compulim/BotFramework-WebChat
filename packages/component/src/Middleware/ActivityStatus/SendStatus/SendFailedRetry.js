@@ -12,17 +12,22 @@ const SendFailedRetry = ({ onRetryClick }) => {
   const handleReference = useCallback(({ data }) => data === 'RETRY' && onRetryClick(), [onRetryClick]);
   const localize = useLocalizer();
 
-  const sendFailedText = localize('ACTIVITY_STATUS_SEND_FAILED_RETRY');
+  const sendFailedRetryText = localize('ACTIVITY_STATUS_SEND_FAILED_RETRY');
+  const sendFailedText = localize('ACTIVITY_STATUS_SEND_FAILED');
 
   return (
     <InlineMarkdown onReference={handleReference} references={MARKDOWN_REFERENCES}>
-      {sendFailedText}
+      {onRetryClick ? sendFailedRetryText : sendFailedText}
     </InlineMarkdown>
   );
 };
 
+SendFailedRetry.defaultProps = {
+  onRetryClick: undefined
+};
+
 SendFailedRetry.propTypes = {
-  onRetryClick: PropTypes.func.isRequired
+  onRetryClick: PropTypes.func
 };
 
 export default SendFailedRetry;

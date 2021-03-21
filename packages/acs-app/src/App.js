@@ -33,7 +33,6 @@ const App = () => {
   //   return { token };
   // }, [identity]);
 
-  const credentials = useCallback(async () => ({ endpointURL, token }), [endpointURL, token]);
   const handleStartClick = useCallback(() => setStarted(Date.now()), [setStarted]);
 
   const [webSpeechPonyfillFactory, setWebSpeechPonyfillFactory] = useState();
@@ -59,7 +58,7 @@ const App = () => {
     <div className="app">
       {started && (
         <div className="app__webchat-box" key={started}>
-          <ACSChatAdapter credentials={credentials} threadId={threadId}>
+          <ACSChatAdapter endpointURL={endpointURL} threadId={threadId} token={token}>
             {chatAdapterProps =>
               chatAdapterProps ? (
                 <WebChatWithDebug

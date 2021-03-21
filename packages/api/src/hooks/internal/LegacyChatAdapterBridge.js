@@ -64,6 +64,10 @@ const InternalLegacyChatAdapterBridge = ({
     [dispatch]
   );
 
+  const resendActivity = useCallback(() => {
+    throw new Error('not implemented');
+  }, []);
+
   const sendEvent = useCallback(
     (name, value) =>
       postActivity({
@@ -143,6 +147,7 @@ const InternalLegacyChatAdapterBridge = ({
       emitTypingIndicator,
       getDirectLineOAuthCodeChallenge,
       notifications,
+      resendActivity,
       sendEvent,
       sendFiles,
       sendMessage,

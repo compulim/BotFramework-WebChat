@@ -40,13 +40,14 @@ TypingComposer.propTypes = {
   children: PropTypes.any,
   emitTypingIndicator: PropTypes.func,
   sendTypingIndicator: PropTypes.bool.isRequired,
-  typingUsers: PropTypes.any // TODO: Check why objectOf is not working on empty object.
-  // typingUsers: PropTypes.objectOf({
-  //   at: PropTypes.number,
-  //   name: PropTypes.string,
-  //   role: PropTypes.string,
-  //   who: PropTypes.string
-  // }).isRequired
+  typingUsers: PropTypes.objectOf(
+    PropTypes.shape({
+      at: PropTypes.number,
+      name: PropTypes.string,
+      role: PropTypes.string,
+      who: PropTypes.string
+    })
+  )
 };
 
 export default TypingComposer;

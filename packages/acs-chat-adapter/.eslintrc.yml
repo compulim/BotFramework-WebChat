@@ -6,8 +6,12 @@ extends:
 - eslint:recommended
 - plugin:react/recommended
 - plugin:react-hooks/recommended
+- plugin:@typescript-eslint/recommended
 globals:
   React: readonly
+parser: '@typescript-eslint/parser'
+plugins:
+- '@typescript-eslint'
 parserOptions:
   ecmaFeatures:
     jsx: true
@@ -113,7 +117,10 @@ rules:
   # "undefined" is commonly used for defaults
   # no-undefined: off
 
-  no-unused-vars:
+  # using TypeScript version of "no-unused-vars"
+  no-unused-vars: off
+
+  '@typescript-eslint/no-unused-vars':
   - error
   - argsIgnorePattern: ^_$
     varsIgnorePattern: ^_

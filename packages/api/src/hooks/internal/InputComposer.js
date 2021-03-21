@@ -10,7 +10,15 @@ import WebChatInputContext from './WebChatInputContext';
 
 let debug;
 
-const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessageBack, sendPostBack }) => {
+const InputComposer = ({
+  children,
+  resendActivity,
+  sendEvent,
+  sendFiles,
+  sendMessage,
+  sendMessageBack,
+  sendPostBack
+}) => {
   debug || (debug = createDebug('<InputComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
@@ -159,6 +167,7 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
     () => ({
       clearSuggestedActions,
       inputMode,
+      resendActivity,
       sendBoxValue,
       sendEvent,
       sendFiles: patchedSendFiles,
@@ -177,6 +186,7 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
       patchedSendMessage,
       patchedSendMessageBack,
       patchedSendPostBack,
+      resendActivity,
       sendBoxValue,
       sendEvent,
       setInputMode,
@@ -191,6 +201,7 @@ const InputComposer = ({ children, sendEvent, sendFiles, sendMessage, sendMessag
 
 InputComposer.defaultProps = {
   children: undefined,
+  resendActivity: undefined,
   sendEvent: undefined,
   sendFiles: undefined,
   sendMessage: undefined,
@@ -200,6 +211,7 @@ InputComposer.defaultProps = {
 
 InputComposer.propTypes = {
   children: PropTypes.any,
+  resendActivity: PropTypes.func,
   sendEvent: PropTypes.func,
   sendFiles: PropTypes.func,
   sendMessage: PropTypes.func,

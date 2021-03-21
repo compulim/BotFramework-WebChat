@@ -75,6 +75,7 @@ const Composer = ({
   avatarRenderer,
   cardActionMiddleware,
   children,
+  deliveryReports,
   dir,
   directLineReferenceGrammarId,
   disabled,
@@ -90,13 +91,14 @@ const Composer = ({
   onTelemetry,
   overrideLocalizedStrings,
   renderMarkdown,
+  resendActivity,
+  returnReadReceipt,
   selectVoice,
   sendEvent,
   sendFiles,
   sendMessage,
   sendMessageBack,
   sendPostBack,
-  sendReadReceipt,
   sendTimeout,
   sendTypingIndicator,
   styleOptions,
@@ -114,10 +116,12 @@ const Composer = ({
   useMemo(() => {
     const capabilities = [];
 
+    capabilities.push(`${deliveryReports ? '✔️' : '❌'} Delivery reports`);
     capabilities.push(`${notifications ? '✔️' : '❌'} Notifications (includes connectivity status)`);
     capabilities.push(`${userId ? '✔️' : '❌'} Provide user ID`);
     capabilities.push(`${typeof username === 'string' ? '✔️' : '❌'} Provide username`);
-    capabilities.push(`${sendReadReceipt ? '✔️' : '❌'} Return read receipts`);
+    capabilities.push(`${resendActivity ? '✔️' : '❌'} Resend activity`);
+    capabilities.push(`${returnReadReceipt ? '✔️' : '❌'} Return read receipts`);
     capabilities.push(`${sendEvent ? '✔️' : '❌'} Send event`);
     capabilities.push(`${sendFiles ? '✔️' : '❌'} Send file`);
     capabilities.push(`${sendMessage ? '✔️' : '❌'} Send text message`);
@@ -401,7 +405,11 @@ const Composer = ({
 
   return (
     <WebChatAPIContext.Provider value={context}>
-      <ActivitiesComposer activities={activities} sendReadReceipt={sendReadReceipt}>
+      <ActivitiesComposer
+        activities={activities}
+        deliveryReports={deliveryReports}
+        returnReadReceipt={returnReadReceipt}
+      >
         <NotificationComposer chatAdapterNotifications={notifications}>
           <TypingComposer
             emitTypingIndicator={emitTypingIndicator}
@@ -409,6 +417,7 @@ const Composer = ({
             typingUsers={typingUsers}
           >
             <InputComposer
+              resendActivity={resendActivity}
               sendEvent={sendEvent}
               sendFiles={sendFiles}
               sendMessage={sendMessage}
@@ -510,6 +519,7 @@ Composer.defaultProps = {
   avatarRenderer: undefined,
   cardActionMiddleware: undefined,
   children: undefined,
+  deliveryReports: undefined,
   dir: 'auto',
   directLineReferenceGrammarId: undefined,
   disabled: false,
@@ -525,13 +535,14 @@ Composer.defaultProps = {
   onTelemetry: undefined,
   overrideLocalizedStrings: undefined,
   renderMarkdown: undefined,
+  resendActivity: undefined,
+  returnReadReceipt: undefined,
   selectVoice: undefined,
   sendEvent: undefined,
   sendFiles: undefined,
   sendMessage: undefined,
   sendMessageBack: undefined,
   sendPostBack: undefined,
-  sendReadReceipt: undefined,
   sendTimeout: undefined,
   sendTypingIndicator: true,
   styleOptions: {},
@@ -559,6 +570,11 @@ Composer.propTypes = {
   avatarRenderer: PropTypes.func,
   cardActionMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   children: PropTypes.any,
+  deliveryReports: PropTypes.objectOf(
+    PropTypes.shape({
+      status: PropTypes.oneOf(['error', 'sending', 'sent'])
+    })
+  ),
   dir: PropTypes.oneOf(['auto', 'ltr', 'rtl']),
   directLineReferenceGrammarId: PropTypes.string,
   disabled: PropTypes.bool,
@@ -582,13 +598,14 @@ Composer.propTypes = {
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
   renderMarkdown: PropTypes.func,
+  resendActivity: PropTypes.func,
+  returnReadReceipt: PropTypes.func,
   selectVoice: PropTypes.func,
   sendEvent: PropTypes.func,
   sendFiles: PropTypes.func,
   sendMessage: PropTypes.func,
   sendMessageBack: PropTypes.func,
   sendPostBack: PropTypes.func,
-  sendReadReceipt: PropTypes.func,
   sendTimeout: PropTypes.number,
   sendTypingIndicator: PropTypes.bool,
   styleOptions: PropTypes.any,
@@ -596,13 +613,14 @@ Composer.propTypes = {
   toastRenderer: PropTypes.func,
   typingIndicatorMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   typingIndicatorRenderer: PropTypes.func,
-  typingUsers: PropTypes.any, // TODO: Check why objectOf is not working on empty object.
-  // typingUsers: PropTypes.objectOf({
-  //   at: PropTypes.number,
-  //   name: PropTypes.string,
-  //   role: PropTypes.string,
-  //   who: PropTypes.string
-  // }),
+  typingUsers: PropTypes.objectOf(
+    PropTypes.shape({
+      at: PropTypes.number,
+      name: PropTypes.string,
+      role: PropTypes.string,
+      who: PropTypes.string
+    })
+  ),
   userId: PropTypes.string,
   username: PropTypes.string,
   webSpeechPonyfillFactory: PropTypes.func

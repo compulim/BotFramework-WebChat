@@ -6,18 +6,20 @@
   "module": "lib/esm/index.js",
   "scripts": {
     "build": "concurrently \"npm run build:babel\"",
-    "build:babel": "concurrently \"npm run build:babel:*\"",
+    "build:babel": "concurrently \"npm run build:babel:*\" \"npm run build:typecheck\"",
     "build:babel:cjs": "babel --config-file ./babel.cjs.config.json --extensions \".js,.jsx,.ts,.tsx\" --out-dir lib src",
     "build:babel:esm": "babel --config-file ./babel.esm.config.json --extensions \".js,.jsx,.ts,.tsx\" --out-dir lib/esm src",
+    "build:typecheck": "tsc --project ./src",
     "eslint": "eslint src/**/*.{js,ts}",
     "lint-staged": "lint-staged",
     "prettier": "prettier --check src/**/*.{js,ts}",
     "prestart:babel:cjs": "npm run build:babel:cjs",
     "prestart:babel:esm": "npm run build:babel:esm",
     "start": "concurrently \"npm run start:babel\"",
-    "start:babel": "concurrently \"npm run start:babel:*\"",
+    "start:babel": "concurrently \"npm run start:babel:*\" \"npm run start:typecheck\"",
     "start:babel:cjs": "npm run build:babel:cjs -- --skip-initial-build --watch",
-    "start:babel:esm": "npm run build:babel:esm -- --skip-initial-build --watch"
+    "start:babel:esm": "npm run build:babel:esm -- --skip-initial-build --watch",
+    "start:typecheck": "tsc --project ./src --watch"
   },
   "author": "Microsoft Corporation (https://microsoft.com/)",
   "license": "MIT",
@@ -26,17 +28,26 @@
     "@babel/core": "^7.13.8",
     "@babel/preset-env": "^7.13.9",
     "@babel/preset-react": "^7.12.13",
+    "@types/prop-types": "15.7.3",
+    "@types/react": "17.0.3",
+    "@typescript-eslint/eslint-plugin": "4.18.0",
+    "@typescript-eslint/parser": "4.18.0",
     "concurrently": "^6.0.0",
     "eslint": "^7.21.0",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "typescript": "4.2.3"
   },
   "dependencies": {
     "@azure/acs-ui-sdk": "file:azure-acs-ui-sdk-0.1.0.tgz",
+    "abort-controller": "3.0.0",
+    "abort-controller-es5": "1.2.0",
     "core-js": "3.9.1",
+    "math-random": "2.0.1",
     "p-defer": "3.0.0",
-    "prop-types": "15.7.2"
+    "prop-types": "15.7.2",
+    "simple-update-in": "2.2.0"
   },
   "peerDependencies": {
     "react": ">= 16.8.6"

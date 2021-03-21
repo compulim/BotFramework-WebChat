@@ -10,10 +10,9 @@ import useStyleSet from '../../hooks/useStyleSet';
 const { useStyleOptions } = hooks;
 
 const Timestamp = ({ activity, className }) => {
-  const { channelData: { 'webchat:read-at': readAt = {} } = {}, timestamp } = activity;
-  const [{ timestampFormat }] = useStyleOptions();
   const [{ timestamp: timestampStyleSet, sendStatus: sendStatusStyleSet }] = useStyleSet();
-
+  const [{ timestampFormat }] = useStyleOptions();
+  const { channelData: { 'webchat:read-by': readBy } = {}, timestamp } = activity;
   const who = fromWho(activity);
 
   timestampStyleSet &&
@@ -21,7 +20,6 @@ const Timestamp = ({ activity, className }) => {
       'botframework-webchat: "styleSet.timestamp" is deprecated. Please use "styleSet.sendStatus". This deprecation migration will be removed on or after December 31, 2021.'
     );
 
-  const hasAtLeastOneReadReceipt = Object.keys(readAt).length;
   const shouldShowReadReceipt = who === 'self';
 
   return (
@@ -36,8 +34,8 @@ const Timestamp = ({ activity, className }) => {
       >
         {timestampFormat === 'relative' ? <RelativeTime value={timestamp} /> : <AbsoluteTime value={timestamp} />}
         {/* TODO: Better icon and accessibility */}
-        {shouldShowReadReceipt && !!hasAtLeastOneReadReceipt && (
-          <span className="webchat__activity-status__read-receipt">{'✔️'}</span>
+        {shouldShowReadReceipt && readBy && (
+          <span className="webchat__activity-status__read-receipt">{readBy === 'all' ? '✔️' : '⚡'}</span>
         )}
       </span>
     )
