@@ -1,5 +1,5 @@
-import { WebChatActivity } from '../types/WebChatActivity';
+import { Activity } from '../types/Activity';
 
-export default function getActivityKey(activity: WebChatActivity): string | undefined {
+export default function getActivityKey(activity: Activity): string | undefined {
   return activity && activity.channelData['webchat:key'];
 }

@@ -5,9 +5,9 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 're
 import updateIn from 'simple-update-in';
 
 import { ACSChatMessage } from '../types/ACSChatMessage';
-import { WebChatActivity } from '../types/WebChatActivity';
-import { WebChatDeliveryStatus } from '../types/WebChatDeliveryStatus';
-import { WebChatReadBy } from '../types/WebChatReadBy';
+import { Activity } from '../types/Activity';
+import { DeliveryStatus } from '../types/DeliveryStatus';
+import { ReadBy } from '../types/ReadBy';
 
 import ActivitiesContext from '../contexts/ActivitiesContext';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
@@ -28,7 +28,7 @@ let debug;
 type DeliveryReports = {
   [trackingNumber: string]: {
     clientMessageId: string;
-    deliveryStatus: WebChatDeliveryStatus;
+    deliveryStatus: DeliveryStatus;
     message: string;
     resent?: true;
   };
@@ -167,10 +167,10 @@ const ActivitiesComposer: FC = ({ children }) => {
   const makeTuple = useCallback(
     (
       chatMessage: ACSChatMessage,
-      readBy: WebChatReadBy,
-      deliveryStatus: WebChatDeliveryStatus,
+      readBy: ReadBy,
+      deliveryStatus: DeliveryStatus,
       trackingNumber?: string
-    ): [ACSChatMessage, WebChatReadBy, WebChatDeliveryStatus, string] => [
+    ): [ACSChatMessage, ReadBy, DeliveryStatus, string] => [
       chatMessage,
       readBy,
       deliveryStatus,
@@ -184,7 +184,7 @@ const ActivitiesComposer: FC = ({ children }) => {
       chatMessages.reduce((entries, chatMessage) => {
         const { clientMessageId, createdOn } = chatMessage;
         const numReaders = readOnEntries.reduce((count, readOn) => (readOn >= +createdOn ? count + 1 : count), 0);
-        const readBy: WebChatReadBy = !numReaders ? undefined : numOtherUsers === numReaders ? 'all' : 'some';
+        const readBy: ReadBy = !numReaders ? undefined : numOtherUsers === numReaders ? 'all' : 'some';
 
         // On ACS, if the message contains "clientMessageId", it is a message sent from the current session.
         // A message could have sender same as current user, but the message could be from another session (e.g. page navigation).
@@ -213,16 +213,16 @@ const ActivitiesComposer: FC = ({ children }) => {
   // The "entries" array will be regenerated on every render loop.
   // The array will be used to construct the final Activity[] with all channel data attached.
   const entries = useMemoAll<
-    [ACSChatMessage, WebChatReadBy, WebChatDeliveryStatus, string],
-    [ACSChatMessage, WebChatReadBy, WebChatDeliveryStatus, string][]
+    [ACSChatMessage, ReadBy, DeliveryStatus, string],
+    [ACSChatMessage, ReadBy, DeliveryStatus, string][]
   >(makeTuple, buildEntries);
 
   const debugConversionsRef = useRef<
     {
-      activity: WebChatActivity;
+      activity: Activity;
       chatMessage: ACSChatMessage;
-      deliveryStatus?: WebChatDeliveryStatus;
-      readBy?: WebChatReadBy;
+      deliveryStatus?: DeliveryStatus;
+      readBy?: ReadBy;
       trackingNumber?: string;
     }[]
   >();
@@ -234,8 +234,8 @@ const ActivitiesComposer: FC = ({ children }) => {
 
     return ([chatMessage, readBy, deliveryStatus, trackingNumber]: [
       ACSChatMessage,
-      WebChatReadBy,
-      WebChatDeliveryStatus,
+      ReadBy,
+      DeliveryStatus,
       string
     ]) => {
       let activity = convert(chatMessage);
@@ -256,7 +256,7 @@ const ActivitiesComposer: FC = ({ children }) => {
     };
   }, [threadId, userId]);
 
-  const activities = useMapper<[ACSChatMessage, WebChatReadBy, WebChatDeliveryStatus, string], WebChatActivity>(
+  const activities = useMapper<[ACSChatMessage, ReadBy, DeliveryStatus, string], Activity>(
     entries,
     convertToActivities
   );

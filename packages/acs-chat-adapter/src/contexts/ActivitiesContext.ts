@@ -1,8 +1,8 @@
 import { createContext } from 'react';
 
-import { WebChatActivity } from '../types/WebChatActivity';
+import { Activity } from '../types/Activity';
 
-const context = createContext<WebChatActivity[]>(undefined);
+const context = createContext<Activity[]>(undefined);
 
 context.displayName = 'ACSChatAdapter.ActivitiesContext';
 

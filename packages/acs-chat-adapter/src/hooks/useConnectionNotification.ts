@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFetchMessages } from '@azure/acs-ui-sdk';
 import AbortController from 'abort-controller-es5';
 
-import { WebChatNotification } from '../types/WebChatNotification';
+import { Notification } from '../types/Notification';
 
 import createDebug from '../utils/debug';
 
@@ -10,10 +10,10 @@ let debug;
 
 // Currently, ACS UI SDK does not status on connectivity.
 // The easiest way is to check if messages has been fetched or not.
-export default function useConnectionNotification(): [WebChatNotification] {
+export default function useConnectionNotification(): [Notification] {
   debug || (debug = createDebug('acs:useConnectionNotification', { backgroundColor: 'yellow', color: 'black' }));
 
-  const [connectionNotification, setConnectionNotification] = useState<WebChatNotification>({
+  const [connectionNotification, setConnectionNotification] = useState<Notification>({
     id: 'connectivitystatus',
     data: 'connecting'
   });

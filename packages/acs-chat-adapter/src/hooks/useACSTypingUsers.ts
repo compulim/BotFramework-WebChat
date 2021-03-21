@@ -8,6 +8,7 @@ import useMapper from './useMapper';
 let EMPTY_ARRAY;
 let PASSTHRU_FN;
 
+// TODO: Refactor into a composer.
 export default function useACSTypingUsers(): [ACSChatThreadMember[]] {
   EMPTY_ARRAY || (EMPTY_ARRAY = []);
   PASSTHRU_FN || (PASSTHRU_FN = value => value);

@@ -21,6 +21,7 @@ let debug;
 let EMPTY_ARRAY;
 let PASSTHRU_FN;
 
+// TODO: Refactor into a composer.
 export default function useACSReadReceiptsWithFetchAndSubscribe(): [ACSReadReceipt[]] {
   debug ||
     (debug = createDebug('acs:useReadReceiptsWithFetchAndSubscribe', { backgroundColor: 'yellow', color: 'black' }));

@@ -1,5 +1,5 @@
 import { ACSChatMessage } from '../types/ACSChatMessage';
-import { WebChatActivity, WebChatEventActivity, WebChatMessageActivity } from '../types/WebChatActivity';
+import { Activity, EventActivity, MessageActivity } from '../types/Activity';
 
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
@@ -18,7 +18,7 @@ export default function createACSMessageToWebChatActivityConverter({
 }: {
   threadId: string;
   userId: string;
-}): (chatMessage: ACSChatMessage) => WebChatActivity {
+}): (chatMessage: ACSChatMessage) => Activity {
   debug ||
     (debug = createDebug('util:acsMessageToWebChatActivity', {
       backgroundColor: 'lightgray',
@@ -69,7 +69,7 @@ export default function createACSMessageToWebChatActivityConverter({
       timestamp: (createdOn ? (typeof createdOn === 'string' ? new Date(createdOn) : createdOn) : now).toISOString()
     };
 
-    const activityContent: WebChatEventActivity | WebChatMessageActivity =
+    const activityContent: EventActivity | MessageActivity =
       // For an outgoing message which is pending send, it does not have "type" field set.
       // Right now, we are assuming the outgoing message is a text message.
       type === 'Text' || (!type && who === 'self')

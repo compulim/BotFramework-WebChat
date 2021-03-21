@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { WebChatTypingUsers } from '../types/WebChatTypingUsers';
+import { TypingUsers } from '../types/TypingUsers';
 
 import createACSTypingUserToWebChatTypingEntryConverter from '../converters/createACSTypingUserToWebChatTypingEntryConverter';
 import useACSTypingUsers from './useACSTypingUsers';
@@ -8,7 +8,7 @@ import useACSUserId from './useACSUserId';
 import useDebugDeps from './useDebugDeps';
 import useMapper from './useMapper';
 
-export default function useTypingUsers(): [WebChatTypingUsers] {
+export default function useTypingUsers(): [TypingUsers] {
   const [typingUsers] = useACSTypingUsers();
   const [userId] = useACSUserId();
 

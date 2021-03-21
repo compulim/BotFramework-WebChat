@@ -3,7 +3,7 @@ import { ChatMessage } from '@azure/communication-chat';
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
 
-type WebChatBaseActivity = Expando<{
+type BaseActivity = Expando<{
   channelData: Expando<{
     'acs:chat-message': ChatMessage;
     'acs:chat-message-id': string;
@@ -29,7 +29,7 @@ type WebChatBaseActivity = Expando<{
   type: string;
 }>;
 
-type WebChatActivityFromOthers = WebChatBaseActivity & {
+type ActivityFromOthers = BaseActivity & {
   channelData: {
     'webchat:who': 'others';
   };
@@ -38,7 +38,7 @@ type WebChatActivityFromOthers = WebChatBaseActivity & {
   };
 };
 
-type WebChatActivityFromSelf = WebChatBaseActivity & {
+type ActivityFromSelf = BaseActivity & {
   channelData: {
     /** Delivery status. If the provider does not support delivery report, must set to "sent". */
     'webchat:delivery-status': 'error' | 'sending' | 'sent';
@@ -57,7 +57,7 @@ type WebChatActivityFromSelf = WebChatBaseActivity & {
   };
 };
 
-export type WebChatActivityFromService = WebChatBaseActivity & {
+export type ActivityFromService = BaseActivity & {
   channelData: {
     'webchat:who': 'service';
   };
@@ -66,25 +66,25 @@ export type WebChatActivityFromService = WebChatBaseActivity & {
   };
 };
 
-export type WebChatEventActivity = {
+export type EventActivity = {
   name?: string;
   type: 'event';
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   value?: any;
 };
 
-export type WebChatMessageActivity = {
+export type MessageActivity = {
   text?: string;
   textFormat: 'markdown' | 'plain' | 'xml';
   type: 'message';
 };
 
-export type WebChatActivity =
+export type Activity =
   // Supported activity type from others: event, message
-  | (WebChatActivityFromOthers & (WebChatEventActivity | WebChatMessageActivity))
+  | (ActivityFromOthers & (EventActivity | MessageActivity))
 
   // Supported activity type from self: event, message
-  | (WebChatActivityFromSelf & (WebChatEventActivity | WebChatMessageActivity))
+  | (ActivityFromSelf & (EventActivity | MessageActivity))
 
   // Supported activity type from service: event
-  | (WebChatActivityFromService & WebChatEventActivity);
+  | (ActivityFromService & EventActivity);

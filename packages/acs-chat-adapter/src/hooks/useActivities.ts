@@ -1,8 +1,8 @@
 import { useContext } from 'react';
 
-import { WebChatActivity } from '../types/WebChatActivity';
+import { Activity } from '../types/Activity';
 import ActivitiesContext from '../contexts/ActivitiesContext';
 
-export default function useActivities2(): [WebChatActivity[]] {
+export default function useActivities(): [Activity[]] {
   return [useContext(ActivitiesContext)];
 }

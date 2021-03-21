@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { WebChatActivity } from '../types/WebChatActivity';
+import { Activity } from '../types/Activity';
 
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
@@ -9,13 +9,13 @@ import warn from '../utils/warn';
 
 let debug;
 
-export default function useReturnReadReceipt(): (activity: WebChatActivity) => void {
+export default function useReturnReadReceipt(): (activity: Activity) => void {
   debug || (debug = createDebug('acs:useReturnReadReceipt'));
 
   const acsSendReadReceipt = useACSSendReadReceipt();
 
   return useCallback(
-    (activity: WebChatActivity): void => {
+    (activity: Activity): void => {
       const { channelData: { 'acs:chat-message': acsChatMessage, 'webchat:who': who } = {} } = activity;
 
       if (!acsChatMessage) {
