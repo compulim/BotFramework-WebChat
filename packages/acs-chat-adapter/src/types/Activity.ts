@@ -3,7 +3,7 @@ import { ChatMessage } from '@azure/communication-chat';
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
 
-type BaseActivity = Expando<{
+type BaseActivity = {
   channelData: Expando<{
     'acs:chat-message': ChatMessage;
     'acs:chat-message-id': string;
@@ -22,19 +22,19 @@ type BaseActivity = Expando<{
   from: {
     id: string;
     name?: string;
-    role?: 'bot' | 'channel' | 'user';
+    role: 'bot' | 'channel' | 'user';
   };
   id: string;
   timestamp: string;
   type: string;
-}>;
+};
 
 type ActivityFromOthers = BaseActivity & {
   channelData: {
     'webchat:who': 'others';
   };
   from: {
-    role?: 'bot';
+    role: 'bot';
   };
 };
 
@@ -53,7 +53,7 @@ type ActivityFromSelf = BaseActivity & {
     'webchat:who': 'self';
   };
   from: {
-    role?: 'user';
+    role: 'user';
   };
 };
 
@@ -62,7 +62,7 @@ export type ActivityFromService = BaseActivity & {
     'webchat:who': 'service';
   };
   from: {
-    role?: 'channel';
+    role: 'channel';
   };
 };
 
