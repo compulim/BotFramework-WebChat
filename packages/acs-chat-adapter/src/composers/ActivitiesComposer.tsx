@@ -18,6 +18,7 @@ import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSReadReceiptsWithFetchAndSubscribe from '../hooks/useACSReadReceiptsWithFetchAndSubscribe';
 import useACSSendMessageWithStatus from '../hooks/useACSSendMessageWithStatus';
 import useACSThreadId from '../hooks/useACSThreadId';
+import useACSThreadMembers from '../hooks/useACSThreadMembers';
 import useACSUserId from '../hooks/useACSUserId';
 import useMapper from '../hooks/useMapper';
 import useMemoAll from '../hooks/useMemoAll';
@@ -42,10 +43,14 @@ const ActivitiesComposer: FC = ({ children }) => {
 
   const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
   const [chatMessages] = useACSChatMessages();
+  const [memberUserIds] = useACSThreadMembers();
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
 
-  // TODO: Merge with delivery report and add to `channelData['webchat:tracking-number']`.
+  const numOtherUsers = useMemo(
+    () => memberUserIds.filter(threadMember => threadMember.user.communicationUserId !== userId).length,
+    [memberUserIds]
+  );
 
   const readOnEntries = useMemo<number[]>(
     () =>
@@ -126,8 +131,8 @@ const ActivitiesComposer: FC = ({ children }) => {
           return;
         }
 
-        setDeliveryReports(deliveryReports =>
-          updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'sent')
+        setDeliveryReports(
+          deliveryReports => updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'sent')
           // TODO: When testing retry, use the line below to inject error artificially.
           // updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'error')
         );
@@ -175,14 +180,11 @@ const ActivitiesComposer: FC = ({ children }) => {
   );
 
   const buildEntries = useCallback(
-    tuple => {
-      // Instead of "numTotalReaders", use "numThreadMembers".
-      const numTotalReaders = readOnEntries.length;
-
-      return chatMessages.reduce((entries, chatMessage) => {
+    tuple =>
+      chatMessages.reduce((entries, chatMessage) => {
         const { clientMessageId, createdOn } = chatMessage;
         const numReaders = readOnEntries.reduce((count, readOn) => (readOn >= +createdOn ? count + 1 : count), 0);
-        const readBy: WebChatReadBy = !numReaders ? undefined : numTotalReaders === numReaders ? 'all' : 'some';
+        const readBy: WebChatReadBy = !numReaders ? undefined : numOtherUsers === numReaders ? 'all' : 'some';
 
         // On ACS, if the message contains "clientMessageId", it is a message sent from the current session.
         // A message could have sender same as current user, but the message could be from another session (e.g. page navigation).
@@ -204,8 +206,7 @@ const ActivitiesComposer: FC = ({ children }) => {
         resent || entries.push(tuple(chatMessage, readBy, deliveryStatus, trackingNumber));
 
         return entries;
-      }, []);
-    },
+      }, []),
     [chatMessages, deliveryReports, readOnEntries]
   );
 

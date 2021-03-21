@@ -1,11 +1,12 @@
 import { ChatProvider } from '@azure/acs-ui-sdk';
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 
 import { ChatAdapter } from './types/ChatAdapter';
 
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
+import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
 import resolveFunction from './utils/resolveFunction';
@@ -116,9 +117,11 @@ const ACSChatAdapter: FC<{
       {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
       {/* <ChatThreadProvider> */}
       <ACSChatMessagesComposer>
-        <ActivitiesComposer>
-          <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
-        </ActivitiesComposer>
+        <ACSThreadMembersComposer>
+          <ActivitiesComposer>
+            <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
+          </ActivitiesComposer>
+        </ACSThreadMembersComposer>
       </ACSChatMessagesComposer>
       {/* </ChatThreadProvider> */}
     </ChatProvider>
