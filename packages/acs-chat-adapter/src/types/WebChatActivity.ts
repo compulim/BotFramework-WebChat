@@ -1,17 +1,21 @@
 import { ChatMessage } from '@azure/communication-chat';
 
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
 
 type WebChatBaseActivity = Expando<{
   channelData: Expando<{
     'acs:chat-message': ChatMessage;
     'acs:chat-message-id': string;
+
+    /** Client message ID of an outgoing activity. This ID is local and may not be delivered to the chat provider. */
     'acs:client-message-id'?: string;
     'acs:converted-at': string;
+
+    /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
-    /** This message was sent from who. */
+    /** Who the activity is send by. */
     'webchat:who': 'others' | 'self' | 'service';
   }>;
   conversationId?: string;
