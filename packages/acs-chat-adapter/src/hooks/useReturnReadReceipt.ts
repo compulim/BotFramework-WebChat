@@ -1,38 +1,59 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { Activity } from '../types/Activity';
 
 import createDebug from '../utils/debug';
+import fromWho from '../utils/fromWho';
+import getActivityKey from '../utils/getActivityKey';
 import styleConsole from '../utils/styleConsole';
 import useACSSendReadReceipt from './useACSSendReadReceipt';
+import useActivities from './useActivities';
 import warn from '../utils/warn';
 
 let debug;
 
-export default function useReturnReadReceipt(): (activity: Activity) => void {
+export default function useReturnReadReceipt(): (activityKey: string) => void {
   debug || (debug = createDebug('acs:useReturnReadReceipt'));
 
+  const [activities] = useActivities();
   const acsSendReadReceipt = useACSSendReadReceipt();
 
+  // Perf: decouple for callbacks
+
+  const activitiesForCallbacksRef = useRef<Activity[]>();
+
+  activitiesForCallbacksRef.current = activities;
+
   return useCallback(
-    (activity: Activity): void => {
-      const { channelData: { 'acs:chat-message': acsChatMessage, 'webchat:who': who } = {} } = activity;
+    (activityKey: string): void => {
+      const { current: activities } = activitiesForCallbacksRef;
 
-      if (!acsChatMessage) {
-        debug(['Cannot return read receipt for non-ACS message.'], [{ acsChatMessage, who }]);
+      const activity = activities.find(activity => getActivityKey(activity) === activityKey);
 
-        warn('Cannot return read receipt for non-ACS message.');
-      } else if (!acsChatMessage.id) {
-        warn('Cannot return read receipt for an outgoing message.', [{ acsChatMessage, who }]);
-      } else if (who !== 'others') {
-        warn('Cannot return read receipt for a message from "channel" or "self".', [{ acsChatMessage, who }]);
-      } else {
-        const { id: acsChatMessageId } = acsChatMessage;
+      if (!activity) {
+        warn(`Cannot find activity with key "${activityKey}".`);
+      }
+
+      const who = fromWho(activity);
+
+      if (who !== 'others') {
+        return warn('Cannot return read receipt for a message from "channel" or "self".', [{ who }]);
+      }
+
+      const { channelData: { 'acs:chat-message-id': acsChatMessageId } = {} } = activity;
+
+      if (!acsChatMessageId) {
+        debug(['Cannot return read receipt for non-ACS message.'], [{ activity }]);
+
+        return warn('Cannot return read receipt for non-ACS message.');
+      }
+
+      // We ignore if the read receipt is successfully sent or not (in an async fashion).
+      /* eslint-disable-next-line wrap-iife */
+      (async function () {
         const now = Date.now();
 
-        // We ignore if the read receipt is successfully sent or not (in an async fashion).
-        /* eslint-disable-next-line require-await */
-        acsSendReadReceipt(acsChatMessageId);
+        await acsSendReadReceipt(acsChatMessageId);
 
         debug(
           [
@@ -40,10 +61,10 @@ export default function useReturnReadReceipt(): (activity: Activity) => void {
             ...styleConsole('purple'),
             ...styleConsole('green')
           ],
-          [{ acsChatMessage, acsChatMessageId, activity }]
+          [{ acsChatMessageId, activity }]
         );
-      }
+      })();
     },
-    [acsSendReadReceipt]
+    [acsSendReadReceipt, activitiesForCallbacksRef]
   );
 }

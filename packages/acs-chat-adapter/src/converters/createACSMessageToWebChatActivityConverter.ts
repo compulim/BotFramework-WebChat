@@ -54,10 +54,10 @@ export default function createACSMessageToWebChatActivityConverter({
 
     const activityMetadata = {
       channelData: {
-        'acs:chat-message': acsChatMessage,
         'acs:chat-message-id': acsChatMessage.id,
-        'acs:client-message-id': clientMessageId,
-        'acs:converted-at': now.toISOString(),
+        'acs:debug:chat-message': acsChatMessage,
+        'acs:debug:client-message-id': clientMessageId,
+        'acs:debug:converted-at': now.toISOString(),
         'webchat:key': clientMessageId || id
       },
       conversationId: threadId,

@@ -21,7 +21,7 @@ export type ChatAdapter = {
    * If multiple activities arrives in a batch, this function will call with the last activity in this batch.
    * It is up to the chat adapter to decide how many read receipts should send to the chat service.
    */
-  returnReadReceipt?: (activity: Activity) => void;
+  returnReadReceipt?: (activityKey: string) => void;
 
   /**
    * Sends a message.

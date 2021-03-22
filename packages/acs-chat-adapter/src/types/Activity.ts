@@ -1,4 +1,8 @@
 import { ChatMessage } from '@azure/communication-chat';
+import { DeliveryStatus } from './DeliveryStatus';
+import { ReadBy } from './ReadBy';
+import { TextFormat } from './TextFormat';
+import { Who } from './Who';
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
@@ -9,18 +13,19 @@ type BaseActivity = {
   //       IMO, since we are not returning RR for a specific message (a.k.a. we don't care what the message that RR is referring to, we just care about time)
   //       We may not need this one. Every time a RR is sent, just grab the last others' message ID and send it out.
   channelData: Expando<{
-    'acs:chat-message': ChatMessage;
     'acs:chat-message-id': string;
 
+    'acs:debug:chat-message': ChatMessage;
+
     /** Client message ID of an outgoing activity. This ID is local and may not be delivered to the chat provider. */
-    'acs:client-message-id'?: string;
-    'acs:converted-at': string;
+    'acs:debug:client-message-id'?: string;
+    'acs:debug:converted-at': string;
 
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
     /** Who the activity is send by. */
-    'webchat:who': 'others' | 'self' | 'service';
+    'webchat:who': Who;
   }>;
   conversationId?: string;
   from: {
@@ -45,10 +50,10 @@ type ActivityFromOthers = BaseActivity & {
 type ActivityFromSelf = BaseActivity & {
   channelData: {
     /** Delivery status. If the provider does not support delivery report, must set to "sent". */
-    'webchat:delivery-status': 'error' | 'sending' | 'sent';
+    'webchat:delivery-status': DeliveryStatus;
 
     /** Read by who. If undefined, it is not read by anyone, or the provider does not support read receipts. */
-    'webchat:read-by'?: 'some' | 'all';
+    'webchat:read-by'?: ReadBy;
 
     /** Tracking number. If undefined, the activity was sent from another session. */
     'webchat:tracking-number'?: string;
@@ -79,7 +84,7 @@ export type EventActivity = {
 
 export type MessageActivity = {
   text?: string;
-  textFormat: 'markdown' | 'plain' | 'xml';
+  textFormat: TextFormat;
   type: 'message';
 };
 

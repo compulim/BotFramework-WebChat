@@ -69,7 +69,7 @@ const ActivitiesComposer = ({ activities, children, returnReadReceipt }) => {
         const activityKey = getActivityKey(activity);
 
         if (lastReadActivityKeyRef.current !== activityKey) {
-          returnReadReceipt(activity);
+          returnReadReceipt(activityKey);
           lastReadActivityKeyRef.current = activityKey;
         }
 
