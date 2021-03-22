@@ -4,6 +4,10 @@ import { ChatMessage } from '@azure/communication-chat';
 type Expando<T> = Omit<any, keyof T> & T;
 
 type BaseActivity = {
+  // TODO: Clean up the channel data, so only small and important information stay here.
+  //       Today, "acs:chat-message" is used for returning RR (getting the "chatMessage.id" out).
+  //       IMO, since we are not returning RR for a specific message (a.k.a. we don't care what the message that RR is referring to, we just care about time)
+  //       We may not need this one. Every time a RR is sent, just grab the last others' message ID and send it out.
   channelData: Expando<{
     'acs:chat-message': ChatMessage;
     'acs:chat-message-id': string;

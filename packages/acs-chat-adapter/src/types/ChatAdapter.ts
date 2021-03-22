@@ -6,7 +6,7 @@ export type ChatAdapter = {
   /** List of activities. This list may include local outgoing activities that is not completely delivered to the chat provider. */
   activities?: Activity[];
 
-  /** Sends a typing indicator. */
+  /** Emits a typing indicator with best effort. */
   emitTypingIndicator?: () => void;
 
   /** List of notifications, including connectivity status. */
@@ -15,7 +15,12 @@ export type ChatAdapter = {
   /** Resends an activity by its tracking number. */
   resend?: (trackingNumber: string) => string;
 
-  /** Returns a read receipt for an activity. */
+  /**
+   * Returns a read receipt for an activity.
+   *
+   * If multiple activities arrives in a batch, this function will call with the last activity in this batch.
+   * It is up to the chat adapter to decide how many read receipts should send to the chat service.
+   */
   returnReadReceipt?: (activity: Activity) => void;
 
   /**
