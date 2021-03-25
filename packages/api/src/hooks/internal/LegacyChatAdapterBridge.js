@@ -34,23 +34,30 @@ function usePatchActivities(directLineActivities, styleOptions) {
     directLineActivities,
     styleOptions,
     useCallback((directLineActivity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
-      const { channelData: { clientActivityID } = {} } = directLineActivity;
+      const {
+        channelData: { clientActivityID } = {},
+        from: { id, name, role }
+      } = directLineActivity;
       const { who } = getMetadata(directLineActivity);
+
+      const displayName = role === 'bot' ? (id === name ? '__BOT__' : name) : name;
       const self = who === 'self';
 
       return [
         directLineActivity,
         self ? userAvatarImage : botAvatarImage,
         self ? userAvatarInitials : botAvatarInitials,
+        displayName,
         clientActivityID || directLineActivity.id,
         who
       ];
     }, []),
     useCallback(
-      ([directLineActivity, avatarImage, avatarInitials, key, who]) =>
+      ([directLineActivity, avatarImage, avatarInitials, displayName, key, who]) =>
         chainUpdateIn(directLineActivity, [
           [['channelData', 'webchat:avatar:image'], () => avatarImage],
           [['channelData', 'webchat:avatar:initials'], () => avatarInitials],
+          [['channelData', 'webchat:display-name'], () => displayName],
           [['channelData', 'webchat:key'], () => key],
           [['channelData', 'webchat:who'], () => who]
         ]),
@@ -218,16 +225,27 @@ InternalLegacyChatAdapterBridge.defaultProps = {
 InternalLegacyChatAdapterBridge.propTypes = {
   children: PropTypes.func,
   directLine: PropTypes.any.isRequired,
+  styleOptions: PropTypes.shape({
+    botAvatarImage: PropTypes.string,
+    botAvatarInitials: PropTypes.string,
+    userAvatarImage: PropTypes.string,
+    userAvatarInitials: PropTypes.string
+  }).isRequired,
   userId: PropTypes.string,
   username: PropTypes.string
 };
 
-const LegacyChatAdapterBridge = ({ children, directLine, store, userId, username }) => {
+const LegacyChatAdapterBridge = ({ children, directLine, store, styleOptions, userId, username }) => {
   const memoizedStore = useMemo(() => store || createStore(), [store]);
 
   return (
     <Provider context={WebChatReduxContext} store={memoizedStore}>
-      <InternalLegacyChatAdapterBridge directLine={directLine} userId={userId} username={username}>
+      <InternalLegacyChatAdapterBridge
+        directLine={directLine}
+        styleOptions={styleOptions}
+        userId={userId}
+        username={username}
+      >
         {children}
       </InternalLegacyChatAdapterBridge>
     </Provider>
@@ -237,6 +255,8 @@ const LegacyChatAdapterBridge = ({ children, directLine, store, userId, username
 LegacyChatAdapterBridge.defaultProps = {
   children: undefined,
   store: undefined,
+  // TODO: If this is a patched style options, it will never undefined, we can put isRequired here.
+  styleOptions: {},
   userId: undefined,
   username: undefined
 };
@@ -245,12 +265,13 @@ LegacyChatAdapterBridge.propTypes = {
   children: PropTypes.func,
   directLine: PropTypes.any.isRequired,
   store: PropTypes.any,
+  // TODO: If this is a patched style options, it will never undefined, we can put isRequired here.
   styleOptions: PropTypes.shape({
     botAvatarImage: PropTypes.string,
     botAvatarInitials: PropTypes.string,
     userAvatarImage: PropTypes.string,
     userAvatarInitials: PropTypes.string
-  }).isRequired,
+  }),
   userId: PropTypes.string,
   username: PropTypes.string
 };

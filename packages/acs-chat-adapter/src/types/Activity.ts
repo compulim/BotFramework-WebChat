@@ -21,20 +21,26 @@ type BaseActivity = {
     'acs:debug:client-message-id'?: string;
     'acs:debug:converted-at': string;
 
+    /** Avatar initials of the sender. */
     'webchat:avatar:initials'?: string;
+
+    /** Avatar image of the sender. */
     'webchat:avatar:image'?: string;
+
+    /** Display name of the sender. Set to "__BOT__" if the sender is an unnamed bot. */
+    'webchat:display-name'?: string | '__BOT__';
 
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
     /** Who the activity is send by. */
     'webchat:who': Who;
-
-    // TODO: Should we have a field to indicate whether the sender is a human or not? It might help localization.
   }>;
   conversationId?: string;
   from: {
     id: string;
+
+    /** This is the full name of the user. For bots, if this is same as `id`, assume it do not have a name. */
     name?: string;
     role: 'bot' | 'channel' | 'user';
   };

@@ -126,37 +126,39 @@ const CarouselFilmStrip = ({
   const [{ bubbleNubOffset, bubbleNubSize, bubbleFromUserNubOffset, bubbleFromUserNubSize }] = useStyleOptions();
   const [{ carouselFilmStrip: carouselFilmStripStyleSet }] = useStyleSet();
   const [direction] = useDirection();
-  const { avatarInitials, who } = getMetadata(activity);
-  const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
-  const ariaLabelId = useUniqueId('webchat__carousel-filmstrip__id');
-  const localize = useLocalizer();
-  const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
-  const showActivityStatus = typeof renderActivityStatus === 'function';
-
-  const itemContainerCallbackRef = useItemContainerCallbackRef();
-  const scrollableCallbackRef = useScrollableCallbackRef();
-  const self = who === 'self';
-
   const {
     attachments = [],
     channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
     text,
     textFormat
   } = activity;
+  const { displayName, who } = getMetadata(activity);
+  const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
+  const ariaLabelId = useUniqueId('webchat__carousel-filmstrip__id');
+  const itemContainerCallbackRef = useItemContainerCallbackRef();
+  const localize = useLocalizer();
+  const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
+  const scrollableCallbackRef = useScrollableCallbackRef();
+  const showActivityStatus = typeof renderActivityStatus === 'function';
 
   const activityDisplayText = messageBackDisplayText || text;
-  // TODO: Update localization strings
-  const attachedAlt = localize(self ? 'ACTIVITY_YOU_ATTACHED_ALT' : 'ACTIVITY_BOT_ATTACHED_ALT');
-  const greetingAlt = (self
-    ? localize('ACTIVITY_YOU_SAID_ALT')
-    : localize('ACTIVITY_BOT_SAID_ALT', avatarInitials || '')
-  ).replace(/\s{2,}/gu, ' ');
+  const fallbackDisplayNameForBot = localize('FALLBACK_DISPLAY_NAME_FOR_BOTS');
+  const fallbackDisplayNameForUsers = localize('FALLBACK_DISPLAY_NAME_FOR_USERS');
+  const self = who === 'self';
 
-  const hasAvatarOnSameSide = who === 'self' ? hasSelfAvatar : hasOthersAvatar;
+  const hasAvatarOnSameSide = self ? hasSelfAvatar : hasOthersAvatar;
   const nubOffset = self ? bubbleFromUserNubOffset : bubbleNubOffset;
   const nubSize = self ? bubbleFromUserNubSize : bubbleNubSize;
   const nubSizeOnOtherSide = self ? bubbleNubSize : bubbleFromUserNubSize;
+  const patchedDisplayName =
+    displayName === '__BOT__' ? fallbackDisplayNameForBot : displayName || fallbackDisplayNameForUsers;
 
+  const attachedAlt = self
+    ? localize('ACTIVITY_YOU_ATTACHED_ALT')
+    : localize('ACTIVITY_OTHERS_ATTACHED_ALT', patchedDisplayName);
+  const greetingAlt = self
+    ? localize('ACTIVITY_YOU_SAID_ALT')
+    : localize('ACTIVITY_OTHERS_SAID_ALT', patchedDisplayName);
   const hasNub = typeof nubSize === 'number';
   const hasNubOnOtherSide = typeof nubSizeOnOtherSide === 'number';
   const showAvatar = showCallout && hasAvatarOnSameSide && !!renderAvatar;

@@ -36,37 +36,37 @@ const ACTIVITY_NUM_ATTACHMENTS_ALT_IDS = {
 // That means, it will only render "2 attachments", instead of "image attachment".
 // This is used in the visual transcript, where we render "Press ENTER to interact."
 const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => {
-  const { avatarInitials } = getMetadata(activity);
+  const { displayName, who } = getMetadata(activity);
+  const {
+    attachments = [],
+    channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
+    text,
+    textFormat,
+    timestamp
+  } = activity;
   const createAttachmentForScreenReaderRenderer = useCreateAttachmentForScreenReaderRenderer();
   const formatDate = useDateFormatter();
   const localize = useLocalizer();
   const localizeWithPlural = useLocalizer({ plural: true });
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
 
-  const {
-    attachments = [],
-    channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-    from: { role } = {},
-    text,
-    textFormat,
-    timestamp
-  } = activity;
-
-  const fromUser = role === 'user';
-  const contentTypeMarkdown = textFormatToContentType(textFormat) === 'text/markdown';
-  const displayText = messageBackDisplayText || text;
-
   const attachmentForScreenReaderRenderers = renderAttachments
     ? attachments
         .map(attachment => createAttachmentForScreenReaderRenderer({ activity, attachment }))
         .filter(render => render)
     : [];
+  const contentTypeMarkdown = textFormatToContentType(textFormat) === 'text/markdown';
+  const displayText = messageBackDisplayText || text;
+  const fallbackDisplayNameForBot = localize('FALLBACK_DISPLAY_NAME_FOR_BOTS');
+  const fallbackDisplayNameForUsers = localize('FALLBACK_DISPLAY_NAME_FOR_USERS');
+  const self = who === 'self';
 
-  // TODO: Update localization strings.
-  const greetingAlt = (fromUser
+  const greetingAlt = self
     ? localize('ACTIVITY_YOU_SAID_ALT')
-    : localize('ACTIVITY_BOT_SAID_ALT', avatarInitials || '')
-  ).replace(/\s{2,}/gu, ' ');
+    : localize(
+        'ACTIVITY_OTHERS_SAID_ALT',
+        displayName === '__BOT__' ? fallbackDisplayNameForBot : displayName || fallbackDisplayNameForUsers
+      );
   const numGenericAttachments = attachments.length - attachmentForScreenReaderRenderers.length;
 
   const numAttachmentsAlt =

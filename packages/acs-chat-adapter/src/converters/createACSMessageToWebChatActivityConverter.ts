@@ -58,6 +58,7 @@ export default function createACSMessageToWebChatActivityConverter({
         'acs:debug:chat-message': acsChatMessage,
         'acs:debug:client-message-id': clientMessageId,
         'acs:debug:converted-at': now.toISOString(),
+        'webchat:display-name': senderDisplayName,
         'webchat:key': clientMessageId || id
       },
       conversationId: threadId,

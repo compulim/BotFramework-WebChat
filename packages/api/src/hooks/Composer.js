@@ -463,6 +463,7 @@ const ComposeWithStore = ({ store, userID, username, ...props }) => {
         <LegacyChatAdapterBridge
           directLine={directLine}
           store={store}
+          // TODO: Need a patched styleOptions.
           styleOptions={styleOptions}
           userId={userID}
           username={username}
@@ -481,6 +482,7 @@ ComposeWithStore.defaultProps = {
   internalRenderErrorBox: undefined,
   onTelemetry: undefined,
   store: undefined,
+  styleOptions: undefined,
   userID: undefined,
   username: undefined
 };
@@ -506,7 +508,7 @@ ComposeWithStore.propTypes = {
     botAvatarInitials: PropTypes.string,
     userAvatarImage: PropTypes.string,
     userAvatarInitials: PropTypes.string
-  }).isRequired,
+  }),
   userID: PropTypes.string,
   username: PropTypes.string
 };
