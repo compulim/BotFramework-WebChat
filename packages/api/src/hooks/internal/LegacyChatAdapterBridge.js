@@ -69,32 +69,14 @@ function usePatchActivities(directLineActivities, styleOptions) {
 const InternalLegacyChatAdapterBridge = ({
   children,
   directLine,
-  // TODO: Move "sendTimeout" to chat adapter.
-  // sendTimeout,
   styleOptions,
   userId: userIdFromProps,
   username: usernameFromProps
 }) => {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(
-      createConnectAction({
-        directLine,
-        userID: userIdFromProps,
-        username: usernameFromProps
-      })
-    );
-
-    return () => {
-      // TODO: [P3] disconnect() is an async call (pending -> fulfilled), we need to wait, or change it to reconnect()
-      dispatch(createDisconnectAction());
-    };
-  }, [dispatch, directLine, userIdFromProps, usernameFromProps]);
-
   const { id: userId, name: username } = useSelector(({ user }) => user);
   const activities = useSelector(({ activities }) => activities);
   const directLineReferenceGrammarId = useSelector(({ referenceGrammarId }) => referenceGrammarId);
+  const dispatch = useDispatch();
   const notifications = useSelector(({ notifications }) => notifications);
   const typingUsers = useSelector(({ typing }) => typing);
 
@@ -111,12 +93,16 @@ const InternalLegacyChatAdapterBridge = ({
 
   const postActivity = useCallback(
     activity => {
+      // Use the sendTimeout
+      // const { sendTimeout } = styleOptions;
+
       // TODO: Convert to async function
       //       POST_ACTIVITY_REJECTED = reject
       //       POST_ACTIVITY_FULFILLED = resolve
       // TODO: We should be diligent on what channelData to send, should we strip out "webchat:*"?
       dispatch(createPostActivityAction(activity));
     },
+    // [dispatch, styleOptions.sendTimeout]
     [dispatch]
   );
 
@@ -194,6 +180,21 @@ const InternalLegacyChatAdapterBridge = ({
       }),
     [postActivity]
   );
+
+  useEffect(() => {
+    dispatch(
+      createConnectAction({
+        directLine,
+        userID: userIdFromProps,
+        username: usernameFromProps
+      })
+    );
+
+    return () => {
+      // TODO: [P3] disconnect() is an async call (pending -> fulfilled), we need to wait, or change it to reconnect()
+      dispatch(createDisconnectAction());
+    };
+  }, [dispatch, directLine, userIdFromProps, usernameFromProps]);
 
   return (
     children &&

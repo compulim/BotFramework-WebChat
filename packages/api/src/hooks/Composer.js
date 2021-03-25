@@ -83,7 +83,6 @@ const Composer = ({
   getDirectLineOAuthCodeChallenge,
   grammars,
   groupActivitiesMiddleware,
-  groupTimestamp,
   internalErrorBoxClass,
   locale,
   notifications,
@@ -98,7 +97,6 @@ const Composer = ({
   sendMessage,
   sendMessageBack,
   sendPostBack,
-  sendTimeout,
   sendTypingIndicator,
   styleOptions,
   toastMiddleware,
@@ -152,11 +150,6 @@ const Composer = ({
 
   const patchedDir = useMemo(() => (dir === 'ltr' || dir === 'rtl' ? dir : 'auto'), [dir]);
   const patchedGrammars = useMemo(() => grammars || [], [grammars]);
-  const patchedStyleOptions = useMemo(() => patchStyleOptions(styleOptions, { groupTimestamp, sendTimeout }), [
-    groupTimestamp,
-    sendTimeout,
-    styleOptions
-  ]);
 
   const patchedSelectVoice = useMemo(() => selectVoice || defaultSelectVoice.bind(null, { language: locale }), [
     locale,
@@ -167,9 +160,9 @@ const Composer = ({
     () =>
       createGroupActivitiesContext({
         groupActivitiesMiddleware,
-        groupTimestamp: patchedStyleOptions.groupTimestamp
+        groupTimestamp: styleOptions.groupTimestamp
       }),
-    [groupActivitiesMiddleware, patchedStyleOptions.groupTimestamp]
+    [groupActivitiesMiddleware, styleOptions.groupTimestamp]
   );
 
   const patchedLocalizedStrings = useMemo(
@@ -364,7 +357,7 @@ const Composer = ({
       renderMarkdown,
       selectVoice: patchedSelectVoice,
       sendTypingIndicator,
-      styleOptions: patchedStyleOptions,
+      styleOptions,
       telemetryDimensionsRef,
       toastRenderer: patchedToastRenderer,
       trackDimension,
@@ -389,11 +382,11 @@ const Composer = ({
       patchedGrammars,
       patchedLocalizedStrings,
       patchedSelectVoice,
-      patchedStyleOptions,
       patchedToastRenderer,
       patchedTypingIndicatorRenderer,
       renderMarkdown,
       sendTypingIndicator,
+      styleOptions,
       telemetryDimensionsRef,
       trackDimension,
       userId,
@@ -439,9 +432,9 @@ const Composer = ({
 };
 
 // We will create a Redux store if it was not passed in
-const ComposeWithStore = ({ store, userID, username, ...props }) => {
+const ComposeWithStore = ({ groupTimestamp, sendTimeout, store, styleOptions, userID, username, ...props }) => {
   // TODO: We should eventually not needing these props in Web Chat, but only in chat adapter.
-  const { directLine, internalRenderErrorBox, onTelemetry, styleOptions } = props;
+  const { directLine, internalRenderErrorBox, onTelemetry } = props;
 
   const [error, setError] = useState();
 
@@ -455,6 +448,14 @@ const ComposeWithStore = ({ store, userID, username, ...props }) => {
     [onTelemetry, setError]
   );
 
+  // TODO: Should we move more props patch here?
+
+  const patchedStyleOptions = useMemo(() => patchStyleOptions(styleOptions, { groupTimestamp, sendTimeout }), [
+    groupTimestamp,
+    sendTimeout,
+    styleOptions
+  ]);
+
   return error ? (
     !!internalRenderErrorBox && internalRenderErrorBox({ error, type: 'uncaught exception' })
   ) : (
@@ -463,15 +464,14 @@ const ComposeWithStore = ({ store, userID, username, ...props }) => {
         <LegacyChatAdapterBridge
           directLine={directLine}
           store={store}
-          // TODO: Need a patched styleOptions.
-          styleOptions={styleOptions}
+          styleOptions={patchedStyleOptions}
           userId={userID}
           username={username}
         >
-          {chatAdapterProps => <Composer {...chatAdapterProps} {...props} />}
+          {chatAdapterProps => <Composer {...chatAdapterProps} {...props} styleOptions={patchedStyleOptions} />}
         </LegacyChatAdapterBridge>
       ) : (
-        <Composer {...props} />
+        <Composer {...props} styleOptions={patchedStyleOptions} />
       )}
     </ErrorBoundary>
   );
@@ -479,8 +479,10 @@ const ComposeWithStore = ({ store, userID, username, ...props }) => {
 
 ComposeWithStore.defaultProps = {
   directLine: undefined,
+  groupTimestamp: undefined,
   internalRenderErrorBox: undefined,
   onTelemetry: undefined,
+  sendTimeout: undefined,
   store: undefined,
   styleOptions: undefined,
   userID: undefined,
@@ -500,8 +502,10 @@ ComposeWithStore.propTypes = {
     referenceGrammarID: PropTypes.string,
     token: PropTypes.string
   }),
+  groupTimestamp: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
   internalRenderErrorBox: PropTypes.any,
   onTelemetry: PropTypes.func,
+  sendTimeout: PropTypes.number,
   store: PropTypes.any,
   styleOptions: PropTypes.shape({
     botAvatarImage: PropTypes.string,
@@ -535,7 +539,6 @@ Composer.defaultProps = {
   getDirectLineOAuthCodeChallenge: undefined,
   grammars: [],
   groupActivitiesMiddleware: undefined,
-  groupTimestamp: undefined,
   internalErrorBoxClass: undefined,
   locale: window.navigator.language || 'en-US',
   notifications: undefined,
@@ -550,7 +553,6 @@ Composer.defaultProps = {
   sendMessage: undefined,
   sendMessageBack: undefined,
   sendPostBack: undefined,
-  sendTimeout: undefined,
   sendTypingIndicator: true,
   styleOptions: {},
   toastMiddleware: undefined,
@@ -585,7 +587,6 @@ Composer.propTypes = {
   getDirectLineOAuthCodeChallenge: PropTypes.func,
   grammars: PropTypes.arrayOf(PropTypes.string),
   groupActivitiesMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
-  groupTimestamp: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
   internalErrorBoxClass: PropTypes.func, // This is for internal use only. We don't allow customization of error box.
   locale: PropTypes.string,
   notifications: PropTypes.arrayOf(
@@ -608,7 +609,6 @@ Composer.propTypes = {
   sendMessage: PropTypes.func,
   sendMessageBack: PropTypes.func,
   sendPostBack: PropTypes.func,
-  sendTimeout: PropTypes.number,
   sendTypingIndicator: PropTypes.bool,
   styleOptions: PropTypes.any,
   toastMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
