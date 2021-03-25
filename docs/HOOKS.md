@@ -56,8 +56,8 @@ Following is the list of hooks supported by Web Chat API.
 -  [`useAdaptiveCardsHostConfig`](#useadaptivecardshostconfig)
 -  [`useAdaptiveCardsPackage`](#useadaptivecardspackage)
 -  [`useAutoReturnReadReceipts`](#useautoreturnreadreceipts)
--  [`useAvatarForBot`](#useavatarforbot)
--  [`useAvatarForUser`](#useavatarforuser)
+-  [`useAvatarForBot`](#useavatarforbot) (Deprecated)
+-  [`useAvatarForUser`](#useavatarforuser) (Deprecated)
 -  [`useByteFormatter`](#useByteFormatter)
 -  [`useConnectivityStatus`](#useconnectivitystatus)
 -  [`useCreateActivityRenderer`](#usecreateactivityrenderer)
@@ -199,6 +199,10 @@ In HTML version of Web Chat, the UI will set this hook automatically based on [`
 
 ## `useAvatarForBot`
 
+<!-- TODO: Deprecated for 2 reasons: 1. "Bot" is now "other users"; 2. Depends on chat adapter, every activity can have different avatar.
+           Please use getMetadata(activity).avatarImage and getMetadata(activity).avatarInitials instead.
+-->
+
 <!-- prettier-ignore-start -->
 ```js
 useAvatarForBot(): [{
@@ -213,6 +217,10 @@ This hook will return the image and initials of the bot. Both image and initials
 To set the avatar for the bot, change the props passed to Web Chat via style options.
 
 ## `useAvatarForUser`
+
+<!-- TODO: Deprecated for 2 reasons: 1. "User" is now "self"; 2. Depends on chat adapter, every activity can have different avatar.
+           Please use getMetadata(activity).avatarImage and getMetadata(activity).avatarInitials instead.
+-->
 
 <!-- prettier-ignore-start -->
 ```js

@@ -62,6 +62,7 @@ function acuteNubSVG(nubSize, strokeWidth, side, upSideDown = false) {
   );
 }
 
+// TODO: Rename "fromUser" to "self".
 const Bubble = ({ 'aria-hidden': ariaHidden, children, className, fromUser, nub }) => {
   const [{ bubble: bubbleStyleSet }] = useStyleSet();
   const [direction] = useDirection();

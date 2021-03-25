@@ -441,7 +441,7 @@ const Composer = ({
 // We will create a Redux store if it was not passed in
 const ComposeWithStore = ({ store, userID, username, ...props }) => {
   // TODO: We should eventually not needing these props in Web Chat, but only in chat adapter.
-  const { directLine, internalRenderErrorBox, onTelemetry } = props;
+  const { directLine, internalRenderErrorBox, onTelemetry, styleOptions } = props;
 
   const [error, setError] = useState();
 
@@ -460,7 +460,13 @@ const ComposeWithStore = ({ store, userID, username, ...props }) => {
   ) : (
     <ErrorBoundary onError={handleError}>
       {directLine ? (
-        <LegacyChatAdapterBridge directLine={directLine} store={store} userId={userID} username={username}>
+        <LegacyChatAdapterBridge
+          directLine={directLine}
+          store={store}
+          styleOptions={styleOptions}
+          userId={userID}
+          username={username}
+        >
           {chatAdapterProps => <Composer {...chatAdapterProps} {...props} />}
         </LegacyChatAdapterBridge>
       ) : (
@@ -495,6 +501,12 @@ ComposeWithStore.propTypes = {
   internalRenderErrorBox: PropTypes.any,
   onTelemetry: PropTypes.func,
   store: PropTypes.any,
+  styleOptions: PropTypes.shape({
+    botAvatarImage: PropTypes.string,
+    botAvatarInitials: PropTypes.string,
+    userAvatarImage: PropTypes.string,
+    userAvatarInitials: PropTypes.string
+  }).isRequired,
   userID: PropTypes.string,
   username: PropTypes.string
 };

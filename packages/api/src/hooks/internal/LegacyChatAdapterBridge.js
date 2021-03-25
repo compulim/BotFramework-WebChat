@@ -11,16 +11,60 @@ import {
 import { Provider } from 'react-redux';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo } from 'react';
+import updateIn from 'simple-update-in';
 
+import getMetadata from '../../utils/getMetadata';
 import mime from '../../utils/mime-wrapper';
 import observableToPromise from '../utils/observableToPromise';
+import useMemoAll from './useMemoAll';
 import WebChatReduxContext, { useDispatch, useSelector } from './WebChatReduxContext';
+
+function chainUpdateIn(target, chain) {
+  return chain.reduce((target, [path, updater]) => updateIn(target, path, updater), target);
+}
+
+function useSelectMap(array, data, selector, updater) {
+  const entries = useMemoAll(selector, select => array.map(element => select(element, data)));
+
+  return useMemoAll(updater, update => entries.map(entry => update(entry)), [entries]);
+}
+
+function usePatchActivities(directLineActivities, styleOptions) {
+  return useSelectMap(
+    directLineActivities,
+    styleOptions,
+    useCallback((directLineActivity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
+      const { channelData: { clientActivityID } = {} } = directLineActivity;
+      const { who } = getMetadata(directLineActivity);
+      const self = who === 'self';
+
+      return [
+        directLineActivity,
+        self ? userAvatarImage : botAvatarImage,
+        self ? userAvatarInitials : botAvatarInitials,
+        clientActivityID || directLineActivity.id,
+        who
+      ];
+    }, []),
+    useCallback(
+      ([directLineActivity, avatarImage, avatarInitials, key, who]) =>
+        chainUpdateIn(directLineActivity, [
+          [['channelData', 'webchat:avatar:image'], () => avatarImage],
+          [['channelData', 'webchat:avatar:initials'], () => avatarInitials],
+          [['channelData', 'webchat:key'], () => key],
+          [['channelData', 'webchat:who'], () => who]
+        ]),
+      []
+    )
+  );
+}
 
 const InternalLegacyChatAdapterBridge = ({
   children,
   directLine,
   // TODO: Move "sendTimeout" to chat adapter.
   // sendTimeout,
+  styleOptions,
   userId: userIdFromProps,
   username: usernameFromProps
 }) => {
@@ -47,6 +91,8 @@ const InternalLegacyChatAdapterBridge = ({
   const notifications = useSelector(({ notifications }) => notifications);
   const typingUsers = useSelector(({ typing }) => typing);
 
+  const patchedActivities = usePatchActivities(activities, styleOptions);
+
   const emitTypingIndicator = useCallback(() => {
     dispatch(createEmitTypingIndicatorAction());
   }, [dispatch]);
@@ -61,6 +107,7 @@ const InternalLegacyChatAdapterBridge = ({
       // TODO: Convert to async function
       //       POST_ACTIVITY_REJECTED = reject
       //       POST_ACTIVITY_FULFILLED = resolve
+      // TODO: We should be diligent on what channelData to send, should we strip out "webchat:*"?
       dispatch(createPostActivityAction(activity));
     },
     [dispatch]
@@ -144,7 +191,7 @@ const InternalLegacyChatAdapterBridge = ({
   return (
     children &&
     children({
-      activities,
+      activities: patchedActivities,
       directLineReferenceGrammarId,
       emitTypingIndicator,
       getDirectLineOAuthCodeChallenge,
@@ -198,6 +245,12 @@ LegacyChatAdapterBridge.propTypes = {
   children: PropTypes.func,
   directLine: PropTypes.any.isRequired,
   store: PropTypes.any,
+  styleOptions: PropTypes.shape({
+    botAvatarImage: PropTypes.string,
+    botAvatarInitials: PropTypes.string,
+    userAvatarImage: PropTypes.string,
+    userAvatarInitials: PropTypes.string
+  }).isRequired,
   userId: PropTypes.string,
   username: PropTypes.string
 };

@@ -1,21 +1,22 @@
 /* eslint complexity: ["error", 30] */
 
-import { hooks } from 'botframework-webchat-api';
+import { getMetadata, hooks } from 'botframework-webchat-api';
 import { useItemContainerCallbackRef, useScrollableCallbackRef } from 'react-film';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useContext } from 'react';
 
 import Bubble from './Bubble';
 import connectToWebChat from '../connectToWebChat';
 import isZeroOrPositive from '../Utils/isZeroOrPositive';
 import ScreenReaderText from '../ScreenReaderText';
 import textFormatToContentType from '../Utils/textFormatToContentType';
+import TranscriptContext from '../Transcript/TranscriptContext';
 import useStyleSet from '../hooks/useStyleSet';
 import useStyleToEmotionObject from '../hooks/internal/useStyleToEmotionObject';
 import useUniqueId from '../hooks/internal/useUniqueId';
 
-const { useAvatarForBot, useAvatarForUser, useDirection, useLocalizer, useStyleOptions } = hooks;
+const { useDirection, useLocalizer, useStyleOptions } = hooks;
 
 const ROOT_STYLE = {
   '&.webchat__carousel-filmstrip': {
@@ -124,9 +125,9 @@ const CarouselFilmStrip = ({
 }) => {
   const [{ bubbleNubOffset, bubbleNubSize, bubbleFromUserNubOffset, bubbleFromUserNubSize }] = useStyleOptions();
   const [{ carouselFilmStrip: carouselFilmStripStyleSet }] = useStyleSet();
-  const [{ initials: botInitials }] = useAvatarForBot();
-  const [{ initials: userInitials }] = useAvatarForUser();
   const [direction] = useDirection();
+  const { avatarInitials, who } = getMetadata(activity);
+  const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
   const ariaLabelId = useUniqueId('webchat__carousel-filmstrip__id');
   const localize = useLocalizer();
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
@@ -134,39 +135,34 @@ const CarouselFilmStrip = ({
 
   const itemContainerCallbackRef = useItemContainerCallbackRef();
   const scrollableCallbackRef = useScrollableCallbackRef();
+  const self = who === 'self';
 
   const {
     attachments = [],
     channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-    from: { role } = {},
     text,
     textFormat
   } = activity;
 
   const activityDisplayText = messageBackDisplayText || text;
-  const fromUser = role === 'user';
-
-  const attachedAlt = localize(fromUser ? 'ACTIVITY_YOU_ATTACHED_ALT' : 'ACTIVITY_BOT_ATTACHED_ALT');
-  const greetingAlt = (fromUser
+  // TODO: Update localization strings
+  const attachedAlt = localize(self ? 'ACTIVITY_YOU_ATTACHED_ALT' : 'ACTIVITY_BOT_ATTACHED_ALT');
+  const greetingAlt = (self
     ? localize('ACTIVITY_YOU_SAID_ALT')
-    : localize('ACTIVITY_BOT_SAID_ALT', botInitials || '')
+    : localize('ACTIVITY_BOT_SAID_ALT', avatarInitials || '')
   ).replace(/\s{2,}/gu, ' ');
 
-  const initials = fromUser ? userInitials : botInitials;
-  const nubOffset = fromUser ? bubbleFromUserNubOffset : bubbleNubOffset;
-  const nubSize = fromUser ? bubbleFromUserNubSize : bubbleNubSize;
-  const otherInitials = fromUser ? botInitials : userInitials;
-  const otherNubSize = fromUser ? bubbleNubSize : bubbleFromUserNubSize;
+  const hasAvatarOnSameSide = who === 'self' ? hasSelfAvatar : hasOthersAvatar;
+  const nubOffset = self ? bubbleFromUserNubOffset : bubbleNubOffset;
+  const nubSize = self ? bubbleFromUserNubSize : bubbleNubSize;
+  const nubSizeOnOtherSide = self ? bubbleNubSize : bubbleFromUserNubSize;
 
-  const hasAvatar = initials || typeof initials === 'string';
-  const hasOtherAvatar = otherInitials || typeof otherInitials === 'string';
   const hasNub = typeof nubSize === 'number';
-  const hasOtherNub = typeof otherNubSize === 'number';
+  const hasNubOnOtherSide = typeof nubSizeOnOtherSide === 'number';
+  const showAvatar = showCallout && hasAvatarOnSameSide && !!renderAvatar;
   const topAlignedCallout = isZeroOrPositive(nubOffset);
 
-  const extraTrailing = !hasOtherAvatar && hasOtherNub; // This is for bot message with user nub and no user avatar. And vice versa.
-
-  const showAvatar = showCallout && hasAvatar && !!renderAvatar;
+  const extraTrailing = !hasOthersAvatar && hasNubOnOtherSide; // This is for bot message with user nub and no user avatar. And vice versa.
   const showNub = showCallout && hasNub && (topAlignedCallout || !attachments.length);
 
   return (
@@ -176,7 +172,7 @@ const CarouselFilmStrip = ({
         'webchat__carousel-filmstrip',
         {
           'webchat__carousel-filmstrip--extra-trailing': extraTrailing,
-          'webchat__carousel-filmstrip--hide-avatar': hasAvatar && !showAvatar,
+          'webchat__carousel-filmstrip--hide-avatar': hasAvatarOnSameSide && !showAvatar,
           'webchat__carousel-filmstrip--hide-nub': hasNub && !showNub,
           'webchat__carousel-filmstrip--no-message': !activityDisplayText,
           'webchat__carousel-filmstrip--rtl': direction === 'rtl',
@@ -207,8 +203,8 @@ const CarouselFilmStrip = ({
               <ScreenReaderText text={greetingAlt} />
               <Bubble
                 className="webchat__carousel-filmstrip__bubble"
-                fromUser={fromUser}
-                nub={showNub || ((hasAvatar || hasNub) && 'hidden')}
+                fromUser={self}
+                nub={showNub || ((hasAvatarOnSameSide || hasNub) && 'hidden')}
               >
                 {renderAttachment({
                   activity,
@@ -239,7 +235,7 @@ const CarouselFilmStrip = ({
                   >
                     <ScreenReaderText text={attachedAlt} />
                     {/* eslint-disable-next-line react/no-array-index-key */}
-                    <Bubble fromUser={fromUser} key={index} nub={false}>
+                    <Bubble fromUser={self} key={index} nub={false}>
                       {renderAttachment({ activity, attachment })}
                     </Bubble>
                   </li>

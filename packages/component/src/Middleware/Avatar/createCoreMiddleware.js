@@ -1,3 +1,4 @@
+import { getMetadata } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -18,46 +19,46 @@ const ROOT_STYLE = {
   }
 };
 
-const DefaultAvatar = ({ 'aria-hidden': ariaHidden, className, fromUser }) => {
+const DefaultAvatar = ({ 'aria-hidden': ariaHidden, className, image, initials, who }) => {
   const [{ avatar: avatarStyleSet }] = useStyleSet();
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
+  const self = who === 'self';
 
   return (
     <div
       aria-hidden={ariaHidden}
-      className={classNames(
-        'webchat__defaultAvatar',
-        { 'webchat__defaultAvatar--fromUser': fromUser },
-        rootClassName,
-        avatarStyleSet + '',
-        (className || '') + ''
-      )}
+      className={classNames('webchat__default-avatar', rootClassName, avatarStyleSet + '', (className || '') + '')}
     >
-      <InitialsAvatar fromUser={fromUser} />
-      <ImageAvatar fromUser={fromUser} />
+      {!!initials && <InitialsAvatar initials={initials} self={self} />}
+      {!!image && <ImageAvatar image={image} />}
     </div>
   );
 };
 
 DefaultAvatar.defaultProps = {
   'aria-hidden': true,
-  className: ''
+  className: '',
+  image: '',
+  initials: ''
 };
 
 DefaultAvatar.propTypes = {
   'aria-hidden': PropTypes.bool,
   className: PropTypes.string,
-  fromUser: PropTypes.bool.isRequired
+  image: PropTypes.string,
+  initials: PropTypes.string,
+  who: PropTypes.oneOf(['others', 'self', 'service']).isRequired
 };
 
 export default function createCoreAvatarMiddleware() {
   return [
-    () => () => ({ fromUser, styleOptions }) => {
-      const { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials } = styleOptions;
+    () => () => ({ activity }) => {
+      const { avatarImage, avatarInitials, who } = getMetadata(activity);
 
-      if (fromUser ? userAvatarImage || userAvatarInitials : botAvatarImage || botAvatarInitials) {
+      if (avatarImage || avatarInitials) {
+        // The next line is not a React component, but a callback function.
         // eslint-disable-next-line react/display-name
-        return () => <DefaultAvatar fromUser={fromUser} />;
+        return () => <DefaultAvatar image={avatarImage} initials={avatarInitials} who={who} />;
       }
 
       return false;

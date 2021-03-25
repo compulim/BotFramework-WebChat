@@ -1,21 +1,21 @@
 /* eslint complexity: ["error", 30] */
 
-import { hooks } from 'botframework-webchat-api';
+import { getMetadata, hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useContext } from 'react';
 
 import Bubble from './Bubble';
 import connectToWebChat from '../connectToWebChat';
 import isZeroOrPositive from '../Utils/isZeroOrPositive';
 import ScreenReaderText from '../ScreenReaderText';
 import textFormatToContentType from '../Utils/textFormatToContentType';
+import TranscriptContext from '../Transcript/TranscriptContext';
 import useStyleSet from '../hooks/useStyleSet';
 import useStyleToEmotionObject from '../hooks/internal/useStyleToEmotionObject';
-
 import useUniqueId from '../hooks/internal/useUniqueId';
 
-const { useAvatarForBot, useAvatarForUser, useLocalizer, useStyleOptions } = hooks;
+const { useLocalizer, useStyleOptions } = hooks;
 
 const ROOT_STYLE = {
   '&.webchat__stacked-layout': {
@@ -94,9 +94,9 @@ const StackedLayout = ({
   showCallout
 }) => {
   const [{ bubbleNubOffset, bubbleNubSize, bubbleFromUserNubOffset, bubbleFromUserNubSize }] = useStyleOptions();
-  const [{ initials: botInitials }] = useAvatarForBot();
-  const [{ initials: userInitials }] = useAvatarForUser();
   const [{ stackedLayout: stackedLayoutStyleSet }] = useStyleSet();
+  const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
+  const { avatarInitials, who } = getMetadata(activity);
   const ariaLabelId = useUniqueId('webchat__stacked-layout__id');
   const localize = useLocalizer();
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
@@ -105,35 +105,31 @@ const StackedLayout = ({
   const {
     attachments = [],
     channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-    from: { role } = {},
     text,
     textFormat
   } = activity;
 
   const activityDisplayText = messageBackDisplayText || text;
-  const fromUser = role === 'user';
+  // TODO: Update localization strings
+  const self = who === 'self';
 
-  const attachedAlt = localize(fromUser ? 'ACTIVITY_YOU_ATTACHED_ALT' : 'ACTIVITY_BOT_ATTACHED_ALT');
-  const greetingAlt = (fromUser
+  const attachedAlt = localize(self ? 'ACTIVITY_YOU_ATTACHED_ALT' : 'ACTIVITY_BOT_ATTACHED_ALT');
+  const greetingAlt = (self
     ? localize('ACTIVITY_YOU_SAID_ALT')
-    : localize('ACTIVITY_BOT_SAID_ALT', botInitials || '')
+    : localize('ACTIVITY_BOT_SAID_ALT', avatarInitials || '')
   ).replace(/\s{2,}/gu, ' ');
+  const hasAvatarOnSameSide = who === 'self' ? hasSelfAvatar : hasOthersAvatar;
+  const hasAvatarOnOtherSide = who === 'self' ? hasOthersAvatar : hasSelfAvatar;
+  const nubOffset = self ? bubbleFromUserNubOffset : bubbleNubOffset;
+  const nubSize = self ? bubbleFromUserNubSize : bubbleNubSize;
+  const nubSizeOnOtherSide = self ? bubbleNubSize : bubbleFromUserNubSize;
 
-  const initials = fromUser ? userInitials : botInitials;
-  const nubOffset = fromUser ? bubbleFromUserNubOffset : bubbleNubOffset;
-  const nubSize = fromUser ? bubbleFromUserNubSize : bubbleNubSize;
-  const otherInitials = fromUser ? botInitials : userInitials;
-  const otherNubSize = fromUser ? bubbleNubSize : bubbleFromUserNubSize;
-
-  const hasAvatar = initials || typeof initials === 'string';
-  const hasOtherAvatar = otherInitials || typeof otherInitials === 'string';
   const hasNub = typeof nubSize === 'number';
-  const hasOtherNub = typeof otherNubSize === 'number';
+  const hasNubOnOtherSide = typeof nubSizeOnOtherSide === 'number';
+  const showAvatar = showCallout && hasAvatarOnSameSide && !!renderAvatar;
   const topAlignedCallout = isZeroOrPositive(nubOffset);
 
-  const extraTrailing = !hasOtherAvatar && hasOtherNub; // This is for bot message with user nub and no user avatar. And vice versa.
-
-  const showAvatar = showCallout && hasAvatar && !!renderAvatar;
+  const extraTrailing = !hasAvatarOnOtherSide && hasNubOnOtherSide; // This is for bot message with user nub and no user avatar. And vice versa.
   const showNub = showCallout && hasNub && (topAlignedCallout || !attachments.length);
 
   return (
@@ -142,8 +138,8 @@ const StackedLayout = ({
       aria-roledescription="activity"
       className={classNames('webchat__stacked-layout', rootClassName, stackedLayoutStyleSet + '', {
         'webchat__stacked-layout--extra-trailing': extraTrailing,
-        'webchat__stacked-layout--from-user': fromUser,
-        'webchat__stacked-layout--hide-avatar': hasAvatar && !showAvatar,
+        'webchat__stacked-layout--from-user': self,
+        'webchat__stacked-layout--hide-avatar': hasAvatarOnSameSide && !showAvatar,
         'webchat__stacked-layout--hide-nub': hasNub && !showNub,
         'webchat__stacked-layout--no-message': !activityDisplayText,
         'webchat__stacked-layout--show-avatar': showAvatar,
@@ -167,8 +163,8 @@ const StackedLayout = ({
               <ScreenReaderText text={greetingAlt} />
               <Bubble
                 className="webchat__stacked-layout__message"
-                fromUser={fromUser}
-                nub={showNub || ((hasAvatar || hasNub) && 'hidden')}
+                fromUser={self}
+                nub={showNub || ((hasAvatarOnSameSide || hasNub) && 'hidden')}
               >
                 {renderAttachment({
                   activity,
@@ -194,10 +190,10 @@ const StackedLayout = ({
               <ScreenReaderText text={attachedAlt} />
               <Bubble
                 className="webchat__stacked-layout__attachment"
-                fromUser={fromUser}
+                fromUser={self}
                 /* eslint-disable-next-line react/no-array-index-key */
                 key={index}
-                nub={(hasAvatar || hasNub) && 'hidden'}
+                nub={(hasAvatarOnSameSide || hasNub) && 'hidden'}
               >
                 {renderAttachment({ activity, attachment })}
               </Bubble>

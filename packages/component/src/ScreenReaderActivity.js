@@ -1,6 +1,6 @@
 /* eslint no-magic-numbers: ["error", { "ignore": [2] }] */
 
-import { hooks } from 'botframework-webchat-api';
+import { getMetadata, hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -9,7 +9,7 @@ import textFormatToContentType from './Utils/textFormatToContentType';
 import useStripMarkdown from './hooks/internal/useStripMarkdown';
 import useStyleToEmotionObject from './hooks/internal/useStyleToEmotionObject';
 
-const { useAvatarForBot, useCreateAttachmentForScreenReaderRenderer, useDateFormatter, useLocalizer } = hooks;
+const { useCreateAttachmentForScreenReaderRenderer, useDateFormatter, useLocalizer } = hooks;
 
 const ROOT_STYLE = {
   '&.webchat__screen-reader-activity': {
@@ -36,7 +36,7 @@ const ACTIVITY_NUM_ATTACHMENTS_ALT_IDS = {
 // That means, it will only render "2 attachments", instead of "image attachment".
 // This is used in the visual transcript, where we render "Press ENTER to interact."
 const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => {
-  const [{ initials: botInitials }] = useAvatarForBot();
+  const { avatarInitials } = getMetadata(activity);
   const createAttachmentForScreenReaderRenderer = useCreateAttachmentForScreenReaderRenderer();
   const formatDate = useDateFormatter();
   const localize = useLocalizer();
@@ -62,9 +62,10 @@ const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => 
         .filter(render => render)
     : [];
 
+  // TODO: Update localization strings.
   const greetingAlt = (fromUser
     ? localize('ACTIVITY_YOU_SAID_ALT')
-    : localize('ACTIVITY_BOT_SAID_ALT', botInitials || '')
+    : localize('ACTIVITY_BOT_SAID_ALT', avatarInitials || '')
   ).replace(/\s{2,}/gu, ' ');
   const numGenericAttachments = attachments.length - attachmentForScreenReaderRenderers.length;
 

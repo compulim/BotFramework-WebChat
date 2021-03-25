@@ -12,6 +12,7 @@ import { ReadBy } from '../types/ReadBy';
 import ActivitiesContext from '../contexts/ActivitiesContext';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
 import createDebug from '../utils/debug';
+import fromWho from '../utils/fromWho';
 import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
@@ -249,6 +250,9 @@ const ActivitiesComposer: FC = ({ children }) => {
       if (trackingNumber) {
         activity = updateIn(activity, ['channelData', 'webchat:tracking-number'], () => trackingNumber);
       }
+
+      // TODO: For testing avatar
+      activity = updateIn(activity, ['channelData', 'webchat:avatar:initials'], () => fromWho(activity) === 'others' ? 'Oth' : 'Self');
 
       debugConversionsRef.current.push({ activity, chatMessage, readBy, deliveryStatus, trackingNumber });
 
