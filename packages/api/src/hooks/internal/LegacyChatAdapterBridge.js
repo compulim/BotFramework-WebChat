@@ -78,6 +78,8 @@ const InternalLegacyChatAdapterBridge = ({
   const directLineReferenceGrammarId = useSelector(({ referenceGrammarId }) => referenceGrammarId);
   const dispatch = useDispatch();
   const notifications = useSelector(({ notifications }) => notifications);
+
+  // TODO: Filter out typing by self.
   const typingUsers = useSelector(({ typing }) => typing);
 
   const patchedActivities = usePatchActivities(activities, styleOptions);

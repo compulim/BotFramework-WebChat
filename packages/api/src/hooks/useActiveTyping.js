@@ -15,11 +15,11 @@ function useActiveTyping(expireAfter) {
     expireAfter = typingAnimationDuration;
   }
 
-  const activeTyping = Object.entries(typingUsers).reduce((activeTyping, [id, { at, name, role }]) => {
+  const activeTyping = Object.entries(typingUsers).reduce((activeTyping, [id, { at, ...others }]) => {
     const until = at + expireAfter;
 
     if (until > now) {
-      return { ...activeTyping, [id]: { at, expireAt: until, name, role } };
+      return { ...activeTyping, [id]: { at, ...others, expireAt: until } };
     }
 
     return activeTyping;

@@ -12,32 +12,24 @@ export default function useTypingUsers(): [TypingUsers] {
   const [typingUsers] = useACSTypingUsers();
   const [userId] = useACSUserId();
 
-  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntryConverter(userId), [userId]);
+  const typingUsersExcludeSelf = useMemo(
+    () => typingUsers.filter(member => member.user.communicationUserId !== userId),
+    [typingUsers]
+  );
 
-  const typingEntries = useMapper(typingUsers, acsTypingUserToWebChatTypingEntry);
+  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntryConverter(), []);
+
+  const typingEntries = useMapper(typingUsersExcludeSelf, acsTypingUserToWebChatTypingEntry);
 
   useDebugDeps(
     {
       typingEntries,
       typingUsers,
+      typingUsersExcludeSelf,
       userId
     },
     'acs:useTypingUsers'
   );
 
-  return useMemo(() => {
-    const now = Date.now();
-
-    return [
-      Object.fromEntries(
-        typingEntries.map(([id, typingEntry]) => [
-          id,
-          {
-            ...typingEntry,
-            at: now
-          }
-        ])
-      )
-    ];
-  }, [typingEntries]);
+  return useMemo(() => [Object.fromEntries(typingEntries)], [typingEntries]);
 }

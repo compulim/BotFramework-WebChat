@@ -9,8 +9,6 @@ const TypingComposer = ({
   sendTypingIndicator,
   typingUsers
 }) => {
-  // Adds a validation to make sure "typingUsers" does not contains "self", we can auto-fix.
-
   const emitTypingIndicator = useMemo(
     () =>
       emitTypingIndicatorFromProps &&

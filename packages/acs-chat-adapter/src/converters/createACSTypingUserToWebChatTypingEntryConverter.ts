@@ -1,30 +1,19 @@
 import { ACSChatThreadMember } from '../types/ACSChatThreadMember';
+import { TypingUser } from '../types/TypingUser';
 
-export default function createACSTypingUserToWebChatTypingEntryConverter(
-  userId: string
-): (
+export default function createACSTypingUserToWebChatTypingEntryConverter(): (
   acsTypingUser: ACSChatThreadMember
-) => [
-  string,
-  {
-    name: string;
-    role: 'bot' | 'user';
-    who: 'others' | 'self';
-  }
-] {
+) => [string, TypingUser] {
   return (acsTypingUser: ACSChatThreadMember) => {
     const {
       user: { communicationUserId }
     } = acsTypingUser;
 
-    const who = userId === communicationUserId ? 'self' : 'others';
-
     return [
       communicationUserId,
       {
-        name: communicationUserId,
-        role: who === 'self' ? 'user' : 'bot',
-        who
+        at: Date.now(),
+        name: communicationUserId
       }
     ];
   };

@@ -21,7 +21,7 @@ const TextTypingIndicator = ({ activeTyping }) => {
   const localize = useLocalizer();
   const localizeWithPlural = useLocalizer({ plural: true });
 
-  // TODO: Use display name
+  // We assume it is very unlikely that the time could collide with each other, so we don't second-sort by names.
   const sortedNames = activeTypingValues.sort(({ at: x }, { at: y }) => x - y).map(({ name }) => name);
   const { length } = sortedNames;
   let text;
@@ -42,10 +42,12 @@ const TextTypingIndicator = ({ activeTyping }) => {
 };
 
 TextTypingIndicator.propTypes = {
-  activeTyping: PropTypes.objectOf({
-    at: PropTypes.number,
-    name: PropTypes.string
-  }).isRequired
+  activeTyping: PropTypes.objectOf(
+    PropTypes.shape({
+      at: PropTypes.number,
+      name: PropTypes.string
+    })
+  ).isRequired
 };
 
 export default TextTypingIndicator;
