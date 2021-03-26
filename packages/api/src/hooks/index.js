@@ -9,6 +9,7 @@ import useCreateActivityRenderer from './useCreateActivityRenderer';
 import useCreateActivityStatusRenderer from './useCreateActivityStatusRenderer';
 import useCreateAttachmentForScreenReaderRenderer from './useCreateAttachmentForScreenReaderRenderer';
 import useCreateAvatarRenderer from './useCreateAvatarRenderer';
+import useCreateTypingIndicatorRenderer from './useCreateTypingIndicatorRenderer';
 import useDateFormatter from './useDateFormatter';
 import useDebouncedNotifications from './useDebouncedNotifications';
 import useDictateAbortable from './useDictateAbortable';
@@ -77,6 +78,7 @@ export {
   useCreateActivityStatusRenderer,
   useCreateAttachmentForScreenReaderRenderer,
   useCreateAvatarRenderer,
+  useCreateTypingIndicatorRenderer,
   useDateFormatter,
   useDebouncedNotifications,
   useDictateAbortable,

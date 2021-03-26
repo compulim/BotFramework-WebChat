@@ -29,12 +29,16 @@ const DEFAULT_OPTIONS = {
   avatarBorderRadius: '50%',
   avatarSize: 40,
   botAvatarBackgroundColor: undefined, // defaults to accent color
+  userAvatarBackgroundColor: undefined, // defaults to accent color
+  showAvatarInGroup: 'status', // Or 'sender' or true (on every activity).
+  showAvatarForOthers: false,
+  showAvatarForSelf: false,
+
+  // TODO: Deprecate the following style options
   botAvatarImage: undefined, // Or a string of URL. Can be a data URI or blob.
   botAvatarInitials: undefined, // Or a string. Empty strings means it has avatar but not initials inside.
-  userAvatarBackgroundColor: undefined, // defaults to accent color
   userAvatarImage: undefined, // Or a string of URL. Can be a data URI or blob.
   userAvatarInitials: undefined, // Or a string. Empty strings means it has avatar but not initials inside.
-  showAvatarInGroup: 'status', // Or 'sender' or true (on every activity).
 
   // Bubble
   // TODO: Should we make a bubbleFromBot*

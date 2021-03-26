@@ -330,7 +330,7 @@ const Composer = ({
       typingIndicatorRenderer ||
       applyMiddlewareForRenderer(
         'typing indicator',
-        { strict: true },
+        { strict: false },
         ...singleToArray(typingIndicatorMiddleware),
         () => () => () => false
       )({})

@@ -1,7 +1,7 @@
 import './App.css';
 
 import { ACSChatAdapter } from 'botframework-webchat-chat-adapter-acs';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createCognitiveServicesSpeechServicesPonyfillFactory } from 'botframework-webchat';
 
 import ACSCredentials from './ui/ACSCredentials';
@@ -34,6 +34,32 @@ const App = () => {
   // }, [identity]);
 
   const handleStartClick = useCallback(() => setStarted(Date.now()), [setStarted]);
+  const styleOptions = useMemo(
+    () => ({
+      showAvatarForOthers: true,
+      showAvatarForSelf: true
+    }),
+    []
+  );
+
+  // const dummyTypingUsers = useMemo(
+  //   () => ({
+  //     'id-1': {
+  //       at: Date.now() + 100001,
+  //       name: 'John'
+  //     },
+  //     'id-2': {
+  //       at: Date.now() + 100000,
+  //       name: 'Mary'
+  //     },
+  //     'id-3': {
+  //       at: Date.now() + 100000,
+  //       name:
+  //         'Minim velit pariatur deserunt deserunt nisi consectetur excepteur consectetur elit proident fugiat dolore.'
+  //     }
+  //   }),
+  //   []
+  // );
 
   const [webSpeechPonyfillFactory, setWebSpeechPonyfillFactory] = useState();
 
@@ -64,6 +90,8 @@ const App = () => {
                 <WebChatWithDebug
                   {...chatAdapterProps}
                   className="app__webchat"
+                  styleOptions={styleOptions}
+                  // typingUsers={dummyTypingUsers}
                   webSpeechPonyfillFactory={webSpeechPonyfillFactory}
                 />
               ) : (

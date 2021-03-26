@@ -1,6 +1,6 @@
 import { hooks } from 'botframework-webchat-api';
 
-const { useActiveTyping, useRenderTypingIndicator, useStyleOptions } = hooks;
+const { useActiveTyping, useCreateTypingIndicatorRenderer } = hooks;
 
 function useTypingIndicatorVisible() {
   const [activeTyping] = useActiveTyping();
@@ -10,11 +10,10 @@ function useTypingIndicatorVisible() {
 
 const BasicTypingIndicator = () => {
   const [activeTyping] = useActiveTyping();
-  const [styleOptions] = useStyleOptions();
   const [typing] = useActiveTyping(Infinity);
-  const createTypingIndicatorRenderer = useRenderTypingIndicator();
+  const createTypingIndicatorRenderer = useCreateTypingIndicatorRenderer();
 
-  const renderTypingIndicator = createTypingIndicatorRenderer({ activeTyping, styleOptions, typing });
+  const renderTypingIndicator = createTypingIndicatorRenderer({ activeTyping, typing });
 
   return renderTypingIndicator && renderTypingIndicator();
 };

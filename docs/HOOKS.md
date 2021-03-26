@@ -958,6 +958,9 @@ useRenderTypingIndicator():
 ```
 <!-- prettier-ignore-end -->
 
+<!-- TODO: "typing" is deprecated, or derivable from "activeTyping" -->
+<!-- TODO: "visible" is deprecated -->
+
 This function is for rendering typing indicator for all participants of the conversation. This function is a composition of `typingIndicatorMiddleware`, which is passed as a prop to `<ReactWebChat>` or `<Composer>`. The caller will pass the following arguments:
 
 -  `activeTyping` lists of participants who are actively typing.

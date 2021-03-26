@@ -89,9 +89,7 @@ function validateAllActivitiesTagged(activities, bins) {
 
 const InternalTranscript = ({ activityElementsRef, className }) => {
   const [{ basicTranscript: basicTranscriptStyleSet }] = useStyleSet();
-  const [
-    { bubbleFromUserNubOffset, bubbleNubOffset, groupTimestamp, internalLiveRegionFadeAfter, showAvatarInGroup }
-  ] = useStyleOptions();
+  const [styleOptions] = useStyleOptions();
   const [activitiesWithRenderer] = useActivities('with renderer');
   const [direction] = useDirection();
   const [focusedActivityKey, setFocusedActivityKey] = useState();
@@ -104,6 +102,15 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
   const rootElementRef = useRef();
   const terminatorRef = useRef();
 
+  const {
+    bubbleFromUserNubOffset,
+    bubbleNubOffset,
+    groupTimestamp,
+    internalLiveRegionFadeAfter,
+    showAvatarInGroup,
+    showAvatarForOthers,
+    showAvatarForSelf
+  } = styleOptions;
   const activityInteractiveAlt = localize('ACTIVITY_INTERACTIVE_LABEL_ALT');
   const hideAllTimestamps = groupTimestamp === false;
   const terminatorText = localize('TRANSCRIPT_TERMINATOR_TEXT');
@@ -115,18 +122,20 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
   const hasOthersAvatar = useMemo(
     () =>
+      !!showAvatarForOthers &&
       activitiesWithRenderer.some(
         ({ activity }) => fromWho(activity) === 'others' && getMetadata(activity).avatarInitials
       ),
-    [activitiesWithRenderer]
+    [activitiesWithRenderer, showAvatarForOthers]
   );
 
   const hasSelfAvatar = useMemo(
     () =>
+      !!showAvatarForSelf &&
       activitiesWithRenderer.some(
         ({ activity }) => fromWho(activity) === 'self' && getMetadata(activity).avatarInitials
       ),
-    [activitiesWithRenderer]
+    [activitiesWithRenderer, showAvatarForSelf]
   );
 
   const context = useMemo(() => ({ hasOthersAvatar, hasSelfAvatar }), [hasOthersAvatar, hasSelfAvatar]);
@@ -214,7 +223,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
     activityTree.forEach(activitiesWithSameSender => {
       const [[firstActivity]] = activitiesWithSameSender;
-      const renderAvatar = createAvatarRenderer({ activity: firstActivity });
+      const renderAvatar = createAvatarRenderer({ activity: firstActivity, styleOptions });
 
       activitiesWithSameSender.forEach((activitiesWithSameSenderAndStatus, indexWithinSenderGroup) => {
         const firstInSenderGroup = !indexWithinSenderGroup;
@@ -364,7 +373,8 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     createAvatarRenderer,
     hideAllTimestamps,
     rootElementRef,
-    showAvatarInGroup
+    showAvatarInGroup,
+    styleOptions
   ]);
 
   const scrollToBottomScrollTo = useScrollTo();

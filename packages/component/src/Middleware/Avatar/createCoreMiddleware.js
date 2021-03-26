@@ -52,10 +52,13 @@ DefaultAvatar.propTypes = {
 
 export default function createCoreAvatarMiddleware() {
   return [
-    () => () => ({ activity }) => {
+    () => () => ({ activity, styleOptions }) => {
       const { avatarImage, avatarInitials, who } = getMetadata(activity);
 
-      if (avatarImage || avatarInitials) {
+      const showAvatar =
+        (who === 'self' && styleOptions.showAvatarForSelf) || (who === 'others' && styleOptions.showAvatarForOthers);
+
+      if (showAvatar && (avatarImage || avatarInitials)) {
         // The next line is not a React component, but a callback function.
         // eslint-disable-next-line react/display-name
         return () => <DefaultAvatar image={avatarImage} initials={avatarInitials} who={who} />;
