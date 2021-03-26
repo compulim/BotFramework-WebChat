@@ -1,27 +1,19 @@
 /* eslint react/prop-types: "off"*/
 
-import { hooks } from 'botframework-webchat-api';
-import classNames from 'classnames';
 import React from 'react';
 
-import TypingAnimation from '../../Assets/TypingAnimation';
-import useStyleSet from '../../hooks/useStyleSet';
+import DotTypingIndicator from './DotTypingIndicator';
+import TextTypingIndicator from './TextTypingIndicator';
 
-const { useDirection, useLocalizer } = hooks;
-
-const DotIndicator = () => {
-  const [{ typingIndicator: typingIndicatorStyleSet }] = useStyleSet();
-  const [direction] = useDirection();
-  const localize = useLocalizer();
-
-  return (
-    <div className={classNames(typingIndicatorStyleSet + '', direction === 'rtl' && 'webchat__typingIndicator--rtl')}>
-      <TypingAnimation aria-label={localize('TYPING_INDICATOR_ALT')} />
-    </div>
-  );
-};
-
-// TODO: [P4] Rename this file or the whole middleware, it looks either too simple or too comprehensive now
-export default function createCoreMiddleware() {
-  return [() => () => ({ visible }) => visible && <DotIndicator />];
+export default function createTypingIndicatorMiddleware() {
+  return [
+    // TODO: Remove "visible".
+    () => () => ({ activeTyping, styleOptions, visible }) =>
+      visible &&
+      (styleOptions.typingIndicatorStyle === 'dot' ? (
+        <DotTypingIndicator />
+      ) : (
+        <TextTypingIndicator activeTyping={activeTyping} />
+      ))
+  ];
 }

@@ -118,5 +118,19 @@
   "TRANSCRIPT_NEW_MESSAGES": "New messages",
   "TRANSCRIPT_TERMINATOR_TEXT": "End of transcript",
   "TYPING_INDICATOR_ALT": "Showing typing indicator",
-  "_TYPING_INDICATOR_ALT.comment": "This is for screen reader for the label that will be narrated when the other party is typing a message."
+  "_TYPING_INDICATOR_ALT.comment": "This is for screen reader for the label that will be narrated when the other party is typing a message.",
+  "TYPING_INDICATOR_ONE": "$1 is typing…",
+  "_TYPING_INDICATOR_ONE.comment": "$1 is the display name of the user who is typing.",
+  "TYPING_INDICATOR_TWO": "$1 and $2 are typing…",
+  "_TYPING_INDICATOR_TWO.comment": "$1 and $2 are the display name of the users who are typing.",
+  "TYPING_INDICATOR_MANY_ONE": "$2, $3, and 1 more are typing…",
+  "_TYPING_INDICATOR_MANY_ONE.comment": "$2 and $3 are the display name of the users who are typing. For example, \"John, Mary, and 1 more are typing\". This is for plural rule of \"one\".",
+  "TYPING_INDICATOR_MANY_FEW": "$2, $3, and $1 more are typing…",
+  "_TYPING_INDICATOR_MANY_FEW.comment": "$2 and $3 are the display name of the users who are typing. $1 is number of users who are also typing. For example, \"John, Mary, and 1 more are typing\". This is for plural rule of \"few\".",
+  "TYPING_INDICATOR_MANY_MANY": "$2, $3, and $1 more are typing…",
+  "_TYPING_INDICATOR_MANY_MANY.comment": "$2 and $3 are the display name of the users who are typing. $1 is number of users who are also typing. For example, \"John, Mary, and 3 more are typing\". This is for plural rule of \"many\".",
+  "TYPING_INDICATOR_MANY_OTHER": "$2, $3, and $1 more are typing…",
+  "_TYPING_INDICATOR_MANY_OTHER.comment": "$2 and $3 are the display name of the users who are typing. $1 is number of users who are also typing. For example, \"John, Mary, and 5 more are typing\". This is for plural rule of \"other\".",
+  "TYPING_INDICATOR_MANY_TWO": "$2, $3, and $1 more are typing…",
+  "_TYPING_INDICATOR_MANY_TWO.comment": "$2 and $3 are the display name of the users who are typing. $1 is number of users who are also typing, can be omitted. For example, \"John, Mary, and 2 more are typing\". This is for plural rule of \"two\"."
 }

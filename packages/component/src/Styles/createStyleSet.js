@@ -10,6 +10,7 @@ import createCarouselFilmStrip from './StyleSet/CarouselFilmStrip';
 import createCarouselFlipper from './StyleSet/CarouselFlipper';
 import createConnectivityNotification from './StyleSet/ConnectivityNotification';
 import createDictationInterimsStyle from './StyleSet/DictationInterims';
+import createDotTypingIndicatorStyle from './StyleSet/DotTypingIndicator';
 import createErrorBoxStyle from './StyleSet/ErrorBox';
 import createErrorNotificationStyle from './StyleSet/ErrorNotification';
 import createFileContentStyle from './StyleSet/FileContent';
@@ -28,10 +29,10 @@ import createStackedLayoutStyle from './StyleSet/StackedLayout';
 import createSuggestedActionsStyle from './StyleSet/SuggestedActions';
 import createSuggestedActionStyle from './StyleSet/SuggestedAction';
 import createTextContentStyle from './StyleSet/TextContent';
+import createTextTypingIndicatorStyle from './StyleSet/TextTypingIndicator';
 import createToasterStyle from './StyleSet/Toaster';
 import createToastStyle from './StyleSet/Toast';
 import createTypingAnimationStyle from './StyleSet/TypingAnimation';
-import createTypingIndicatorStyle from './StyleSet/TypingIndicator';
 import createUploadButtonStyle from './StyleSet/UploadButton';
 import createVideoAttachmentStyle from './StyleSet/VideoAttachment';
 import createVideoContentStyle from './StyleSet/VideoContent';
@@ -110,6 +111,7 @@ export default function createStyleSet(options) {
     carouselFlipper: createCarouselFlipper(options),
     connectivityNotification: createConnectivityNotification(options),
     dictationInterims: createDictationInterimsStyle(options),
+    dotTypingIndicator: createDotTypingIndicatorStyle(options),
     errorBox: createErrorBoxStyle(options),
     errorNotification: createErrorNotificationStyle(options),
     fileContent: createFileContentStyle(options),
@@ -129,10 +131,10 @@ export default function createStyleSet(options) {
     suggestedAction: createSuggestedActionStyle(options),
     suggestedActions: createSuggestedActionsStyle(options),
     textContent: createTextContentStyle(options),
+    textTypingIndicator: createTextTypingIndicatorStyle(options),
     toast: createToastStyle(options),
     toaster: createToasterStyle(options),
     typingAnimation: createTypingAnimationStyle(options),
-    typingIndicator: createTypingIndicatorStyle(options),
     uploadButton: createUploadButtonStyle(options),
     videoAttachment: createVideoAttachmentStyle(options),
     videoContent: createVideoContentStyle(options),

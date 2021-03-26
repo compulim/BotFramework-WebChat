@@ -1,7 +1,8 @@
 import { hooks } from 'botframework-webchat-api';
 
-const { useActiveTyping, useRenderTypingIndicator } = hooks;
+const { useActiveTyping, useRenderTypingIndicator, useStyleOptions } = hooks;
 
+// TODO: Chat adapter should not send typing with self. We can do validations in TypingComposer.js.
 function useTypingIndicatorVisible() {
   const [activeTyping] = useActiveTyping();
 
@@ -10,11 +11,13 @@ function useTypingIndicatorVisible() {
 
 const BasicTypingIndicator = () => {
   const [activeTyping] = useActiveTyping();
+  const [styleOptions] = useStyleOptions();
   const [visible] = useTypingIndicatorVisible();
   const [typing] = useActiveTyping(Infinity);
   const renderTypingIndicator = useRenderTypingIndicator();
 
-  return renderTypingIndicator({ activeTyping, typing, visible });
+  // TODO: Remove "visible", return false instead.
+  return renderTypingIndicator({ activeTyping, styleOptions, typing, visible });
 };
 
 export default BasicTypingIndicator;
