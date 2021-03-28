@@ -432,9 +432,18 @@ const Composer = ({
 };
 
 // We will create a Redux store if it was not passed in
-const ComposeWithStore = ({ groupTimestamp, sendTimeout, store, styleOptions, userID, username, ...props }) => {
-  // TODO: We should eventually not needing these props in Web Chat, but only in chat adapter.
-  const { directLine, internalRenderErrorBox, onTelemetry } = props;
+const ComposeWithStore = ({
+  directLine,
+  groupTimestamp,
+  sendTimeout,
+  store,
+  styleOptions,
+  userID,
+  username,
+  ...props
+}) => {
+  // TODO: Seems "internalRenderErrorBox" is not used. Can we use "internalErrorBoxClass" instead?
+  const { internalRenderErrorBox, onTelemetry } = props;
 
   const [error, setError] = useState();
 

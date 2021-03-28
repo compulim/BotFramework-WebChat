@@ -166,8 +166,6 @@ const DEFAULT_OPTIONS = {
   typingAnimationDuration: 5000,
   typingAnimationHeight: 20,
   typingAnimationWidth: 64,
-
-  // TODO: Add typing indicator style
   typingIndicatorStyle: 'text', // 'dot'
 
   spinnerAnimationBackgroundImage: null,
