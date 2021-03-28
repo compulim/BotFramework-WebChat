@@ -132,8 +132,8 @@ const CarouselFilmStrip = ({
     text,
     textFormat
   } = activity;
-  const { displayName, who } = getMetadata(activity);
   const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
+  const { senderName, who } = getMetadata(activity);
   const ariaLabelId = useUniqueId('webchat__carousel-filmstrip__id');
   const itemContainerCallbackRef = useItemContainerCallbackRef();
   const localize = useLocalizer();
@@ -151,7 +151,7 @@ const CarouselFilmStrip = ({
   const nubSize = self ? bubbleFromUserNubSize : bubbleNubSize;
   const nubSizeOnOtherSide = self ? bubbleNubSize : bubbleFromUserNubSize;
   const patchedDisplayName =
-    displayName === '__BOT__' ? fallbackDisplayNameForBot : displayName || fallbackDisplayNameForUsers;
+    senderName === '__BOT__' ? fallbackDisplayNameForBot : senderName || fallbackDisplayNameForUsers;
 
   const attachedAlt = self
     ? localize('ACTIVITY_YOU_ATTACHED_ALT')

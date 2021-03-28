@@ -101,16 +101,16 @@ const StackedLayout = ({
     text,
     textFormat
   } = activity;
-  const { displayName, who } = getMetadata(activity);
   const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
+  const { senderName, who } = getMetadata(activity);
   const ariaLabelId = useUniqueId('webchat__stacked-layout__id');
   const localize = useLocalizer();
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
   const showActivityStatus = typeof renderActivityStatus === 'function';
 
   const activityDisplayText = messageBackDisplayText || text;
-  const fallbackDisplayNameForBot = localize('FALLBACK_DISPLAY_NAME_FOR_BOTS');
-  const fallbackDisplayNameForUsers = localize('FALLBACK_DISPLAY_NAME_FOR_USERS');
+  const fallbackNameForBot = localize('FALLBACK_NAME_FOR_BOTS');
+  const fallbackNameForUsers = localize('FALLBACK_NAME_FOR_USERS');
   const self = who === 'self';
 
   const hasAvatarOnOtherSide = self ? hasOthersAvatar : hasSelfAvatar;
@@ -118,15 +118,14 @@ const StackedLayout = ({
   const nubOffset = self ? bubbleFromUserNubOffset : bubbleNubOffset;
   const nubSize = self ? bubbleFromUserNubSize : bubbleNubSize;
   const nubSizeOnOtherSide = self ? bubbleNubSize : bubbleFromUserNubSize;
-  const patchedDisplayName =
-    displayName === '__BOT__' ? fallbackDisplayNameForBot : displayName || fallbackDisplayNameForUsers;
+  const patchedSenderName = senderName === '__BOT__' ? fallbackNameForBot : senderName || fallbackNameForUsers;
 
   const attachedAlt = self
     ? localize('ACTIVITY_YOU_ATTACHED_ALT')
-    : localize('ACTIVITY_OTHERS_ATTACHED_ALT', patchedDisplayName);
+    : localize('ACTIVITY_OTHERS_ATTACHED_ALT', patchedSenderName);
   const greetingAlt = self
     ? localize('ACTIVITY_YOU_SAID_ALT')
-    : localize('ACTIVITY_OTHERS_SAID_ALT', patchedDisplayName);
+    : localize('ACTIVITY_OTHERS_SAID_ALT', patchedSenderName);
   const hasNub = typeof nubSize === 'number';
   const hasNubOnOtherSide = typeof nubSizeOnOtherSide === 'number';
   const showAvatar = showCallout && hasAvatarOnSameSide && !!renderAvatar;

@@ -36,7 +36,6 @@ const ACTIVITY_NUM_ATTACHMENTS_ALT_IDS = {
 // That means, it will only render "2 attachments", instead of "image attachment".
 // This is used in the visual transcript, where we render "Press ENTER to interact."
 const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => {
-  const { displayName, who } = getMetadata(activity);
   const {
     attachments = [],
     channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
@@ -44,6 +43,7 @@ const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => 
     textFormat,
     timestamp
   } = activity;
+  const { senderName, who } = getMetadata(activity);
   const createAttachmentForScreenReaderRenderer = useCreateAttachmentForScreenReaderRenderer();
   const formatDate = useDateFormatter();
   const localize = useLocalizer();
@@ -65,7 +65,7 @@ const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => 
     ? localize('ACTIVITY_YOU_SAID_ALT')
     : localize(
         'ACTIVITY_OTHERS_SAID_ALT',
-        displayName === '__BOT__' ? fallbackDisplayNameForBot : displayName || fallbackDisplayNameForUsers
+        senderName === '__BOT__' ? fallbackDisplayNameForBot : senderName || fallbackDisplayNameForUsers
       );
   const numGenericAttachments = attachments.length - attachmentForScreenReaderRenderers.length;
 

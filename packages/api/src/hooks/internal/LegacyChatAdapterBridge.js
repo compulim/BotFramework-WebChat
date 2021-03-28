@@ -40,25 +40,25 @@ function usePatchActivities(directLineActivities, styleOptions) {
       } = directLineActivity;
       const { who } = getMetadata(directLineActivity);
 
-      const displayName = role === 'bot' ? (id === name ? '__BOT__' : name) : name;
+      const senderName = role === 'bot' ? (id === name ? '__BOT__' : name) : name;
       const self = who === 'self';
 
       return [
         directLineActivity,
         self ? userAvatarImage : botAvatarImage,
         self ? userAvatarInitials : botAvatarInitials,
-        displayName,
         clientActivityID || directLineActivity.id,
+        senderName,
         who
       ];
     }, []),
     useCallback(
-      ([directLineActivity, avatarImage, avatarInitials, displayName, key, who]) =>
+      ([directLineActivity, avatarImage, avatarInitials, key, senderName, who]) =>
         chainUpdateIn(directLineActivity, [
           [['channelData', 'webchat:avatar:image'], () => avatarImage],
           [['channelData', 'webchat:avatar:initials'], () => avatarInitials],
-          [['channelData', 'webchat:display-name'], () => displayName],
           [['channelData', 'webchat:key'], () => key],
+          [['channelData', 'webchat:sender-name'], () => senderName],
           [['channelData', 'webchat:who'], () => who]
         ]),
       []

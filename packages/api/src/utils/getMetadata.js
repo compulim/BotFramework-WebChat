@@ -3,7 +3,7 @@ export default function getMetadata(activity) {
     channelData: {
       'webchat:avatar:image': imageFromActivity,
       'webchat:avatar:initials': initialsFromActivity,
-      'webchat:display-name': displayName,
+      'webchat:sender-name': senderName,
       'webchat:who': who
     },
     // TODO: Remove "from".
@@ -13,7 +13,7 @@ export default function getMetadata(activity) {
   return {
     avatarImage: imageFromActivity,
     avatarInitials: initialsFromActivity,
-    displayName,
+    senderName,
     who: who || (role === 'user' ? 'self' : 'others')
   };
 }
