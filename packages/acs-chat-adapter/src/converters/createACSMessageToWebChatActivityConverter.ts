@@ -102,10 +102,8 @@ export default function createACSMessageToWebChatActivityConverter({
         ...activityMetadata,
         channelData: {
           ...activityMetadata.channelData,
-          'webchat:who': 'self',
-          // TODO: Maybe we should save this logic somewhere else, because Promise returned by useSendMessageWithSendReceipt() is exactly doing the same thing.
-          //       Better to have single source of truth.
-          'webchat:delivery-status': createdOn ? 'sent' : 'sending' // If it contains "createdOn", it's sent.
+          'webchat:delivery-status': createdOn ? 'sent' : 'sending', // If it contains "createdOn", it's sent.
+          'webchat:who': 'self'
         },
         from: {
           ...activityMetadata.from,

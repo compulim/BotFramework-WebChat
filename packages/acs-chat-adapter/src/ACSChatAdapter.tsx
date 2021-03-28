@@ -11,6 +11,7 @@ import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
+import TypingUsersComposer from './composers/TypingUsersComposer';
 import useACSDisplayName from './hooks/useACSDisplayName';
 import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
@@ -119,7 +120,9 @@ const ACSChatAdapter: FC<{
       <ACSChatMessagesComposer>
         <ACSThreadMembersComposer>
           <ActivitiesComposer>
-            <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
+            <TypingUsersComposer>
+              <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
+            </TypingUsersComposer>
           </ActivitiesComposer>
         </ACSThreadMembersComposer>
       </ACSChatMessagesComposer>
