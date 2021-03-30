@@ -8,11 +8,11 @@ import { ACSChatMessage } from '../types/ACSChatMessage';
 import { Activity } from '../types/Activity';
 import { DeliveryStatus } from '../types/DeliveryStatus';
 import { ReadBy } from '../types/ReadBy';
+import { UserProfiles } from '../types/UserProfiles';
 
 import ActivitiesContext from '../contexts/ActivitiesContext';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
 import createDebug from '../utils/debug';
-import fromWho from '../utils/fromWho';
 import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
@@ -39,7 +39,7 @@ function generateTrackingNumber(): string {
   return `t-${random().toString(36).substr(2, 10)}`;
 }
 
-const ActivitiesComposer: FC = ({ children }) => {
+const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'orange' }));
 
   const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
@@ -171,12 +171,7 @@ const ActivitiesComposer: FC = ({ children }) => {
       readBy: ReadBy,
       deliveryStatus: DeliveryStatus,
       trackingNumber?: string
-    ): [ACSChatMessage, ReadBy, DeliveryStatus, string] => [
-      chatMessage,
-      readBy,
-      deliveryStatus,
-      trackingNumber
-    ],
+    ): [ACSChatMessage, ReadBy, DeliveryStatus, string] => [chatMessage, readBy, deliveryStatus, trackingNumber],
     []
   );
 
@@ -231,7 +226,7 @@ const ActivitiesComposer: FC = ({ children }) => {
   debugConversionsRef.current = [];
 
   const convertToActivities = useMemo(() => {
-    const convert = createACSMessageToWebChatActivityConverter({ threadId, userId });
+    const convert = createACSMessageToWebChatActivityConverter({ threadId, userId, userProfiles });
 
     return ([chatMessage, readBy, deliveryStatus, trackingNumber]: [
       ACSChatMessage,
@@ -251,14 +246,11 @@ const ActivitiesComposer: FC = ({ children }) => {
         activity = updateIn(activity, ['channelData', 'webchat:tracking-number'], () => trackingNumber);
       }
 
-      // TODO: For testing avatar
-      activity = updateIn(activity, ['channelData', 'webchat:avatar:initials'], () => fromWho(activity) === 'others' ? 'Oth' : 'Self');
-
       debugConversionsRef.current.push({ activity, chatMessage, readBy, deliveryStatus, trackingNumber });
 
       return activity;
     };
-  }, [threadId, userId]);
+  }, [threadId, userId, userProfiles]);
 
   const activities = useMapper<[ACSChatMessage, ReadBy, DeliveryStatus, string], Activity>(
     entries,
@@ -286,12 +278,16 @@ const ActivitiesComposer: FC = ({ children }) => {
   );
 };
 
-ActivitiesComposer.defaultProps = {
-  children: undefined
-};
+ActivitiesComposer.defaultProps = {};
 
 ActivitiesComposer.propTypes = {
-  children: PropTypes.any
+  userProfiles: PropTypes.objectOf(
+    PropTypes.shape({
+      image: PropTypes.string,
+      initials: PropTypes.string,
+      name: PropTypes.string
+    })
+  ).isRequired
 };
 
 export default ActivitiesComposer;

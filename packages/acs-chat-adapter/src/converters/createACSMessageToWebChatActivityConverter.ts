@@ -1,5 +1,6 @@
 import { ACSChatMessage } from '../types/ACSChatMessage';
 import { Activity, EventActivity, MessageActivity } from '../types/Activity';
+import { UserProfiles } from '../types/UserProfiles';
 
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
@@ -14,10 +15,12 @@ function isOthersUserId(userId: string) {
 // "threadId" is undefined for messages from others, so we prefer to use the "threadId" from setup.
 export default function createACSMessageToWebChatActivityConverter({
   threadId,
-  userId
+  userId,
+  userProfiles
 }: {
   threadId: string;
   userId: string;
+  userProfiles: UserProfiles;
 }): (chatMessage: ACSChatMessage) => Activity {
   debug ||
     (debug = createDebug('util:acsMessageToWebChatActivity', {
@@ -37,6 +40,7 @@ export default function createACSMessageToWebChatActivityConverter({
       type
     } = acsChatMessage;
 
+    const userProfile = userProfiles[communicationUserId];
     const who: 'others' | 'self' | 'service' =
       userId === communicationUserId ? 'self' : isOthersUserId(userId) ? 'others' : 'service';
 
@@ -52,19 +56,22 @@ export default function createACSMessageToWebChatActivityConverter({
       }
     }
 
+    const senderName = (userProfile || {}).name || senderDisplayName || communicationUserId;
+
     const activityMetadata = {
       channelData: {
         'acs:chat-message-id': acsChatMessage.id,
         'acs:debug:chat-message': acsChatMessage,
         'acs:debug:client-message-id': clientMessageId,
         'acs:debug:converted-at': now.toISOString(),
+        'webchat:avatar:initials': (userProfile || {}).initials,
         'webchat:key': clientMessageId || id,
-        'webchat:sender-name': senderDisplayName
+        'webchat:sender-name': senderName
       },
       conversationId: threadId,
       from: {
         id: communicationUserId,
-        name: senderDisplayName
+        name: senderName
       },
       id: clientMessageId || id,
       timestamp: (createdOn ? (typeof createdOn === 'string' ? new Date(createdOn) : createdOn) : now).toISOString()

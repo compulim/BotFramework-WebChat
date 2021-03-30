@@ -1,9 +1,10 @@
 import { ACSChatThreadMember } from '../types/ACSChatThreadMember';
 import { TypingUser } from '../types/TypingUser';
+import { UserProfiles } from '../types/UserProfiles';
 
-export default function createACSTypingUserToWebChatTypingEntryConverter(): (
-  acsTypingUser: ACSChatThreadMember
-) => [string, TypingUser] {
+export default function createACSTypingUserToWebChatTypingEntryConverter(
+  userProfiles: UserProfiles
+): (acsTypingUser: ACSChatThreadMember) => [string, TypingUser] {
   return (acsTypingUser: ACSChatThreadMember) => {
     const {
       user: { communicationUserId }
@@ -13,7 +14,7 @@ export default function createACSTypingUserToWebChatTypingEntryConverter(): (
       communicationUserId,
       {
         at: Date.now(),
-        name: communicationUserId
+        name: (userProfiles[communicationUserId] || {}).name || communicationUserId
       }
     ];
   };

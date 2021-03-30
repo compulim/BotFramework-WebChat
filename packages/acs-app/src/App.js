@@ -6,6 +6,7 @@ import { createCognitiveServicesSpeechServicesPonyfillFactory } from 'botframewo
 
 import ACSCredentials from './ui/ACSCredentials';
 import createFetchSpeechServicesCredentials from './util/createFetchSpeechServicesCredentials';
+import listChatThreadMembers from './network/acs/listChatThreadMembers';
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
 
@@ -15,6 +16,7 @@ const App = () => {
   const [started, setStarted] = useState();
   const [threadId, setThreadId] = useSessionState('', 'ACS_THREAD_ID');
   const [token, setToken] = useSessionState('', 'ACS_TOKEN');
+  const [userProfiles, setUserProfiles] = useState({});
 
   const handleACSCredentialsChange = useCallback(
     ({ endpointURL, identity, threadId, token }) => {
@@ -33,7 +35,38 @@ const App = () => {
   //   return { token };
   // }, [identity]);
 
-  const handleStartClick = useCallback(() => setStarted(Date.now()), [setStarted]);
+  const abortController = useMemo(() => new AbortController(), []);
+
+  useEffect(() => () => abortController.abort(), [abortController]);
+
+  const refreshUserProfiles = useCallback(() => {
+    if (!threadId || !token) {
+      return;
+    }
+
+    (async function () {
+      const { value } = await listChatThreadMembers(threadId, { token });
+
+      abortController.signal.aborted ||
+        setUserProfiles(
+          Object.fromEntries(
+            value.map(({ id }) => [
+              id,
+              {
+                initials: id.substr(-2),
+                name: `User ${id.substr(-4)}`
+              }
+            ])
+          )
+        );
+    })();
+  }, [abortController, setUserProfiles, threadId, token]);
+
+  const handleStartClick = useCallback(() => {
+    setStarted(Date.now());
+    refreshUserProfiles();
+  }, [refreshUserProfiles, setStarted]);
+
   const styleOptions = useMemo(
     () => ({
       showAvatarForOthers: true,
@@ -84,7 +117,7 @@ const App = () => {
     <div className="app">
       {started && (
         <div className="app__webchat-box" key={started}>
-          <ACSChatAdapter endpointURL={endpointURL} threadId={threadId} token={token}>
+          <ACSChatAdapter endpointURL={endpointURL} threadId={threadId} token={token} userProfiles={userProfiles}>
             {chatAdapterProps =>
               chatAdapterProps ? (
                 <WebChatWithDebug

@@ -1,9 +1,10 @@
 import { ChatProvider } from '@azure/acs-ui-sdk';
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChatAdapter } from './types/ChatAdapter';
+import { UserProfiles } from './types/UserProfiles';
 
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
@@ -25,7 +26,7 @@ import useTypingUsers from './hooks/useTypingUsers';
 let debug;
 let internalDebug;
 
-const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ children }) => {
+const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles: UserProfiles }> = ({ children }) => {
   // Lazy initializing constants to save loading speed and memory
   internalDebug ||
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
@@ -59,7 +60,14 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any }> = ({ childr
 InternalACSChatAdapter.defaultProps = {};
 
 InternalACSChatAdapter.propTypes = {
-  children: PropTypes.func.isRequired
+  children: PropTypes.func.isRequired,
+  userProfiles: PropTypes.objectOf(
+    PropTypes.shape({
+      image: PropTypes.string,
+      initials: PropTypes.string,
+      name: PropTypes.string
+    })
+  ).isRequired
 };
 
 type ResolvableToken = string | Promise<string> | (() => string) | (() => Promise<string>);
@@ -69,11 +77,13 @@ const ACSChatAdapter: FC<{
   endpointURL: string;
   threadId: string;
   token: ResolvableToken;
-}> = ({ children, endpointURL, threadId, token }) => {
+  userProfiles: UserProfiles;
+}> = ({ children, endpointURL, threadId, token, userProfiles }) => {
   // Lazy initializing constants to save loading speed and memory
   debug || (debug = createDebug('<ACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [initialToken, setInitialToken] = useState<string>(() => (typeof token === 'string' ? token : undefined));
+  const patchedUserProfiles = useMemo<UserProfiles>(() => userProfiles || {}, [userProfiles]);
 
   // Perf: decouple for callbacks.
   const tokenForCallbacksRef = useRef<ResolvableToken>();
@@ -119,9 +129,9 @@ const ACSChatAdapter: FC<{
       {/* <ChatThreadProvider> */}
       <ACSChatMessagesComposer>
         <ACSThreadMembersComposer>
-          <ActivitiesComposer>
-            <TypingUsersComposer>
-              <InternalACSChatAdapter>{children}</InternalACSChatAdapter>
+          <ActivitiesComposer userProfiles={patchedUserProfiles}>
+            <TypingUsersComposer userProfiles={patchedUserProfiles}>
+              <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
             </TypingUsersComposer>
           </ActivitiesComposer>
         </ACSThreadMembersComposer>
@@ -133,13 +143,23 @@ const ACSChatAdapter: FC<{
   );
 };
 
-ACSChatAdapter.defaultProps = {};
+ACSChatAdapter.defaultProps = {
+  userProfiles: {}
+};
 
+// TODO: Since ACS do not provide profile data, we should have a mapProfile function to convert userId -> (avatar image, initials, name).
 ACSChatAdapter.propTypes = {
   children: PropTypes.func.isRequired,
   endpointURL: PropTypes.string.isRequired,
   token: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
-  threadId: PropTypes.string.isRequired
+  threadId: PropTypes.string.isRequired,
+  userProfiles: PropTypes.objectOf(
+    PropTypes.shape({
+      image: PropTypes.string,
+      initials: PropTypes.string,
+      name: PropTypes.string
+    })
+  )
 };
 
 export default ACSChatAdapter;

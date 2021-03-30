@@ -29,7 +29,8 @@ const DefaultAvatar = ({ 'aria-hidden': ariaHidden, className, image, initials, 
       aria-hidden={ariaHidden}
       className={classNames('webchat__default-avatar', rootClassName, avatarStyleSet + '', (className || '') + '')}
     >
-      {!!initials && <InitialsAvatar initials={initials} self={self} />}
+      {/* If the user does not have initials or image, we will always show a circle, to distinguish them from other users. */}
+      <InitialsAvatar initials={initials} self={self} />
       {!!image && <ImageAvatar image={image} />}
     </div>
   );
