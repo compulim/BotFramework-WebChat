@@ -83,6 +83,7 @@ const Composer = ({
   getDirectLineOAuthCodeChallenge,
   grammars,
   groupActivitiesMiddleware,
+  honorReadReceipts,
   internalErrorBoxClass,
   locale,
   notifications,
@@ -90,7 +91,6 @@ const Composer = ({
   overrideLocalizedStrings,
   renderMarkdown,
   resend,
-  returnReadReceipt,
   selectVoice,
   sendEvent,
   sendFiles,
@@ -98,6 +98,7 @@ const Composer = ({
   sendMessageBack,
   sendPostBack,
   sendTypingIndicator,
+  setHonorReadReceipts,
   styleOptions,
   toastMiddleware,
   toastRenderer,
@@ -110,14 +111,24 @@ const Composer = ({
 }) => {
   debug || (debug = createDebug('<Composer>', { backgroundColor: 'red' }));
 
+  // eslint-disable-next-line complexity
   useMemo(() => {
+    if (
+      (typeof honorReadReceipts === 'undefined' && typeof setHonorReadReceipts !== 'undefined') ||
+      (typeof honorReadReceipts !== 'undefined' && typeof setHonorReadReceipts === 'undefined')
+    ) {
+      debug(
+        '🔥🔥🔥 If chat adapter does not support read receipts, it must set both "honorReadReceipts" and "setHonorReadReceipts" to "undefined".'
+      );
+    }
+
     const capabilities = [];
 
+    capabilities.push(`${setHonorReadReceipts ? '✔️' : '❌'} Honor read receipts`);
     capabilities.push(`${notifications ? '✔️' : '❌'} Notifications (includes connectivity status)`);
     capabilities.push(`${userId ? '✔️' : '❌'} Provide user ID`);
     capabilities.push(`${typeof username === 'string' ? '✔️' : '❌'} Provide username`);
     capabilities.push(`${resend ? '✔️' : '❌'} Resend activity`);
-    capabilities.push(`${returnReadReceipt ? '✔️' : '❌'} Return read receipts`);
     capabilities.push(`${sendEvent ? '✔️' : '❌'} Send event`);
     capabilities.push(`${sendFiles ? '✔️' : '❌'} Send file`);
     capabilities.push(`${sendMessage ? '✔️' : '❌'} Send text message`);
@@ -150,6 +161,9 @@ const Composer = ({
 
   const patchedDir = useMemo(() => (dir === 'ltr' || dir === 'rtl' ? dir : 'auto'), [dir]);
   const patchedGrammars = useMemo(() => grammars || [], [grammars]);
+
+  // If the chat adapter support read receipts, the value must be boolean, otherwise, undefined.
+  const patchedHonorReadReceipts = typeof setHonorReadReceipts === 'undefined' ? undefined : !!honorReadReceipts;
 
   const patchedSelectVoice = useMemo(() => selectVoice || defaultSelectVoice.bind(null, { language: locale }), [
     locale,
@@ -396,7 +410,11 @@ const Composer = ({
 
   return (
     <WebChatAPIContext.Provider value={context}>
-      <ActivitiesComposer activities={activities} returnReadReceipt={returnReadReceipt}>
+      <ActivitiesComposer
+        activities={activities}
+        honorReadReceipts={patchedHonorReadReceipts}
+        setHonorReadReceipts={setHonorReadReceipts}
+      >
         <NotificationComposer chatAdapterNotifications={notifications}>
           <TypingComposer
             emitTypingIndicator={emitTypingIndicator}
@@ -548,6 +566,7 @@ Composer.defaultProps = {
   getDirectLineOAuthCodeChallenge: undefined,
   grammars: [],
   groupActivitiesMiddleware: undefined,
+  honorReadReceipts: undefined,
   internalErrorBoxClass: undefined,
   locale: window.navigator.language || 'en-US',
   notifications: undefined,
@@ -555,7 +574,6 @@ Composer.defaultProps = {
   overrideLocalizedStrings: undefined,
   renderMarkdown: undefined,
   resend: undefined,
-  returnReadReceipt: undefined,
   selectVoice: undefined,
   sendEvent: undefined,
   sendFiles: undefined,
@@ -563,6 +581,7 @@ Composer.defaultProps = {
   sendMessageBack: undefined,
   sendPostBack: undefined,
   sendTypingIndicator: true,
+  setHonorReadReceipts: undefined,
   styleOptions: {},
   toastMiddleware: undefined,
   toastRenderer: undefined,
@@ -596,6 +615,7 @@ Composer.propTypes = {
   getDirectLineOAuthCodeChallenge: PropTypes.func,
   grammars: PropTypes.arrayOf(PropTypes.string),
   groupActivitiesMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
+  honorReadReceipts: PropTypes.bool,
   internalErrorBoxClass: PropTypes.func, // This is for internal use only. We don't allow customization of error box.
   locale: PropTypes.string,
   notifications: PropTypes.arrayOf(
@@ -611,7 +631,6 @@ Composer.propTypes = {
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
   renderMarkdown: PropTypes.func,
   resend: PropTypes.func,
-  returnReadReceipt: PropTypes.func,
   selectVoice: PropTypes.func,
   sendEvent: PropTypes.func,
   sendFiles: PropTypes.func,
@@ -619,6 +638,7 @@ Composer.propTypes = {
   sendMessageBack: PropTypes.func,
   sendPostBack: PropTypes.func,
   sendTypingIndicator: PropTypes.bool,
+  setHonorReadReceipts: PropTypes.func,
   styleOptions: PropTypes.any,
   toastMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),
   toastRenderer: PropTypes.func,

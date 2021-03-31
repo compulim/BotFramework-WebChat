@@ -10,6 +10,7 @@ import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
+import HonorReadReceiptsComposer from './composers/HonorReadReceiptsCompose';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
 import TypingUsersComposer from './composers/TypingUsersComposer';
@@ -17,9 +18,9 @@ import useACSDisplayName from './hooks/useACSDisplayName';
 import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
 import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
+import useHonorReadReceipts from './hooks/useHonorReadReceipts';
 import useNotifications from './hooks/useNotifications';
 import useResend from './hooks/useResend';
-import useReturnReadReceipt from './hooks/useReturnReadReceipt';
 import useSendMessageWithTrackingNumber from './hooks/useSendMessageWithTrackingNumber';
 import useTypingUsers from './hooks/useTypingUsers';
 
@@ -32,13 +33,13 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [activities] = useActivities();
+  const [honorReadReceipts, setHonorReadReceipts] = useHonorReadReceipts();
   const [notifications] = useNotifications();
   const [typingUsers] = useTypingUsers();
   const [userId] = useACSUserId();
   const [username] = useACSDisplayName();
   const emitTypingIndicator = useEmitTypingIndicator();
   const resend = useResend();
-  const returnReadReceipt = useReturnReadReceipt();
   const sendMessage = useSendMessageWithTrackingNumber();
 
   internalDebug([`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')], [{ activities }]);
@@ -46,10 +47,11 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
   return children({
     activities,
     emitTypingIndicator,
+    honorReadReceipts,
     notifications,
     resend,
-    returnReadReceipt,
     sendMessage,
+    setHonorReadReceipts,
     typingUsers,
     userId,
     // TODO: Consider if we need "username" or could be derived from member list.
@@ -130,9 +132,11 @@ const ACSChatAdapter: FC<{
       <ACSChatMessagesComposer>
         <ACSThreadMembersComposer>
           <ActivitiesComposer userProfiles={patchedUserProfiles}>
-            <TypingUsersComposer userProfiles={patchedUserProfiles}>
-              <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
-            </TypingUsersComposer>
+            <HonorReadReceiptsComposer>
+              <TypingUsersComposer userProfiles={patchedUserProfiles}>
+                <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
+              </TypingUsersComposer>
+            </HonorReadReceiptsComposer>
           </ActivitiesComposer>
         </ACSThreadMembersComposer>
       </ACSChatMessagesComposer>

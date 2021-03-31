@@ -1,6 +1,5 @@
 import useActiveTyping from './useActiveTyping';
 import useActivities from './useActivities';
-import useAutoReturnReadReceipts from './useAutoReturnReadReceipts';
 import useAvatarForBot from './useAvatarForBot';
 import useAvatarForUser from './useAvatarForUser';
 import useByteFormatter from './useByteFormatter';
@@ -23,6 +22,7 @@ import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
 import useGrammars from './useGrammars';
 import useGroupActivities from './useGroupActivities';
 import useGroupTimestamp from './useGroupTimestamp';
+import useHonorReadReceipts from './useHonorReadReceipts';
 import useInputMode from './useInputMode';
 import useLanguage from './useLanguage';
 import useLastTypingAt from './useLastTypingAt';
@@ -69,7 +69,6 @@ import useWebSpeechPonyfill from './useWebSpeechPonyfill';
 export {
   useActiveTyping,
   useActivities,
-  useAutoReturnReadReceipts,
   useAvatarForBot,
   useAvatarForUser,
   useByteFormatter,
@@ -92,6 +91,7 @@ export {
   useGrammars,
   useGroupActivities,
   useGroupTimestamp,
+  useHonorReadReceipts,
   useInputMode,
   useLanguage,
   useLastTypingAt,

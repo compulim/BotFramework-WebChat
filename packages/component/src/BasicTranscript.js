@@ -46,7 +46,7 @@ import useUniqueId from './hooks/internal/useUniqueId';
 
 const {
   useActivities,
-  useAutoReturnReadReceipts,
+  useHonorReadReceipts,
   useCreateAvatarRenderer,
   useDirection,
   useGroupActivities,
@@ -1135,17 +1135,17 @@ const BasicTranscript = ({ className }) => {
   const scrollerRef = useRef(() => Infinity);
 
   const scroller = useCallback((...args) => scrollerRef.current(...args), [scrollerRef]);
-  const [_, setAutoReturnReadReceipts] = useAutoReturnReadReceipts();
+  const [, setHonorReadReceipts] = useHonorReadReceipts();
 
   useEffect(() => {
-    if (!document) {
+    if (!document || !setHonorReadReceipts) {
       return;
     }
 
     const handleVisibilityChange = ({ target: { visibilityState } }) => {
       debug(`Visibility changed to %c${visibilityState}%c`, ...styleConsole('purple'));
 
-      setAutoReturnReadReceipts(visibilityState !== 'hidden');
+      setHonorReadReceipts(visibilityState !== 'hidden');
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -1153,7 +1153,7 @@ const BasicTranscript = ({ className }) => {
     handleVisibilityChange({ target: document });
 
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [setAutoReturnReadReceipts]);
+  }, [setHonorReadReceipts]);
 
   return (
     <ReactScrollToBottomComposer scroller={scroller}>

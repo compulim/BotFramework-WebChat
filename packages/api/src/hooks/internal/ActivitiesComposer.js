@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import createDebug from '../../utils/debug';
-import fromWho from '../../utils/fromWho';
 import getActivityKey from '../../utils/getActivityKey';
-// import styleConsole from '../../utils/styleConsole';
 import useCreateActivityRenderer from '../useCreateActivityRenderer';
 import useCreateActivityStatusRenderer from '../useCreateActivityStatusRenderer';
 import useMemoAll from './useMemoAll';
@@ -14,7 +12,7 @@ import WebChatActivitiesContext from './WebChatActivitiesContext';
 
 let debug;
 
-const ActivitiesComposer = ({ activities, children, returnReadReceipt }) => {
+const ActivitiesComposer = ({ activities, children, honorReadReceipts, setHonorReadReceipts }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   // Validate every activity
@@ -49,34 +47,6 @@ const ActivitiesComposer = ({ activities, children, returnReadReceipt }) => {
 
     return activities;
   }, [activities]);
-
-  const [autoReturnReadReceipts, setAutoReturnReadReceipts] = useState(!!returnReadReceipt);
-
-  // Validate "userId" must be set.
-
-  const lastReadActivityKeyRef = useRef();
-
-  // TODO: Find a way to cache and only mark as read when activity key changed.
-  useMemo(() => {
-    if (!autoReturnReadReceipts || !returnReadReceipt) {
-      return;
-    }
-
-    for (let index = activities.length - 1; index >= 0; index--) {
-      const activity = activities[index];
-
-      if (fromWho(activity) === 'others') {
-        const activityKey = getActivityKey(activity);
-
-        if (lastReadActivityKeyRef.current !== activityKey) {
-          returnReadReceipt(activityKey);
-          lastReadActivityKeyRef.current = activityKey;
-        }
-
-        return;
-      }
-    }
-  }, [activities, autoReturnReadReceipts, lastReadActivityKeyRef, returnReadReceipt]);
 
   // Gets renderer for every activity.
   // Activities that are not visible will return a falsy renderer.
@@ -128,10 +98,10 @@ const ActivitiesComposer = ({ activities, children, returnReadReceipt }) => {
     () => ({
       activities,
       activitiesWithRenderer,
-      autoReturnReadReceipts,
-      setAutoReturnReadReceipts: returnReadReceipt && setAutoReturnReadReceipts
+      honorReadReceipts,
+      setHonorReadReceipts
     }),
-    [activities, activitiesWithRenderer, autoReturnReadReceipts, returnReadReceipt, setAutoReturnReadReceipts]
+    [activities, activitiesWithRenderer, honorReadReceipts, setHonorReadReceipts]
   );
 
   return <WebChatActivitiesContext.Provider value={context}>{children}</WebChatActivitiesContext.Provider>;
@@ -140,13 +110,15 @@ const ActivitiesComposer = ({ activities, children, returnReadReceipt }) => {
 ActivitiesComposer.defaultProps = {
   activities: undefined,
   children: undefined,
-  returnReadReceipt: undefined
+  honorReadReceipts: undefined,
+  setHonorReadReceipts: undefined
 };
 
 ActivitiesComposer.propTypes = {
   activities: PropTypes.array,
   children: PropTypes.any,
-  returnReadReceipt: PropTypes.func
+  honorReadReceipts: PropTypes.bool,
+  setHonorReadReceipts: PropTypes.func
 };
 
 export default ActivitiesComposer;
