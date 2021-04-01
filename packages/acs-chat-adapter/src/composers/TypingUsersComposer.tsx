@@ -1,44 +1,55 @@
 import PropTypes from 'prop-types';
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useRef } from 'react';
+import updateIn from 'simple-update-in';
 
 import { TypingUsers } from '../types/TypingUsers';
 import { UserProfiles } from '../types/UserProfiles';
 
 import { default as TypingUsersContext } from '../contexts/TypingUsersContext';
-import createACSTypingUserToWebChatTypingEntryConverter from '../converters/createACSTypingUserToWebChatTypingEntryConverter';
+import diffArray from '../utils/diffArray';
 import useACSTypingUsers from '../hooks/useACSTypingUsers';
 import useACSUserId from '../hooks/useACSUserId';
 import useDebugDeps from '../hooks/useDebugDeps';
-import useMapper from '../hooks/useMapper';
+import usePrevious from '../hooks/usePrevious';
 
 const TypingUsersComposer: FC<{ userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
+  const [acsTypingUsers] = useACSTypingUsers();
   const [userId] = useACSUserId();
 
-  const [acsTypingUsers] = useACSTypingUsers();
+  const acsTypingUserIdsExcludeSelf = useMemo(() => acsTypingUsers.filter(targetUserId => targetUserId !== userId), [
+    acsTypingUsers,
+    userId
+  ]);
 
-  const acsTypingUsersExcludeSelf = useMemo(
-    () => acsTypingUsers.filter(member => member.user.communicationUserId !== userId),
-    [acsTypingUsers]
+  const prevACSTypingUserIdsExcludeSelf = usePrevious(acsTypingUserIdsExcludeSelf) || [];
+
+  const { removed } = diffArray(prevACSTypingUserIdsExcludeSelf, acsTypingUserIdsExcludeSelf);
+
+  const typingUsersRef = useRef<TypingUsers>({});
+  let { current: nextTypingUsers } = typingUsersRef;
+
+  nextTypingUsers = updateIn(nextTypingUsers, [(_, userId: string) => removed.includes(userId)]);
+
+  nextTypingUsers = acsTypingUserIdsExcludeSelf.reduce(
+    (nextTypingUsers, userId) => updateIn(nextTypingUsers, [userId, 'name'], () => (userProfiles[userId] || {}).name),
+    nextTypingUsers
   );
-
-  const acsTypingUserToWebChatTypingEntry = useMemo(() => createACSTypingUserToWebChatTypingEntryConverter(userProfiles), [userProfiles]);
-
-  const typingEntries = useMapper(acsTypingUsersExcludeSelf, acsTypingUserToWebChatTypingEntry);
-
-  const typingUsers = useMemo<[TypingUsers]>(() => [Object.fromEntries(typingEntries)], [typingEntries]);
 
   useDebugDeps(
     {
-      acsTypingUsers: acsTypingUsers,
-      acsTypingUsersExcludeSelf,
-      typingEntries,
-      typingUsers,
-      userId
+      acsTypingUsers,
+      acsTypingUserIdsExcludeSelf,
+      changed: typingUsersRef.current !== nextTypingUsers,
+      nextTypingUsers,
+      userId,
+      typingUsers: typingUsersRef.current
     },
     '<ACSTypingUsersComposer>'
   );
 
-  return <TypingUsersContext.Provider value={typingUsers}>{children}</TypingUsersContext.Provider>;
+  typingUsersRef.current = nextTypingUsers;
+
+  return <TypingUsersContext.Provider value={[nextTypingUsers]}>{children}</TypingUsersContext.Provider>;
 };
 
 TypingUsersComposer.propTypes = {

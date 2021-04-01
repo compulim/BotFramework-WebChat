@@ -121,7 +121,7 @@ export default async function playCognitiveServicesStream(audioContext, stream, 
     const read = () =>
       Promise.race([
         // Abort will gracefully end the queue. We will check signal.aborted later to throw abort exception.
-        // eslint-disable-next-line no-empty-function
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         abortPromise.catch(() => {}),
         stream
           .read(array.buffer)

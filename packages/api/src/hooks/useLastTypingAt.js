@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import useWebChatTypingContext from './internal/useWebChatTypingContext';
+import { useContext } from '../contexts/internal/TypingContext';
 
 let showDeprecationNotes = true;
 
@@ -13,7 +13,7 @@ export default function useLastTypingAt() {
     showDeprecationNotes = false;
   }
 
-  const { typingUsers } = useWebChatTypingContext();
+  const { typingUsers } = useContext();
 
   return useMemo(() => Object.fromEntries(Object.entries(typingUsers).map(([userId, { at }]) => [userId, at])), [
     typingUsers

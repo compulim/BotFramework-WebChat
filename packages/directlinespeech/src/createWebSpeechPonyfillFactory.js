@@ -11,7 +11,7 @@ import playCognitiveServicesStream from './playCognitiveServicesStream';
 import playWhiteNoise from './playWhiteNoise';
 import SpeechSynthesisAudioStreamUtterance from './SpeechSynthesisAudioStreamUtterance';
 
-export default function({
+export default function ({
   audioContext,
   enableTelemetry,
   ponyfill = {

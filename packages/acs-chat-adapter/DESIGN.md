@@ -90,17 +90,19 @@ Chat provider may also use a different protocol or API to send the display name 
 ### Design
 
 ```ts
-declare type TypingUsers {
-  [userId: string]: {
-    /** Display name of the user who is typing */
-    name?: string;
-  };
-}
+declare type TypingUsers = {
+   [userId: string]: {
+      /** Display name of the user who is typing. */
+      name?: string;
+   };
+};
 ```
 
 Chat adapter should provide the mentioned data structure, with the display name of the user. In US, the display name is likely to be the first name of the user. In Japan, the display name is likely to be the surname of the user.
 
 Display name differs from country to country. Chat adapter may need to know the locale to get the display name properly.
+
+If the chat UI need to know the time when typing started, such as for debouncing or ordering purpose, the UI should perform reconciliation and mark the time itself.
 
 ### 🔥🔥🔥 Questions
 
@@ -176,5 +178,7 @@ If chat provider only support a single type of signal, chat adapter is responsib
 Chat providers may support this feature in a various ways:
 
 ### Design
+
+### Alternatives considered
 
 ### Exceptions

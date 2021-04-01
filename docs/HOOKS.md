@@ -134,14 +134,20 @@ Following is the list of hooks supported by Web Chat API.
 ```js
 interface Typing {
   at: number;
-  expireAt: number;
+  expireAt: number; // TODO: Deprecate this.
   name: string;
-  role: 'bot' | 'user';
+  role: 'bot' | 'user'; // TODO: Deprecate this.
 }
 
 useActiveTyping(expireAfter?: number): [{ [id: string]: Typing }]
 ```
 <!-- prettier-ignore-end -->
+
+TODO: We are deprecating the `expireAfter` parameters. Some chat adapters may not "pulse" the typing signals, but instead, sending start/stop signals (a.k.a. toggle signals). `expireAfter` don't work with toggle signals because there is no "pulse", i.e. no intermittent signals to refresh the indicator. As no intermittent signal, we need to always keep the typing indicator "on".
+
+TODO: `expireAt` is also deprecated.
+
+TODO: `role` is also deprecated, because it is always `'bot'`.
 
 This hook will return a list of participants who are actively typing, including the start typing time (`at`) and expiration time (`expireAt`), the name and the role of the participant.
 

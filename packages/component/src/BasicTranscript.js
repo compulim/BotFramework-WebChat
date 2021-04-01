@@ -783,6 +783,8 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             </Fade>
           ))}
         </section>
+        {/* We will fix this later. */}
+        {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
         <InternalTranscriptScrollable
           onFocusActivity={handleFocusActivity}
           onFocusFiller={handleFocusFiller}

@@ -15,48 +15,51 @@ export default function usePostActivity() {
   const sendMessageBack = useSendMessageBack();
   const sendPostBack = useSendPostBack();
 
-  return useCallback(activity => {
-    // TODO: How to handle channel data?
-    const { channelData = {} } = activity;
+  return useCallback(
+    activity => {
+      // TODO: How to handle channel data?
+      const { channelData = {} } = activity;
 
-    // TODO: Rename to "webchat:message-back:display-text"
-    if (channelData.messageBack) {
-      if (sendMessageBack) {
-        return sendMessageBack(activity.value, activity.text, channelData.messageBack.displayText);
+      // TODO: Rename to "webchat:message-back:display-text"
+      if (channelData.messageBack) {
+        if (sendMessageBack) {
+          return sendMessageBack(activity.value, activity.text, channelData.messageBack.displayText);
+        }
+
+        return warn('This chat adapter does not support sending "messageBack" activity.');
+      } else if (channelData.postBack) {
+        if (sendPostBack) {
+          return sendPostBack(activity.text || activity.value);
+        }
+
+        return warn('This chat adapter does not support sending "postBack" activity.');
+      } else if (activity.attachments) {
+        if (sendFiles) {
+          return sendFiles(
+            activity.attachments.map(({ contentUrl, name, thumbnailUrl }, index) => ({
+              name,
+              size: (channelData.attachmentSizes || [])[index],
+              thumbnail: thumbnailUrl,
+              url: contentUrl
+            }))
+          );
+        }
+
+        return warn('This chat adapter does not support sending activity with attachments.');
+      } else if (activity.type === 'message') {
+        if (sendMessage) {
+          return sendMessage(activity.text);
+        }
+
+        return warn('This chat adapter does not support sending plain text activity.');
+      } else if (activity.type === 'event') {
+        if (sendEvent) {
+          return sendEvent();
+        }
+
+        return warn('This chat adapter does not support sending event activity.');
       }
-
-      return warn('This chat adapter does not support sending "messageBack" activity.');
-    } else if (channelData.postBack) {
-      if (sendPostBack) {
-        return sendPostBack(activity.text || activity.value);
-      }
-
-      return warn('This chat adapter does not support sending "postBack" activity.');
-    } else if (activity.attachments) {
-      if (sendFiles) {
-        return sendFiles(
-          activity.attachments.map(({ contentUrl, name, thumbnailUrl }, index) => ({
-            name,
-            size: (channelData.attachmentSizes || [])[index],
-            thumbnail: thumbnailUrl,
-            url: contentUrl
-          }))
-        );
-      }
-
-      return warn('This chat adapter does not support sending activity with attachments.');
-    } else if (activity.type === 'message') {
-      if (sendMessage) {
-        return sendMessage(activity.text);
-      }
-
-      return warn('This chat adapter does not support sending plain text activity.');
-    } else if (activity.type === 'event') {
-      if (sendEvent) {
-        return sendEvent();
-      }
-
-      return warn('This chat adapter does not support sending event activity.');
-    }
-  });
+    },
+    [sendEvent, sendFiles, sendMessage, sendMessageBack, sendPostBack]
+  );
 }

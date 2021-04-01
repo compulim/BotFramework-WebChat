@@ -1,11 +1,17 @@
 extends:
 - plugin:react/recommended
+- plugin:react-hooks/recommended
 plugins:
-- prettier
+- react
 - react-hooks
 rules:
-# plugins
-  prettier/prettier: error
+  # We will rework on these rules when the package is fully TypeScript-ed
+  "@typescript-eslint/explicit-member-accessibility": off
+  "@typescript-eslint/explicit-function-return-type": off
+  "@typescript-eslint/explicit-module-boundary-types": off
+  "@typescript-eslint/indent": off
+  "@typescript-eslint/no-explicit-any": off
+  "@typescript-eslint/interface-name-prefix": off
 
   react/button-has-type: error
   react/default-props-match-prop-types: error

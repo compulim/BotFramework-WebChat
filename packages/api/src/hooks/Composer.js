@@ -642,10 +642,7 @@ Composer.propTypes = {
   typingIndicatorRenderer: PropTypes.func,
   typingUsers: PropTypes.objectOf(
     PropTypes.shape({
-      at: PropTypes.number,
-      name: PropTypes.string,
-      role: PropTypes.string,
-      who: PropTypes.string
+      name: PropTypes.string
     })
   ),
   userId: PropTypes.string,

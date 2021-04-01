@@ -2,6 +2,8 @@
 
 import { call, cancel, cancelled, fork, put, race, take } from 'redux-saga/effects';
 
+// We are only importing types from "botframework-directlinejs". It is okay that DLJS is not in prod deps list because types are only used during dev.
+// eslint-disable-next-line node/no-unpublished-import
 import { ConnectionStatus } from 'botframework-directlinejs';
 import { decode } from 'jsonwebtoken';
 

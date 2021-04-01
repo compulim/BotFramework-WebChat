@@ -1,3 +1,7 @@
+# botframework-directlinespeech-sdk is potentially an isolated package.
+# Thus, we should not inherits any settings from the root /.eslintrc.yml.
+# We should copy those settings.
+
 env:
   browser: true
   es6: true
@@ -5,15 +9,28 @@ env:
 extends:
 - eslint:recommended
 - plugin:node/recommended-module
+- plugin:@typescript-eslint/recommended
 globals:
   React: readonly
+parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
     jsx: true
   ecmaVersion: 10
   sourceType: module
+plugins:
+- node
+- prettier
+- "@typescript-eslint/eslint-plugin"
 root: true
 rules:
+  # We will rework on these rules
+  "@typescript-eslint/explicit-member-accessibility": off
+  "@typescript-eslint/explicit-function-return-type": off
+  "@typescript-eslint/explicit-module-boundary-types": off
+  "@typescript-eslint/indent": off
+  "@typescript-eslint/no-explicit-any": off
+  "@typescript-eslint/interface-name-prefix": off
   # Only list rules that are not in *:recommended set
   # If rules are set to disable the one in *:recommended, please elaborate the reason
 
@@ -47,7 +64,10 @@ rules:
   no-caller: error
   no-div-regex: error
   no-else-return: error
-  no-empty-function: error
+
+  no-empty-function: off
+  "@typescript-eslint/no-empty-function": error
+
   no-eq-null: error
   no-eval: error
   no-extend-native: error
@@ -112,21 +132,14 @@ rules:
   # "undefined" is commonly used for defaults
   # no-undefined: off
 
-  no-unused-vars:
+  no-unused-vars: off
+  "@typescript-eslint/no-unused-vars":
   - error
   - argsIgnorePattern: ^_$
     varsIgnorePattern: ^_
-  no-use-before-define: error
 
-  # Group - Node.js and CommonJS eslint-plugin-node
-  node/callback-return: error
-  node/global-require: error
-  node/handle-callback-err: error
-  node/no-mixed-requires: error
-  node/no-new-require: error
-  node/no-path-concat: error
-  node/no-sync: error
-  node/prefer-global/buffer: error
+  no-use-before-define: off
+  "@typescript-eslint/no-use-before-define": error
 
   # Group - ECMAScript 6
   arrow-body-style:
@@ -178,6 +191,10 @@ rules:
   yield-star-spacing:
   - error
   - after
+
+  # plugins
+  prettier/prettier: error
+
 settings:
   react:
     version: detect

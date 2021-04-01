@@ -5,7 +5,9 @@ class SpeechSynthesisAudioStreamUtterance extends EventTarget {
     super();
 
     if (audioStream && !(audioStream.format && typeof audioStream.read === 'function')) {
-      throw new Error('botframework-directlinespeech-sdk: If the first argument is specified, it must be a Cognitive Services audio stream.');
+      throw new Error(
+        'botframework-directlinespeech-sdk: If the first argument is specified, it must be a Cognitive Services audio stream.'
+      );
     }
 
     this.audioStream = audioStream;

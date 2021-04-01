@@ -1,13 +1,11 @@
 extends:
 - plugin:react/recommended
-- plugin:@typescript-eslint/recommended
-parser: "@typescript-eslint/parser"
+- plugin:react-hooks/recommended
 plugins:
-- prettier
+- react
 - react-hooks
-- "@typescript-eslint"
 rules:
-  # We will rework on these rules
+  # We will rework on these rules when the package is fully TypeScript-ed
   "@typescript-eslint/explicit-member-accessibility": off
   "@typescript-eslint/explicit-function-return-type": off
   "@typescript-eslint/explicit-module-boundary-types": off
@@ -15,12 +13,10 @@ rules:
   "@typescript-eslint/no-explicit-any": off
   "@typescript-eslint/interface-name-prefix": off
 
-  # plugins
-  prettier/prettier: error
-
   react/button-has-type: error
   react/default-props-match-prop-types: error
   react/destructuring-assignment: error
+  react/display-name: off
   react/forbid-component-props:
   - error
   - forbid:
@@ -85,7 +81,7 @@ rules:
   # - allow: literal
   react/jsx-fragments:
   - error
-  - syntax
+  - element
   react/jsx-pascal-case: error
   react/jsx-props-no-multi-spaces: error
   react/jsx-sort-default-props: error
@@ -96,11 +92,6 @@ rules:
     beforeClosing: never
     beforeSelfClosing: always
     closingSlash: never
-  react/jsx-wrap-multilines: error
+  react/jsx-wrap-multilines: error # Conflict with no-extra-parens
   react-hooks/rules-of-hooks: error
   react-hooks/exhaustive-deps: warn
-
-  # The correct way to use with typescript-eslint is to disable the core version.
-  # https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md#how-to-use
-  no-use-before-define: off
-  "@typescript-eslint/no-use-before-define": error

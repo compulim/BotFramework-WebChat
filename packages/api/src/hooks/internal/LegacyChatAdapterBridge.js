@@ -82,6 +82,8 @@ const InternalLegacyChatAdapterBridge = ({
   // TODO: Filter out typing by self.
   const typingUsers = useSelector(({ typing }) => typing);
 
+  // TODO: Read typingAnimationDuration from styleOptions.
+
   const patchedActivities = usePatchActivities(activities, styleOptions);
 
   const emitTyping = useCallback(() => {

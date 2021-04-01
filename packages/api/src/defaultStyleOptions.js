@@ -163,7 +163,7 @@ const DEFAULT_OPTIONS = {
   slowConnectionAfter: 15000,
 
   typingAnimationBackgroundImage: null,
-  typingAnimationDuration: 5000,
+  typingAnimationDuration: 5000, // TODO: Deprecate this because it is only required in Direct Line protocol.
   typingAnimationHeight: 20,
   typingAnimationWidth: 64,
   typingIndicatorStyle: 'text', // 'dot'

@@ -1,5 +1,5 @@
 // This is for the racing between sagaMiddleware and store
-/* eslint no-use-before-define: "off" */
+/* eslint @typescript-eslint/no-use-before-define: "off" */
 
 import { applyMiddleware, createStore as createReduxStore } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';

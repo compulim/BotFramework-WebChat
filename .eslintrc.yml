@@ -4,13 +4,18 @@ env:
   jest: true
 extends:
 - eslint:recommended
+- plugin:@typescript-eslint/recommended
 globals:
   React: readonly
+parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
     jsx: true
   ecmaVersion: 10
   sourceType: module
+plugins:
+- prettier
+- "@typescript-eslint/eslint-plugin"
 root: true
 rules:
   # Only list rules that are not in *:recommended set
@@ -46,7 +51,10 @@ rules:
   no-caller: error
   no-div-regex: error
   no-else-return: error
-  no-empty-function: error
+
+  no-empty-function: off
+  "@typescript-eslint/no-empty-function": error
+
   no-eq-null: error
   no-eval: error
   no-extend-native: error
@@ -111,11 +119,14 @@ rules:
   # "undefined" is commonly used for defaults
   # no-undefined: off
 
-  no-unused-vars:
+  no-unused-vars: off
+  "@typescript-eslint/no-unused-vars":
   - error
   - argsIgnorePattern: ^_$
     varsIgnorePattern: ^_
-  no-use-before-define: error
+
+  no-use-before-define: off
+  "@typescript-eslint/no-use-before-define": error
 
   # Group - ECMAScript 6
   arrow-body-style:
@@ -167,6 +178,14 @@ rules:
   yield-star-spacing:
   - error
   - after
+
+  # plugins
+  prettier/prettier: error
+
 settings:
+  node:
+    tryExtensions:
+    - .js
+    - .ts
   react:
     version: detect
