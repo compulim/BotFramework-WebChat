@@ -13,8 +13,8 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
   debug || (debug = createDebug('<NotificationComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [localNotifications, setLocalNotifications] = useState({});
-  const ourChatAdapterNotificationsRef = useRef({});
   const forceRender = useForceRender();
+  const ourChatAdapterNotificationsRef = useRef({});
 
   useMemoWithPrevious(
     (prevChatAdapterNotifications = []) => {
@@ -102,7 +102,7 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
 
   const notifications = useMemo(() => ({ ...ourChatAdapterNotificationsRef.current, ...localNotifications }), [
     localNotifications,
-    ourChatAdapterNotificationsRef
+    ourChatAdapterNotificationsRef.current
   ]);
 
   debug(

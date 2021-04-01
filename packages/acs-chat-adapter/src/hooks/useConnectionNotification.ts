@@ -5,6 +5,7 @@ import AbortController from 'abort-controller-es5';
 import { Notification } from '../types/Notification';
 
 import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 
 let debug;
 
@@ -26,6 +27,8 @@ export default function useConnectionNotification(): [Notification] {
     // eslint-disable-next-line wrap-iife
     (async function () {
       try {
+        debug('Fetching first set of messages');
+
         await fetchMessages();
       } catch (err) {
         return (
@@ -46,6 +49,8 @@ export default function useConnectionNotification(): [Notification] {
 
     return () => abortController.abort();
   }, [fetchMessages, setConnectionNotification]);
+
+  debug(`Connectivity status is %c${connectionNotification.data}%c`, ...styleConsole('purple'));
 
   return [connectionNotification];
 }
