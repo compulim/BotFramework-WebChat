@@ -17,7 +17,7 @@ import TypingUsersComposer from './composers/TypingUsersComposer';
 import useACSDisplayName from './hooks/useACSDisplayName';
 import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
-import useEmitTypingIndicator from './hooks/useEmitTypingIndicator';
+import useEmitTyping from './hooks/useEmitTyping';
 import useHonorReadReceipts from './hooks/useHonorReadReceipts';
 import useNotifications from './hooks/useNotifications';
 import useResend from './hooks/useResend';
@@ -38,7 +38,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
   const [typingUsers] = useTypingUsers();
   const [userId] = useACSUserId();
   const [username] = useACSDisplayName();
-  const emitTypingIndicator = useEmitTypingIndicator();
+  const emitTyping = useEmitTyping();
   const resend = useResend();
   const sendMessage = useSendMessageWithTrackingNumber();
 
@@ -46,7 +46,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
 
   return children({
     activities,
-    emitTypingIndicator,
+    emitTyping,
     honorReadReceipts,
     notifications,
     resend,

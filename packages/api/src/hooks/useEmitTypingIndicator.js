@@ -1,5 +1,5 @@
 import useWebChatTypingContext from './internal/useWebChatTypingContext';
 
 export default function useEmitTypingIndicator() {
-  return useWebChatTypingContext().emitTypingIndicator;
+  return useWebChatTypingContext().emitTyping;
 }

@@ -84,7 +84,7 @@ const InternalLegacyChatAdapterBridge = ({
 
   const patchedActivities = usePatchActivities(activities, styleOptions);
 
-  const emitTypingIndicator = useCallback(() => {
+  const emitTyping = useCallback(() => {
     dispatch(createEmitTypingIndicatorAction());
   }, [dispatch]);
 
@@ -203,7 +203,7 @@ const InternalLegacyChatAdapterBridge = ({
     children({
       activities: patchedActivities,
       directLineReferenceGrammarId,
-      emitTypingIndicator,
+      emitTyping,
       getDirectLineOAuthCodeChallenge,
       notifications,
       resendActivity,

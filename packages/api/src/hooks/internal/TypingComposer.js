@@ -3,28 +3,23 @@ import React, { useMemo } from 'react';
 
 import WebChatTypingContext from './WebChatTypingContext';
 
-const TypingComposer = ({
-  children,
-  emitTypingIndicator: emitTypingIndicatorFromProps,
-  sendTypingIndicator,
-  typingUsers
-}) => {
-  const emitTypingIndicator = useMemo(
+const TypingComposer = ({ children, emitTyping: emitTypingFromProps, sendTypingIndicator, typingUsers }) => {
+  const emitTyping = useMemo(
     () =>
-      emitTypingIndicatorFromProps &&
+      emitTypingFromProps &&
       (() => {
-        sendTypingIndicator && emitTypingIndicatorFromProps();
+        sendTypingIndicator && emitTypingFromProps();
       }),
-    [emitTypingIndicatorFromProps, sendTypingIndicator]
+    [emitTypingFromProps, sendTypingIndicator]
   );
 
   const context = useMemo(
     () => ({
-      emitTypingIndicator,
+      emitTyping,
       sendTypingIndicator,
       typingUsers
     }),
-    [emitTypingIndicator, sendTypingIndicator, typingUsers]
+    [emitTyping, sendTypingIndicator, typingUsers]
   );
 
   return <WebChatTypingContext.Provider value={context}>{children}</WebChatTypingContext.Provider>;
@@ -32,13 +27,13 @@ const TypingComposer = ({
 
 TypingComposer.defaultProps = {
   children: undefined,
-  emitTypingIndicator: undefined,
+  emitTyping: undefined,
   typingUsers: undefined
 };
 
 TypingComposer.propTypes = {
   children: PropTypes.any,
-  emitTypingIndicator: PropTypes.func,
+  emitTyping: PropTypes.func,
   sendTypingIndicator: PropTypes.bool.isRequired,
   typingUsers: PropTypes.objectOf(
     PropTypes.shape({

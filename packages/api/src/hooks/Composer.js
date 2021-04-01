@@ -79,7 +79,7 @@ const Composer = ({
   directLineReferenceGrammarId,
   disabled,
   downscaleImageToDataURL,
-  emitTypingIndicator,
+  emitTyping,
   getDirectLineOAuthCodeChallenge,
   grammars,
   groupActivitiesMiddleware,
@@ -140,11 +140,11 @@ const Composer = ({
       capabilities.push('✔️ Typing indicator (receive)');
     }
 
-    if (emitTypingIndicator) {
+    if (emitTyping) {
       capabilities.push('✔️ Typing indicator (send)');
     }
 
-    if (!emitTypingIndicator && !typingUsers) {
+    if (!emitTyping && !typingUsers) {
       capabilities.push('❌ Typing indicator (send and receive)');
     }
 
@@ -416,11 +416,7 @@ const Composer = ({
         setHonorReadReceipts={setHonorReadReceipts}
       >
         <NotificationComposer chatAdapterNotifications={notifications}>
-          <TypingComposer
-            emitTypingIndicator={emitTypingIndicator}
-            sendTypingIndicator={sendTypingIndicator}
-            typingUsers={typingUsers}
-          >
+          <TypingComposer emitTyping={emitTyping} sendTypingIndicator={sendTypingIndicator} typingUsers={typingUsers}>
             <InputComposer
               resend={resend}
               sendEvent={sendEvent}
@@ -562,7 +558,7 @@ Composer.defaultProps = {
   directLineReferenceGrammarId: undefined,
   disabled: false,
   downscaleImageToDataURL: undefined,
-  emitTypingIndicator: undefined,
+  emitTyping: undefined,
   getDirectLineOAuthCodeChallenge: undefined,
   grammars: [],
   groupActivitiesMiddleware: undefined,
@@ -611,7 +607,7 @@ Composer.propTypes = {
   directLineReferenceGrammarId: PropTypes.string,
   disabled: PropTypes.bool,
   downscaleImageToDataURL: PropTypes.func,
-  emitTypingIndicator: PropTypes.func,
+  emitTyping: PropTypes.func,
   getDirectLineOAuthCodeChallenge: PropTypes.func,
   grammars: PropTypes.arrayOf(PropTypes.string),
   groupActivitiesMiddleware: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.func), PropTypes.func]),

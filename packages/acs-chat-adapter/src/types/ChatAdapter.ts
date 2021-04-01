@@ -11,7 +11,7 @@ export type ChatAdapter = {
   activities?: Activity[];
 
   /** Emits a typing indicator with best effort. */
-  emitTypingIndicator?: () => void;
+  emitTyping?: () => void;
 
   /**
    * True, if the chat adapter will honor read receipts, otherwise, false.
