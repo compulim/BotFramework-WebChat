@@ -15,9 +15,9 @@
 
 # Topics
 
--  [Return read receipts](#return-read-receipts)
--  [Receiving typing signals](#receiving-typing-signals)
--  [Sending typing signals](#sending-typing-signals)
+- [Return read receipts](#return-read-receipts)
+- [Receiving typing signals](#receiving-typing-signals)
+- [Sending typing signals](#sending-typing-signals)
 
 ## Return read receipts
 
@@ -29,10 +29,10 @@ Chat UI will return read receipts when the user read activity.
 
 Chat providers may support this feature in a various ways:
 
--  Return one read receipt for the last message
-   -  Pass the ID of the last message
-   -  Without passing anything
--  Return many read receipts for every message read
+- Return one read receipt for the last message
+  - Pass the ID of the last message
+  - Without passing anything
+- Return many read receipts for every message read
 
 Not every activity is human-readable. Chat adapter should decide which activity to return.
 
@@ -76,12 +76,12 @@ Chat UI will show "John is typing" when it receives a typing signal from chat ad
 
 Chat providers may support this feature in a various ways:
 
--  Single type of signal
-   -  Send "John is typing" signal periodically, commonly, once every 3 to 10 secodns
-   -  If no "John is typing" signal is received for a certain period, adapter should consider John stopped typing
--  Two types of signal
-   -  Send "John is typing" signal
-   -  Send "John stopped typing" signal
+- Pulse: single type of signal
+  - Send "John is typing" signal periodically, commonly, once every 3 to 10 secodns
+  - If no "John is typing" signal is received for a certain period, adapter should consider John stopped typing
+- Toggle: two types of signal
+  - Send "John is typing" signal
+  - Send "John stopped typing" signal
 
 If the signal is sent periodically, it is up to the chat adapter or chat provider to define the period. Chat UI has no interests in this value and should not know about it.
 
@@ -91,10 +91,10 @@ Chat provider may also use a different protocol or API to send the display name 
 
 ```ts
 declare type TypingUsers = {
-   [userId: string]: {
-      /** Display name of the user who is typing. */
-      name?: string;
-   };
+  [userId: string]: {
+    /** Display name of the user who is typing. */
+    name?: string;
+  };
 };
 ```
 
@@ -106,10 +106,10 @@ If the chat UI need to know the time when typing started, such as for debouncing
 
 ### 🔥🔥🔥 Questions
 
--  Chat adapter or provider should not know about the locale
-   -  It may be difficult to change the locale on-the-fly, as the chat adapter may potentially need to ask chat provider to change locale for that particular WebSocket connection
--  If chat UI is going to handle the localization of names, should chat adapter pass a complex name structure?
-   -  It seems too complicated for normal developers
+- Chat adapter or provider should not know about the locale
+  - It may be difficult to change the locale on-the-fly, as the chat adapter may potentially need to ask chat provider to change locale for that particular WebSocket connection
+- If chat UI is going to handle the localization of names, should chat adapter pass a complex name structure?
+  - It seems too complicated for normal developers
 
 ```ts
 {
@@ -136,12 +136,12 @@ Chat UI will send typing signal when the user is typing, inputting via voice, or
 
 Chat providers may support this feature in a various ways:
 
--  Single type of signal
-   -  Send "user is typing" signal periodically, commonly, once every 3 to 10 seconds
-   -  If no "user is typing" signal is received for a certain period, provider will consider the user stopped typing
--  Two types of signal
-   -  Send "user is typing" signal
-   -  Send "user stopped typing" signal
+- Pulse: single type of signal
+  - Send "user is typing" signal periodically, commonly, once every 3 to 10 seconds
+  - If no "user is typing" signal is received for a certain period, provider will consider the user stopped typing
+- Toggle: two types of signal
+  - Send "user is typing" signal
+  - Send "user stopped typing" signal
 
 If the signal is sent periodically, it is up to the chat adapter or chat provider to define the period. Chat UI has no interests in this value and should not know about it.
 
@@ -158,10 +158,10 @@ declare function emitTyping(started?: boolean = true): void;
 
 Chat UI will send two types of signal: "user is typing" and "user stopped typing":
 
--  When the user start typing, a "user is typing" signal will be sent
--  When the user completed a message by sending it, a "user stopped typing" signal will be sent
--  When the user paused typing without completing a message, the chat UI will send "user stopped typing" signal after a predefined period
-   -  The period is defined by the chat UI
+- When the user start typing, a "user is typing" signal will be sent
+- When the user completed a message by sending it, a "user stopped typing" signal will be sent
+- When the user paused typing without completing a message, the chat UI will send "user stopped typing" signal after a predefined period
+  - The period is defined by the chat UI
 
 If chat provider only support a single type of signal, chat adapter is responsible to perform the conversion.
 
