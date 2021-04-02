@@ -1,0 +1,8 @@
+# This configuration is applied on top of the root .eslintrc.yml, which is platform agnostic (e.g. Node.js vs. React).
+# For platform-dependent rules, such as React, we enable and load it here.
+# For global rules, such as Prettier and TypeScript, we install the plugin at the root and enable there.
+
+# This is for packages which relies on Node.js.
+
+extends:
+- plugin:node/recommended-module

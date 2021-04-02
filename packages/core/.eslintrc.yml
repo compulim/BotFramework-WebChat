@@ -1,10 +1,3 @@
 extends:
-- plugin:node/recommended-module
-rules:
-  # We will rework on these rules
-  "@typescript-eslint/explicit-member-accessibility": off
-  "@typescript-eslint/explicit-function-return-type": off
-  "@typescript-eslint/explicit-module-boundary-types": off
-  "@typescript-eslint/indent": off
-  "@typescript-eslint/no-explicit-any": off
-  "@typescript-eslint/interface-name-prefix": off
+- ../../.eslintrc.ignore-typescript.yml
+- ../../.eslintrc.node.yml

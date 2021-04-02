@@ -22,7 +22,7 @@ plugins:
 - node
 - prettier
 - "@typescript-eslint/eslint-plugin"
-root: true
+root: true # This setting prevent inheriting configuration from the root .eslintrc.yml.
 rules:
   # We will rework on these rules
   "@typescript-eslint/explicit-member-accessibility": off
