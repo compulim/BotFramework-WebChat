@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
 import InternalTypingUsers from '../../types/internal/TypingUsers';
@@ -7,6 +7,11 @@ import InternalTypingUsers from '../../types/internal/TypingUsers';
 import diffMap from '../../utils/diffMap';
 import InternalTypingContext from '../../contexts/internal/TypingContext';
 import usePrevious from './usePrevious';
+
+// If no argument is passed to `emitTypingIndicator`, it is in "pulse" mode.
+// In pulse mode, if another pulse was not received within a predefined period, it will stop the typing signal.
+// This is the timeout (in milliseconds) for detecting missing pulse and stopping the typing signal.
+const PULSE_EMIT_INDICATOR_TIMEOUT = 3000;
 
 type ChatAdapterTypingUsers = {
   [userId: string]: {
@@ -21,7 +26,7 @@ const TypingComposer = ({
   typingUsers
 }: {
   children: any;
-  emitTyping: () => void;
+  emitTyping: (start: boolean) => void;
   sendTypingIndicator: boolean;
   typingUsers: ChatAdapterTypingUsers;
 }) => {
@@ -52,13 +57,44 @@ const TypingComposer = ({
 
   typingUsersMapRef.current = nextTypingUsersMap;
 
+  const sendStopTypingTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // If chat adapter changed emitTyping(), we should send stop typing to the previous emitTyping() immediately.
+  useEffect(() => {
+    let prevEmitTyping = emitTypingFromProps;
+
+    return () => {
+      const { current: sendStopTypingTimeout } = sendStopTypingTimeoutRef;
+
+      if (sendStopTypingTimeout) {
+        prevEmitTyping(false);
+        clearTimeout(sendStopTypingTimeout);
+      }
+
+      sendStopTypingTimeoutRef.current = undefined;
+    };
+  }, [emitTypingFromProps, sendStopTypingTimeoutRef]);
+
   const emitTyping = useMemo(
     () =>
       emitTypingFromProps &&
-      (() => {
-        sendTypingIndicator && emitTypingFromProps();
+      ((start?: boolean) => {
+        if (!sendTypingIndicator) {
+          return;
+        }
+
+        clearTimeout(sendStopTypingTimeoutRef.current);
+        sendStopTypingTimeoutRef.current = undefined;
+
+        if (typeof start === 'boolean') {
+          emitTypingFromProps(start);
+        } else {
+          sendStopTypingTimeoutRef.current = setTimeout(() => emitTypingFromProps(false), PULSE_EMIT_INDICATOR_TIMEOUT);
+
+          emitTypingFromProps(true);
+        }
       }),
-    [emitTypingFromProps, sendTypingIndicator]
+    [emitTypingFromProps, sendStopTypingTimeoutRef, sendTypingIndicator]
   );
 
   const context = useMemo(

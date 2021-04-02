@@ -112,9 +112,6 @@ function useTextBoxValue() {
   const [_, setInputMode] = useInputMode();
   const [value, setValue] = useSendBoxValue();
 
-  // TODO: We should redesign how emitTypingIndicator works with chat adapter.
-  //       Yesterday, we fire emitTypingIndicator on a debounced interval of 3s.
-  //       Tomorrow, maybe we should fire startEmitTypingIndicator and stopEmitTypingIndicator.
   const emitTypingIndicator = useEmitTypingIndicator();
   const replaceEmoticon = useReplaceEmoticon();
   const stopDictate = useStopDictate();

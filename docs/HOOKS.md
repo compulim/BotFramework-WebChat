@@ -512,13 +512,22 @@ This hook will return a function which can be called to dismiss a notification g
 
 <!-- prettier-ignore-start -->
 ```js
-useEmitTypingIndicator(): () => void | undefined
+useEmitTypingIndicator(): (start?: boolean) => void | undefined
 ```
 <!-- prettier-ignore-end -->
 
-When called, this function will send a typing activity from the user to the bot.
+New in 4.13.0:
 
-New in 4.13.0: If the chat adapter does not support emit typing indicator, it will return `undefined`.
+- If the chat adapter does not support emit typing indicator, it will return `undefined`
+- When called with `true` or `false`, the function will be in "toggle mode", in contrast to the traditional "pulse mode"
+
+When called with `true`, this function will transit to "toggle mode". It will emit a "typing started" signal.
+
+When called with `false`, this function will transit to "toggle mode". It will emit a "typing stopped" signal.
+
+When called with `undefined`, this function will transit to "pulse mode". It will emit a "typing started" signal to the chat platform. After 3 seconds, it will automatically emit a "typing stopped" signal. To keep the "typing started" signal active, the function need to be called at least once every 3 seconds (a.k.a. pulse).
+
+While in "pulse mode", if the function was then called with `true` or `false`, the function will transit back to "toggle mode". That means, after the pulse expired, the "typing stopped" signal will not be emitted automatically.
 
 ## `useFocus`
 

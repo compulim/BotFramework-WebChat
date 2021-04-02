@@ -10,6 +10,7 @@ import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
+import EmitTypingComposer from './composers/EmitTypingComposer';
 import HonorReadReceiptsComposer from './composers/HonorReadReceiptsCompose';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
@@ -134,7 +135,9 @@ const ACSChatAdapter: FC<{
           <ActivitiesComposer userProfiles={patchedUserProfiles}>
             <HonorReadReceiptsComposer>
               <TypingUsersComposer userProfiles={patchedUserProfiles}>
-                <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
+                <EmitTypingComposer>
+                  <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
+                </EmitTypingComposer>
               </TypingUsersComposer>
             </HonorReadReceiptsComposer>
           </ActivitiesComposer>

@@ -1,7 +1,7 @@
-import { useSendTypingNotification as useACSSendTypingNotification } from '@azure/acs-ui-sdk';
+import { useContext } from 'react';
 
-export default function useEmitTyping(): () => void {
-  const sendTypingNotification = useACSSendTypingNotification();
+import EmitTypingContext from '../contexts/EmitTypingContext';
 
-  return sendTypingNotification;
+export default function useEmitTyping(): (start: boolean) => void {
+  return useContext(EmitTypingContext);
 }

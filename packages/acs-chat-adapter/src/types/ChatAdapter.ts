@@ -10,8 +10,12 @@ export type ChatAdapter = {
    */
   activities?: Activity[];
 
-  /** Emits a typing indicator with best effort. */
-  emitTyping?: () => void;
+  /**
+   * Emit start and stop typing signal with best effort.
+   *
+   * @param {boolean} typing - True to emit start typing signal, false to emit stop typing signal.
+   */
+  emitTyping?: (typing: boolean) => void;
 
   /**
    * True, if the chat adapter will honor read receipts, otherwise, false.
@@ -40,7 +44,7 @@ export type ChatAdapter = {
    *
    * If the chat adapter does not support read receipts, it should return `undefined`.
    */
-  setHonorReadReceipts?: (nextHonorReadReceipts: boolean) => void;
+  setHonorReadReceipts?: (honorReadReceipts: boolean) => void;
 
   /** List of users who are actively typing. */
   typingUsers?: TypingUsers;
