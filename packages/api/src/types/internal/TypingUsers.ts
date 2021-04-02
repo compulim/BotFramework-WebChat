@@ -5,6 +5,12 @@ type InternalTypingUsers = {
 
     /** Display name of the user. */
     name: string;
+
+    /** Deprecated: will always return Infinity. */
+    expireAt: number;
+
+    /** Deprecated: will always return "bot". */
+    role: 'bot';
   };
 };
 

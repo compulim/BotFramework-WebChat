@@ -100,9 +100,11 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
     [setLocalNotifications]
   );
 
-  const notifications = useMemo(() => ({ ...ourChatAdapterNotificationsRef.current, ...localNotifications }), [
+  const { current: ourChatAdapterNotifications } = ourChatAdapterNotificationsRef;
+
+  const notifications = useMemo(() => ({ ...ourChatAdapterNotifications, ...localNotifications }), [
     localNotifications,
-    ourChatAdapterNotificationsRef.current
+    ourChatAdapterNotifications
   ]);
 
   debug(

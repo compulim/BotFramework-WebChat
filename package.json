@@ -17,36 +17,43 @@
   "homepage": "https://github.com/microsoft/BotFramework-WebChat#readme",
   "lint-staged": {
     "packages/acs-chat-adapter/src/**/*.{js,ts}": [
-      "npm run lint-staged:acs-chat-adapter:eslint",
-      "npm run lint-staged:acs-chat-adapter:prettier"
+      "npm run precommit:acs-chat-adapter:eslint"
+    ],
+    "packages/acs-chat-adapter/src/**/*.ts": [
+      "npm run precommit:acs-chat-adapter:typecheck"
     ],
     "packages/api/src/**/*.{js,ts}": [
-      "npm run lint-staged:api:eslint",
-      "npm run lint-staged:api:prettier"
+      "npm run precommit:api:eslint"
+    ],
+    "packages/api/src/**/*.ts": [
+      "npm run precommit:api:typecheck"
     ],
     "packages/bundle/src/**/*.{js,ts}": [
-      "npm run lint-staged:bundle:eslint",
-      "npm run lint-staged:bundle:prettier"
+      "npm run precommit:bundle:eslint"
+    ],
+    "packages/bundle/src/**/*.ts": [
+      "npm run precommit:bundle:typecheck"
     ],
     "packages/component/src/**/*.{js,ts}": [
-      "npm run lint-staged:component:eslint",
-      "npm run lint-staged:component:prettier"
+      "npm run precommit:component:eslint"
+    ],
+    "packages/component/src/**/*.ts": [
+      "npm run precommit:component:typecheck"
     ],
     "packages/core/src/**/*.{js,ts}": [
-      "npm run lint-staged:core:eslint",
-      "npm run lint-staged:core:prettier"
+      "npm run precommit:core:eslint"
+    ],
+    "packages/core/src/**/*.ts": [
+      "npm run precommit:core:typecheck"
     ],
     "packages/directlinespeech/src/**/*.{js,ts}": [
-      "npm run lint-staged:directlinespeech:eslint",
-      "npm run lint-staged:directlinespeech:prettier"
+      "npm run precommit:directlinespeech:eslint"
     ],
     "packages/isomorphic-react/src/**/*.{js,ts}": [
-      "npm run lint-staged:isomorphic-react:eslint",
-      "npm run lint-staged:isomorphic-react:prettier"
+      "npm run precommit:isomorphic-react:eslint"
     ],
     "packages/isomorphic-react-dom/src/**/*.{js,ts}": [
-      "npm run lint-staged:isomorphic-react-dom:eslint",
-      "npm run lint-staged:isomorphic-react-dom:prettier"
+      "npm run precommit:isomorphic-react-dom:eslint"
     ]
   },
   "keywords": [],
@@ -54,24 +61,22 @@
     "bootstrap": "lerna bootstrap --ci",
     "build": "lerna run --ignore playground --stream build",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "eslint": "lerna run --parallel --stream eslint -- ",
+    "eslint": "npm run precommit",
     "lint-staged": "lint-staged",
-    "lint-staged:acs-chat-adapter:eslint": "cd packages && cd acs-chat-adapter && npm run eslint",
-    "lint-staged:acs-chat-adapter:prettier": "cd packages && cd acs-chat-adapter && npm run prettier",
-    "lint-staged:api:eslint": "cd packages && cd api && npm run eslint",
-    "lint-staged:api:prettier": "cd packages && cd api && npm run prettier",
-    "lint-staged:bundle:eslint": "cd packages && cd bundle && npm run eslint",
-    "lint-staged:bundle:prettier": "cd packages && cd bundle && npm run prettier",
-    "lint-staged:component:eslint": "cd packages && cd component && npm run eslint",
-    "lint-staged:component:prettier": "cd packages && cd component && npm run prettier",
-    "lint-staged:core:eslint": "cd packages && cd core && npm run eslint",
-    "lint-staged:core:prettier": "cd packages && cd core && npm run prettier",
-    "lint-staged:directlinespeech:eslint": "cd packages && cd directlinespeech && npm run eslint",
-    "lint-staged:directlinespeech:prettier": "cd packages && cd directlinespeech && npm run prettier",
-    "lint-staged:isomorphic-react:eslint": "cd packages && cd isomorphic-react && npm run eslint",
-    "lint-staged:isomorphic-react:prettier": "cd packages && cd isomorphic-react && npm run prettier",
-    "lint-staged:isomorphic-react-dom:eslint": "cd packages && cd isomorphic-react-dom && npm run eslint",
-    "lint-staged:isomorphic-react-dom:prettier": "cd packages && cd isomorphic-react-dom && npm run prettier",
+    "precommit": "lerna run --parallel --stream precommit -- ",
+    "precommit:acs-chat-adapter:eslint": "cd packages && cd acs-chat-adapter && npm run precommit:eslint",
+    "precommit:acs-chat-adapter:typecheck": "cd packages && cd acs-chat-adapter && npm run precommit:typecheck",
+    "precommit:api:eslint": "cd packages && cd api && npm run precommit:eslint",
+    "precommit:api:typecheck": "cd packages && cd api && npm run precommit:typecheck",
+    "precommit:bundle:eslint": "cd packages && cd bundle && npm run precommit:eslint",
+    "precommit:bundle:typecheck": "cd packages && cd bundle && npm run precommit:typecheck",
+    "precommit:component:eslint": "cd packages && cd component && npm run precommit:eslint",
+    "precommit:component:typecheck": "cd packages && cd component && npm run precommit:typecheck",
+    "precommit:core:eslint": "cd packages && cd core && npm run precommit:eslint",
+    "precommit:core:typecheck": "cd packages && cd core && npm run precommit:typecheck",
+    "precommit:directlinespeech:eslint": "cd packages && cd directlinespeech && npm run precommit:eslint",
+    "precommit:isomorphic-react:eslint": "cd packages && cd isomorphic-react && npm run precommit:eslint",
+    "precommit:isomorphic-react-dom:eslint": "cd packages && cd isomorphic-react-dom && npm run precommit:eslint",
     "prepare": "husky install",
     "start": "concurrently --kill-others --raw \"serve\" \"serve -p 5001 -c serve-test.json\" \"lerna run --ignore acs-app --ignore acs-server --ignore playground --parallel --stream start\"",
     "start:docker": "npm run start:docker:build && npm run start:docker:up",
