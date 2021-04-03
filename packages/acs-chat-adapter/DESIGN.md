@@ -18,6 +18,7 @@
 - [Return read receipts](#return-read-receipts)
 - [Receiving typing signals](#receiving-typing-signals)
 - [Sending typing signals](#sending-typing-signals)
+- [Metadata associated with transcript](#metadata-associated-with-transcript)
 
 ## Return read receipts
 
@@ -227,6 +228,45 @@ Although this design is common, UI/UX designers cannot actually control the timi
 ### Exceptions
 
 ## Changing or persisting chat adapter
+
+Hiding the UI but keeping the chat adapter to continue to run in the background.
+
+In the chat UI, we need to make sure it is stateless, or its state can be derived from props.
+
+TBD.
+
+## Metadata associated with transcript
+
+### Story
+
+To assist rendering activities, we need the following metadata:
+
+- Type of sender: `self`, `others`, `service`
+- Number of readers who read this activity: `some`, `all`
+- Delivery status for outgoing activity: `error`, `sending`, `sent`
+- (Optional) Avatar initials and image
+- (Optional) Sender display name
+
+### Chat provider adaptations
+
+Chat providers may support this feature in a various ways:
+
+- Read receipts via out-of-band (OOB, e.g. in a different array)
+- Delivery status by resolving the Promise returned from the send message function
+- Delivery status by a different array for message failures
+- Find out current user ID and match with the activity, to see if the activity was send by ourselves or others
+
+### Design
+
+To reduce complexity, metadata need to be attached to every activity.
+
+For avatar initials and images, this design allow activities to show different avatar for the same sender. This enables user to change avatar during the conversation and the transcript could show different version of avatars.
+
+To simplify read receipts, the chat adapter only need to mark if "some" or "all" participants have read the activity.
+
+### Alternatives considered
+
+### Exceptions
 
 <!--
 
