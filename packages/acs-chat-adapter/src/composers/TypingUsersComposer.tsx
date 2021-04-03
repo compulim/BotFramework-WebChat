@@ -30,7 +30,8 @@ const TypingUsersComposer: FC<{ userProfiles: UserProfiles }> = ({ children, use
   nextTypingUsers = updateIn(nextTypingUsers, [(_, userId: string) => removed.includes(userId)]);
 
   nextTypingUsers = acsTypingUserIdsExcludeSelf.reduce(
-    (nextTypingUsers, userId) => updateIn(nextTypingUsers, [userId, 'name'], () => (userProfiles[userId] || {}).name),
+    (nextTypingUsers, userId) =>
+      updateIn(nextTypingUsers, [userId, 'name'], () => (userProfiles[userId] || {}).name || ''),
     nextTypingUsers
   );
 

@@ -17,12 +17,15 @@ const TYPING_INDICATOR_MANY_IDS = {
 
 const TextTypingIndicator = ({ activeTyping }) => {
   const [{ textTypingIndicator: textTypingIndicatorStyleSet }] = useStyleSet();
-  const activeTypingValues = Object.values(activeTyping);
+  const activeTypingEntries = Object.entries(activeTyping);
   const localize = useLocalizer();
   const localizeWithPlural = useLocalizer({ plural: true });
 
   // We assume it is very unlikely that the time could collide with each other, so we don't second-sort by names.
-  const sortedNames = activeTypingValues.sort(({ at: x }, { at: y }) => x - y).map(({ name }) => name);
+  const sortedNames = activeTypingEntries
+    .sort(([, { at: x }, { at: y }]) => x - y)
+    .map(([userId, { name }]) => name || userId);
+
   const { length } = sortedNames;
   let text;
 
@@ -36,9 +39,7 @@ const TextTypingIndicator = ({ activeTyping }) => {
     text = localizeWithPlural(TYPING_INDICATOR_MANY_IDS, sortedNames.length - 2, sortedNames[0], sortedNames[1]);
   }
 
-  return (
-    text && <div className={classNames('webchat__text-typing-indicator', textTypingIndicatorStyleSet + '')}>{text}</div>
-  );
+  return <div className={classNames('webchat__text-typing-indicator', textTypingIndicatorStyleSet + '')}>{text}</div>;
 };
 
 TextTypingIndicator.propTypes = {
