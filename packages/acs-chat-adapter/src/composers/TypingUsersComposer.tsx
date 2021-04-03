@@ -2,15 +2,14 @@ import PropTypes from 'prop-types';
 import React, { FC, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
-import { TypingUsers } from '../types/TypingUsers';
-import { UserProfiles } from '../types/UserProfiles';
-
 import { default as TypingUsersContext } from '../contexts/TypingUsersContext';
 import diffArray from '../utils/diffArray';
+import TypingUsers from '../types/TypingUsers';
 import useACSTypingUsers from '../hooks/useACSTypingUsers';
 import useACSUserId from '../hooks/useACSUserId';
 import useDebugDeps from '../hooks/useDebugDeps';
 import usePrevious from '../hooks/usePrevious';
+import UserProfiles from '../types/UserProfiles';
 
 const TypingUsersComposer: FC<{ userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   const [acsTypingUsers] = useACSTypingUsers();

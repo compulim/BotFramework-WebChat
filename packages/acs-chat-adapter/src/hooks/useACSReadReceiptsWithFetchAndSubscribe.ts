@@ -3,8 +3,7 @@ import { useFetchReadReceipts, useSubscribeReadReceipt } from '@azure/acs-ui-sdk
 import { useReceipts } from '@azure/acs-ui-sdk/dist/providers/ChatThreadProvider';
 import AbortController from 'abort-controller-es5';
 
-import { ACSReadReceipt } from '../types/ACSReadReceipt';
-
+import ACSReadReceipt from '../types/ACSReadReceipt';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
 import useDebugDeps from './useDebugDeps';

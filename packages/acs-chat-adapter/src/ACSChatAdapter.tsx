@@ -3,12 +3,10 @@ import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChatAdapter } from './types/ChatAdapter';
-import { UserProfiles } from './types/UserProfiles';
-
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
+import ChatAdapter from './types/ChatAdapter';
 import createDebug from './utils/debug';
 import EmitTypingComposer from './composers/EmitTypingComposer';
 import HonorReadReceiptsComposer from './composers/HonorReadReceiptsCompose';
@@ -22,6 +20,7 @@ import useEmitTyping from './hooks/useEmitTyping';
 import useHonorReadReceipts from './hooks/useHonorReadReceipts';
 import useNotifications from './hooks/useNotifications';
 import useResend from './hooks/useResend';
+import UserProfiles from './types/UserProfiles';
 import useSendMessageWithTrackingNumber from './hooks/useSendMessageWithTrackingNumber';
 import useTypingUsers from './hooks/useTypingUsers';
 

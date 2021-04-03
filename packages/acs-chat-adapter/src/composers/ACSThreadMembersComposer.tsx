@@ -4,8 +4,7 @@ import { useThreadMembers } from '@azure/acs-ui-sdk/dist/providers/ChatThreadPro
 import PropTypes from 'prop-types';
 import React, { FC } from 'react';
 
-import { ACSChatThreadMember } from '../types/ACSChatThreadMember';
-
+import ACSChatThreadMember from '../types/ACSChatThreadMember';
 import ACSThreadMembersContext from '../contexts/ACSThreadMembersContext';
 import useMapper from '../hooks/useMapper';
 

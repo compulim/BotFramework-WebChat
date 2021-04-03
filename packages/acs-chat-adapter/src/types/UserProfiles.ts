@@ -1,5 +1,7 @@
-import { UserProfile } from './UserProfile';
+import UserProfile from './UserProfile';
 
-export type UserProfiles = {
+type UserProfiles = {
   [userId: string]: UserProfile;
 };
+
+export default UserProfiles;

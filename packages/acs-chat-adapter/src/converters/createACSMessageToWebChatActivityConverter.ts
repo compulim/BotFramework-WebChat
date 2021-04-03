@@ -1,9 +1,8 @@
-import { ACSChatMessage } from '../types/ACSChatMessage';
-import { Activity, EventActivity, MessageActivity } from '../types/Activity';
-import { UserProfiles } from '../types/UserProfiles';
-
+import ACSChatMessage from '../types/ACSChatMessage';
+import Activity, { EventActivity, MessageActivity } from '../types/Activity';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
+import UserProfiles from '../types/UserProfiles';
 
 let debug;
 

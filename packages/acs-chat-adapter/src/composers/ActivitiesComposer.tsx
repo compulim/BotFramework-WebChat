@@ -4,15 +4,13 @@ import random from 'math-random';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
-import { ACSChatMessage } from '../types/ACSChatMessage';
-import { Activity } from '../types/Activity';
-import { DeliveryStatus } from '../types/DeliveryStatus';
-import { ReadBy } from '../types/ReadBy';
-import { UserProfiles } from '../types/UserProfiles';
-
+import ACSChatMessage from '../types/ACSChatMessage';
 import ActivitiesContext from '../contexts/ActivitiesContext';
+import Activity from '../types/Activity';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
 import createDebug from '../utils/debug';
+import DeliveryStatus from '../types/DeliveryStatus';
+import ReadBy from '../types/ReadBy';
 import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
@@ -23,6 +21,7 @@ import useACSThreadMembers from '../hooks/useACSThreadMembers';
 import useACSUserId from '../hooks/useACSUserId';
 import useMapper from '../hooks/useMapper';
 import useMemoAll from '../hooks/useMemoAll';
+import UserProfiles from '../types/UserProfiles';
 
 let debug;
 

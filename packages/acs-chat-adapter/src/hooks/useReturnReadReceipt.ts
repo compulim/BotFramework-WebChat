@@ -1,7 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-import { Activity } from '../types/Activity';
-
+import Activity from '../types/Activity';
 import createDebug from '../utils/debug';
 import fromWho from '../utils/fromWho';
 import getActivityKey from '../utils/getActivityKey';

@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import { ACSChatMessage } from '../types/ACSChatMessage';
+import ACSChatMessage from '../types/ACSChatMessage';
 
 const context = createContext<ACSChatMessage[]>(undefined);
 

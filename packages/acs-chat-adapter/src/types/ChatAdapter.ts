@@ -1,8 +1,8 @@
-import { Activity } from './Activity';
-import { Notification } from './Notification';
-import { TypingUsers } from './TypingUsers';
+import Activity from './Activity';
+import Notification from './Notification';
+import TypingUsers from './TypingUsers';
 
-export type ChatAdapter = {
+type ChatAdapter = {
   /**
    * List of activities.
    *
@@ -13,9 +13,9 @@ export type ChatAdapter = {
   /**
    * Emit start and stop typing signal with best effort.
    *
-   * @param {boolean} typing - True to emit start typing signal, false to emit stop typing signal.
+   * @param {boolean} started - True to emit start typing signal, false to emit stop typing signal.
    */
-  emitTyping?: (typing: boolean) => void;
+  emitTyping?: (started: boolean) => void;
 
   /**
    * True, if the chat adapter will honor read receipts, otherwise, false.
@@ -55,3 +55,5 @@ export type ChatAdapter = {
   /** The username. */
   username?: string;
 };
+
+export default ChatAdapter;

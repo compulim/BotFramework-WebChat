@@ -39,21 +39,23 @@ Not every activity is human-readable. Chat adapter should decide which activity 
 ### Design
 
 ```ts
-{
+declare type ChatAdapter = {
   /**
    * True, if read receipts is supported and chat adapter should return read receipts for all incoming messages, otherwise, false.
    *
    * If `undefined`, the chat adapter does not support read receipts.
    */
-  honorReadReceipts?: boolean;
+  honorReadReceipts?: boolean = true;
 
   /**
    * Sets if the chat adapter should return read receipts for all incoming messages.
    *
+   * The chat adapter should return read receipts by default, unless this function is called with `false` after the chat adapter is initialized.
+   *
    * If `undefined`, the chat adapter does not support read receipts.
    */
   setHonorReadReceipts?: (honorReadReceipts: boolean) => void;
-}
+};
 ```
 
 If chat provider does not support read receipts, it should set both to `undefined`.
@@ -61,6 +63,17 @@ If chat provider does not support read receipts, it should set both to `undefine
 If chat provider support read receipts, it should return `true` or `false` for `honorReadReceipts`. It MUST not return `undefined` for `honorReadReceipts`.
 
 Chat UI may temporarily pause read receipts because the UI is not in foreground or [obscurred](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState).
+
+### Alternatives considered
+
+```ts
+declare type ChatAdapter = {
+  /** Converted getter and setter of the honor read receipts. */
+  honorReadReceipts?: () => boolean | (honorReadReceipts: boolean) => void;
+}
+```
+
+This design is inspired from jQuery but it is not used in APIs proposed by W3C. Although it converge the "supportability of honor read receipts" feature in chat adapter, we are not selecting this design because it is not commonly known.
 
 ### Exceptions
 
@@ -96,6 +109,15 @@ declare type TypingUsers = {
     name?: string;
   };
 };
+
+declare type ChatAdapter = {
+  /**
+   * Map of users who are typing.
+   *
+   * If `undefined`, this chat adapter does not support listing out who are typing.
+   */
+  typingUsers?: TypingUsers;
+};
 ```
 
 Chat adapter should provide the mentioned data structure, with the display name of the user. In US, the display name is likely to be the first name of the user. In Japan, the display name is likely to be the surname of the user.
@@ -112,16 +134,18 @@ If the chat UI need to know the time when typing started, such as for debouncing
   - It seems too complicated for normal developers
 
 ```ts
-{
+declare type TypingUsers = {
   [userId: string]: {
-    name: string | {
-      first: string;
-      last: string;
-      surname: string;
-      display: string;
-    };
-  }
-}
+    name:
+      | string
+      | {
+          first: string;
+          last: string;
+          surname: string;
+          display: string;
+        };
+  };
+};
 ```
 
 ### Exceptions
@@ -148,28 +172,65 @@ If the signal is sent periodically, it is up to the chat adapter or chat provide
 ### Design
 
 ```ts
-/**
- * Emit a typing signal to the chat provider.
- *
- * If `started` is `true` or `undefined`, a start typing signal will be emitted. Otherwise, a stop typing signal will be emitted.
- */
-declare function emitTyping(started?: boolean = true): void;
+declare type ChatAdapter = {
+  /**
+   * Emit a typing signal to the chat provider.
+   *
+   * If `started` is `true`, a start typing signal will be emitted. Otherwise, a stop typing signal will be emitted.
+   */
+  emitTyping?: (started: boolean = true) => void;
+};
 ```
 
 Chat UI will send two types of signal: "user is typing" and "user stopped typing":
 
 - When the user start typing, a "user is typing" signal will be sent
 - When the user completed a message by sending it, a "user stopped typing" signal will be sent
-- When the user paused typing without completing a message, the chat UI will send "user stopped typing" signal after a predefined period
-  - The period is defined by the chat UI
+- When the user paused typing without completing a message, the chat UI will send "user stopped typing" signal after a predefined period chosen by the chat UI
 
 If chat provider only support a single type of signal, chat adapter is responsible to perform the conversion.
+
+### Alternatives considered
+
+#### Send "typing stopped" by the return function
+
+```ts
+declare type ChatAdapter = {
+  emitTyping?: () => void;
+};
+```
+
+After calling `emitTyping`, it return another function, that can be called to send "typing stopped".
+
+Upside: the return function can be a "reference counter", and we can have multiple `emitTyping()` "session" going on, and if all returning functions are called, it will send the final "typing stopped" signal.
+
+Downside: if developers forget to call or lost the return function, it will be locked in the "typing started" state permanently.
+
+#### Pulse mode
+
+```ts
+declare type ChatAdapter = {
+  emitTyping?: () => void;
+};
+```
+
+To keep the "typing" state, the chat UI need to call this function periodicially, for example, every 3 seconds.
+
+Upside: typing will be automatically ended if the UI failed to call the function.
+
+Downside: the period varies across chat adapters and chat providers. The chat UI need to know exactly what period it need. Also, it is not possible to send "typing stopped" signal. If the chat UI know the user stopped typing, such as after a message is sent, or the UI is backgrounded, there is no way to stop typing until time expired.
+
+Another downside: the time that between a user release the last key press and the time the UI consider the user stopped typing, is a variable. And the chat adapter or chat provider will govern another variable for the periodic pulse. If these 2 time interval is not the same, other users will perceive a longer "user is typing" signal.
+
+Although this design is common, UI/UX designers cannot actually control the timing of the signals.
 
 ### Exceptions
 
 ## Changing or persisting chat adapter
 
-## Template
+<!--
+
+## Template for design topics
 
 ### Story
 
@@ -182,3 +243,5 @@ Chat providers may support this feature in a various ways:
 ### Alternatives considered
 
 ### Exceptions
+
+-->

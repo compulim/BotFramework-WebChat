@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
-import { Activity } from '../types/Activity';
 import ActivitiesContext from '../contexts/ActivitiesContext';
+import Activity from '../types/Activity';
 
 export default function useActivities(): [Activity[]] {
   return [useContext(ActivitiesContext)];

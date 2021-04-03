@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
-import { Notification } from '../types/Notification';
-
+import Notification from '../types/Notification';
 import useConnectionNotification from './useConnectionNotification';
 
 export default function useNotifications(): [Notification[]] {

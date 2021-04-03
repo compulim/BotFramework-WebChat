@@ -1,8 +1,8 @@
 import { ChatMessage } from '@azure/communication-chat';
-import { DeliveryStatus } from './DeliveryStatus';
-import { ReadBy } from './ReadBy';
-import { TextFormat } from './TextFormat';
-import { Who } from './Who';
+import DeliveryStatus from './DeliveryStatus';
+import ReadBy from './ReadBy';
+import TextFormat from './TextFormat';
+import Who from './Who';
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
@@ -99,7 +99,7 @@ export type MessageActivity = {
   type: 'message';
 };
 
-export type Activity =
+type Activity =
   // Supported activity type from others: event, message
   | (ActivityFromOthers & (EventActivity | MessageActivity))
 
@@ -108,3 +108,5 @@ export type Activity =
 
   // Supported activity type from service: event
   | (ActivityFromService & EventActivity);
+
+export default Activity;

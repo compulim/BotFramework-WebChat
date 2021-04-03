@@ -1,1 +1,3 @@
-export type Who = 'others' | 'self' | 'service';
+type Who = 'others' | 'self' | 'service';
+
+export default Who;

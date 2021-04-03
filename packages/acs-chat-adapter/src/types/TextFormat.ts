@@ -1,1 +1,3 @@
-export type TextFormat = 'markdown' | 'plain' | 'xml';
+type TextFormat = 'markdown' | 'plain' | 'xml';
+
+export default TextFormat;

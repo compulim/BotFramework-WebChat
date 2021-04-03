@@ -1,1 +1,3 @@
-export type ReadBy = 'some' | 'all';
+type ReadBy = 'some' | 'all';
+
+export default ReadBy;

@@ -1,5 +1,7 @@
-import { TypingUser } from './TypingUser';
+import TypingUser from './TypingUser';
 
-export type TypingUsers = {
+type TypingUsers = {
   [userId: string]: TypingUser;
 };
+
+export default TypingUsers;

@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import { ACSChatThreadMember } from '../types/ACSChatThreadMember';
+import ACSChatThreadMember from '../types/ACSChatThreadMember';
 
 const context = createContext<ACSChatThreadMember[]>(undefined);
 

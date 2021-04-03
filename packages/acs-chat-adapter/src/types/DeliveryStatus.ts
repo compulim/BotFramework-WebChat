@@ -1,1 +1,3 @@
-export type DeliveryStatus = 'error' | 'sending' | 'sent';
+type DeliveryStatus = 'error' | 'sending' | 'sent';
+
+export default DeliveryStatus;

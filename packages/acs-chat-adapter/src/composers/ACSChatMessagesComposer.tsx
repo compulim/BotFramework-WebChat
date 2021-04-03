@@ -4,8 +4,7 @@ import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
 import React, { FC, useEffect } from 'react';
 
-import { ACSChatMessage } from '../types/ACSChatMessage';
-
+import ACSChatMessage from '../types/ACSChatMessage';
 import ACSChatMessagesContext from '../contexts/ACSChatMessagesContext';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
