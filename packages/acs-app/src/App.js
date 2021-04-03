@@ -6,7 +6,6 @@ import { createCognitiveServicesSpeechServicesPonyfillFactory } from 'botframewo
 
 import ACSCredentials from './ui/ACSCredentials';
 import createFetchSpeechServicesCredentials from './util/createFetchSpeechServicesCredentials';
-import listChatThreadMembers from './network/acs/listChatThreadMembers';
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
 
@@ -45,7 +44,21 @@ const App = () => {
     }
 
     (async function () {
-      const { value } = await listChatThreadMembers(threadId, { token });
+      const res = await fetch(
+        new URL(`/chat/threads/${threadId}/members?api-version=2020-09-21-preview2`, endpointURL),
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            'content-type': 'application/json'
+          }
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error('Failed to get thread member list');
+      }
+
+      const { value } = await res.json();
 
       abortController.signal.aborted ||
         setUserProfiles(
