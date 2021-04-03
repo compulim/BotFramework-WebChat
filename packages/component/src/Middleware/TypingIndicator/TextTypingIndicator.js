@@ -21,10 +21,14 @@ const TextTypingIndicator = ({ activeTyping }) => {
   const localize = useLocalizer();
   const localizeWithPlural = useLocalizer({ plural: true });
 
+  const fallbackNameForBot = localize('FALLBACK_NAME_FOR_BOTS');
+
   // We assume it is very unlikely that the time could collide with each other, so we don't second-sort by names.
   const sortedNames = activeTypingEntries
     .sort(([, { at: x }, { at: y }]) => x - y)
-    .map(([userId, { name }]) => name || userId);
+    .map(([userId, { name }], index) =>
+      name !== '__BOT__' ? name || userId : index ? fallbackNameForBot.toLocaleLowerCase() : fallbackNameForBot
+    );
 
   const { length } = sortedNames;
   let text;
