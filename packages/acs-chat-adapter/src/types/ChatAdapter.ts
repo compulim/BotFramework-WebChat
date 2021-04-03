@@ -49,9 +49,11 @@ type ChatAdapter = {
   /** List of users who are actively typing. */
   typingUsers?: TypingUsers;
 
+  // TODO: Can Web Chat works without userID?
   /** The user ID. */
   userId?: string;
 
+  // TODO: Can Web Chat works without username?
   /** The username. */
   username?: string;
 };

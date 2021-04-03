@@ -13,7 +13,6 @@ import HonorReadReceiptsComposer from './composers/HonorReadReceiptsCompose';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
 import TypingUsersComposer from './composers/TypingUsersComposer';
-import useACSDisplayName from './hooks/useACSDisplayName';
 import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
 import useEmitTyping from './hooks/useEmitTyping';
@@ -27,7 +26,10 @@ import useTypingUsers from './hooks/useTypingUsers';
 let debug;
 let internalDebug;
 
-const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles: UserProfiles }> = ({ children }) => {
+const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles: UserProfiles }> = ({
+  children,
+  userProfiles
+}) => {
   // Lazy initializing constants to save loading speed and memory
   internalDebug ||
     (internalDebug = createDebug('<InternalACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
@@ -37,10 +39,11 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
   const [notifications] = useNotifications();
   const [typingUsers] = useTypingUsers();
   const [userId] = useACSUserId();
-  const [username] = useACSDisplayName();
   const emitTyping = useEmitTyping();
   const resend = useResend();
   const sendMessage = useSendMessageWithTrackingNumber();
+
+  const { [userId]: { name: username } = { name: undefined } } = userProfiles;
 
   internalDebug([`Rendering %c${activities.length}%c activities`, ...styleConsole('purple')], [{ activities }]);
 
@@ -54,7 +57,6 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
     setHonorReadReceipts,
     typingUsers,
     userId,
-    // TODO: Consider if we need "username" or could be derived from member list.
     username
   });
 };

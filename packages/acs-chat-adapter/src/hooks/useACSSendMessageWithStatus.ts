@@ -32,15 +32,14 @@ let debug;
  *
  * @return {ACSSendMessageWithStatus} A function to send a message with progress and delivery.
  */
-export default function useACSSendMessageWithStatus(): (
-  message: string,
-  progressCallback?: (clientMessageId: string) => void
-) => Promise<string> {
+export default function useACSSendMessageWithStatus(
+  username?: string
+): (message: string, progressCallback?: (clientMessageId: string) => void) => Promise<string> {
   debug || (debug = createDebug('useACSSendMessageWithStatus', { backgroundColor: 'yellow', color: 'black' }));
 
   const [chatMessages] = useACSChatMessages();
   const [failedClientMessageIds] = useACSFailedClientMessageIds();
-  const acsSendMessage = useACSSendMessage();
+  const acsSendMessage = useACSSendMessage(username);
   const criticalSection = useMemo(() => createCriticalSection<string>(), []);
   const pendingQueueRef = useRef<{
     content: string;

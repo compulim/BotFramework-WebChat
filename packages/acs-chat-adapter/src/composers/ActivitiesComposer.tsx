@@ -47,6 +47,8 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
 
+  const { name: username } = userProfiles[userId];
+
   const numOtherUsers = useMemo(
     () => memberUserIds.filter(threadMember => threadMember.user.communicationUserId !== userId).length,
     [memberUserIds]
@@ -70,7 +72,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
   );
 
   const abortController = useMemo(() => new AbortController(), []);
-  const acsSendMessageWithDelivery = useACSSendMessageWithStatus();
+  const acsSendMessageWithDelivery = useACSSendMessageWithStatus(username);
 
   useEffect(() => () => abortController.abort(), [abortController]);
 
