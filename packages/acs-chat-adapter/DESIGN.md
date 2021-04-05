@@ -6,7 +6,7 @@
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Chat adapter                    | The adapter for integrating the chat service and chat UI.                                                                    |
 | Chat provider                   | The provider for chat service.                                                                                               |
-| Chat UI                         | The UI for chatting between users.                                                                                           |
+| Chat UI                         | The UI for chatting between users, primarily Web Chat.                                                                       |
 | Message                         | A textual message, probably readable by human user.                                                                          |
 | Activity                        | Any exchange between chat provider and chat client. Could be a message, binary data. Could be temporal or non-temporal data. |
 | User                            | A human user, a conversational chatbot (read-write), or a secretarial agent (read-only).                                     |
@@ -72,7 +72,7 @@ If chat provider does not support read receipts, it should set both to `undefine
 
 If chat provider support read receipts, it should return `true` or `false` for `honorReadReceipts`. It MUST not return `undefined` for `honorReadReceipts`.
 
-Chat UI may temporarily pause read receipts because the UI is not in foreground or [obscurred](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState).
+Chat UI may temporarily pause read receipts when the UI is not in foreground or [obscurred](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState). The UI will call `setHonorReadReceipts` with `false` to pause and `true` to resume.
 
 ### Alternatives considered
 
@@ -200,6 +200,9 @@ Chat UI will send two types of signal: "user is typing" and "user stopped typing
 
 If chat provider only support a single type of signal, chat adapter is responsible to perform the conversion.
 
+- When `emitTyping(true)` is called, the chat adapter should periodically emit the pulse signal to the chat provider based on a period published by the chat provider spec;
+- When `emitTyping(false)` is called, the chat adapter should stop emitting the pulse signal periodically.
+
 ### Alternatives considered
 
 #### Send "typing stopped" by the return function
@@ -243,29 +246,90 @@ Although this design is common, UI/UX designers cannot actually control the timi
 To assist rendering activities, we need the following metadata:
 
 - Type of sender: `self`, `others`, `service`
-- Number of readers who read this activity: `some`, `all`
-- Delivery status for outgoing activity: `error`, `sending`, `sent`
+- (Optional) Number of readers who read this activity: `some`, `all`
+- (Optional) Delivery status for outgoing activity: `error`, `sending`, `sent`
 - (Optional) Avatar initials and image
 - (Optional) Sender display name
+- (Optional) Tracking number, for resending the activity on failures
 
 ### Chat provider adaptations
 
 Chat providers may support this feature in a various ways:
 
-- Read receipts via out-of-band (OOB, e.g. in a different array)
+- Read receipts via out-of-band (OOB, such as in a different transport or response)
 - Delivery status by resolving the Promise returned from the send message function
 - Delivery status by a different array for message failures
 - Find out current user ID and match with the activity, to see if the activity was send by ourselves or others
 
 ### Design
 
-To reduce complexity, metadata need to be attached to every activity.
+```ts
+type BaseActivity = {
+  channelData: Expando<{
+    /** Avatar initials of the sender. */
+    'webchat:avatar:initials'?: string;
+
+    /** Avatar image of the sender. */
+    'webchat:avatar:image'?: string;
+
+    /** Delivery status. If the provider does not support delivery report, must set to "sent". */
+    'webchat:delivery-status'?: 'error' | 'sending' | 'sent';
+
+    /** Read by who. If undefined, it is not read by anyone, or the provider does not support read receipts. */
+    'webchat:read-by'?: 'some' | 'all';
+
+    /** Display name of the sender. Set to "__BOT__" if the sender is an unnamed bot. */
+    'webchat:sender-name'?: string | '__BOT__';
+
+    /** Tracking number. If undefined, the activity was sent from another session, or the chat adapter does not support resend. */
+    'webchat:tracking-number'?: string;
+
+    /** Who the activity is send by. */
+    'webchat:who': 'self' | 'others' | 'service';
+  }>;
+};
+```
+
+To reduce complexity, metadata should be attached to every activity.
 
 For avatar initials and images, this design allow activities to show different avatar for the same sender. This enables user to change avatar during the conversation and the transcript could show different version of avatars.
 
 To simplify read receipts, the chat adapter only need to mark if "some" or "all" participants have read the activity.
 
 ### Alternatives considered
+
+```ts
+declare type ChatAdapter = {
+  activities: Activity[];
+
+  deliveryReports: {
+    [activityKey: string]: 'error' | 'sending' | 'sent';
+  };
+
+  readReceipts: {
+    [activityKey: string]: string[];
+  };
+
+  userProfiles: {
+    [userId: string]: {
+      image?: string;
+      initials?: string;
+      name?: string;
+      role: 'self' | 'others' | 'service';
+    };
+  };
+
+  trackingNumbers: {
+    [trackingNumber: string]: string;
+  };
+};
+```
+
+This structure is the reverse of "attach metadata to every activity". It is significantly more complicated than the chosen approach.
+
+It does not support activities from same sender with different avatar images without making it more complex.
+
+<!-- For most developers, merging different data structure while keeping immutability is not trivial. If immutability is not doing correctly, it may cause either: activity not showing its updates, or performance impact. -->
 
 ### Special cases
 
@@ -324,6 +388,8 @@ The chat adapter must have a way to notify the chat UI in case of send failures,
 The chat UI can request a resend by presenting the tracking number. In this case, it is optional for the chat adapter to create a new tracking number or reuse the existing one. If a new tracking number is provided, it must be provided in a synchronous manner.
 
 On resend, the chat adapter is responsible to update the local-outgoing activity, such as, updating [the delivery status and the tracking number](metadata-associated-with-transcript).
+
+This design allows the chat adapter to store failing activities in client storage and restore them on another page session.
 
 ### Alternatives considered
 

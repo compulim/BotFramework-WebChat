@@ -21,8 +21,10 @@ type ChatAdapter = {
    * True, if the chat adapter will honor read receipts, otherwise, false.
    *
    * If the chat adapter does not support read receipts, it should return `undefined`.
+   *
+   * When the chat adapter is initialized, this should be set to `true`.
    */
-  honorReadReceipts?: true;
+  honorReadReceipts?: boolean;
 
   /** List of notifications, including connectivity status. */
   notifications?: Notification[];
@@ -49,7 +51,7 @@ type ChatAdapter = {
   /** List of users who are actively typing. */
   typingUsers?: TypingUsers;
 
-  // TODO: Can Web Chat works without userID?
+  // TODO: Can Web Chat works without userID? Seems cannot because our end-dev may need the user ID.
   /** The user ID. */
   userId?: string;
 

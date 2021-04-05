@@ -21,18 +21,22 @@ type BaseActivity = {
     'acs:debug:client-message-id'?: string;
     'acs:debug:converted-at': string;
 
+    // TODO: Rename to "webchat:sender:initials"
     /** Avatar initials of the sender. */
     'webchat:avatar:initials'?: string;
 
+    // TODO: Rename to "webchat:sender:image"
     /** Avatar image of the sender. */
     'webchat:avatar:image'?: string;
 
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
+    // TODO: Rename to "webchat:sender:name"
     /** Display name of the sender. Set to "__BOT__" if the sender is an unnamed bot. */
     'webchat:sender-name'?: string | '__BOT__';
 
+    // TODO: Rename to "webchat:sender:who"
     /** Who the activity is send by. */
     'webchat:who': Who;
   }>;
@@ -44,7 +48,11 @@ type BaseActivity = {
     name?: string;
     role: 'bot' | 'channel' | 'user';
   };
+
+  // TODO: Can server ID be optional?
   id: string;
+
+  // TODO: Can timestamp be optional? Web Chat could manual timestamp it. How timestamp is used in Web Chat? We don't care about ordering any more.
   timestamp: string;
   type: string;
 };
@@ -66,7 +74,7 @@ type ActivityFromSelf = BaseActivity & {
     /** Read by who. If undefined, it is not read by anyone, or the provider does not support read receipts. */
     'webchat:read-by'?: ReadBy;
 
-    /** Tracking number. If undefined, the activity was sent from another session. */
+    /** Tracking number. If undefined, the activity was sent from another session, or the chat adapter does not support resend. */
     'webchat:tracking-number'?: string;
 
     /** This message was sent from us. */
