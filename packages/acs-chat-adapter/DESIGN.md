@@ -2,16 +2,17 @@
 
 ## Terminology
 
-| Name                    | Description                                                                                                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Chat adapter            | The adapter for integrating the chat service and chat UI.                                                                    |
-| Chat provider           | The provider for chat service.                                                                                               |
-| Chat UI                 | The UI for chatting between users.                                                                                           |
-| Message                 | A textual message, probably readable by human user.                                                                          |
-| Activity                | Any exchange between chat provider and chat client. Could be a message, binary data. Could be temporal or non-temporal data. |
-| User                    | A human user, a conversational chatbot (read-write), or a secretarial agent (read-only).                                     |
-| Outgoing activity       | An activity sent by the user represented by the chat UI.                                                                     |
-| Local-outgoing activity | An outgoing activity which is sent during the current UI session.                                                            |
+| Name                            | Description                                                                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Chat adapter                    | The adapter for integrating the chat service and chat UI.                                                                    |
+| Chat provider                   | The provider for chat service.                                                                                               |
+| Chat UI                         | The UI for chatting between users.                                                                                           |
+| Message                         | A textual message, probably readable by human user.                                                                          |
+| Activity                        | Any exchange between chat provider and chat client. Could be a message, binary data. Could be temporal or non-temporal data. |
+| User                            | A human user, a conversational chatbot (read-write), or a secretarial agent (read-only).                                     |
+| Outgoing activity               | An activity sent by the user represented by the chat UI.                                                                     |
+| Local-outgoing activity         | An outgoing activity which is sent during the current UI session.                                                            |
+| Pending local-outgoing activity | An outgoing activity which is not completely sent in the current UI session.                                                 |
 
 # Topics
 
@@ -19,6 +20,14 @@
 - [Receiving typing signals](#receiving-typing-signals)
 - [Sending typing signals](#sending-typing-signals)
 - [Metadata associated with transcript](#metadata-associated-with-transcript)
+- [Resending activity](#resending-activity)
+- [All activities must have persistent key](#all-activities-must-have-persistent-key)
+- [Supporting local-outgoing activity](#supporting-local-outgoing-activity)
+
+## Assumptions
+
+- Chat adapter must provide the ID of the user
+- Chat providers must provide the ID of the sender for every activity
 
 ## Return read receipts
 
@@ -76,7 +85,7 @@ declare type ChatAdapter = {
 
 This design is inspired from jQuery but it is not used in APIs proposed by W3C. Although it converge the "supportability of honor read receipts" feature in chat adapter, we are not selecting this design because it is not commonly known.
 
-### Exceptions
+### Special cases
 
 Depends on the design of chat UI, some activities may not be rendered. They may still consider read, in the perspective of chat adapter.
 
@@ -149,7 +158,7 @@ declare type TypingUsers = {
 };
 ```
 
-### Exceptions
+### Special cases
 
 ## Sending typing signals
 
@@ -225,15 +234,7 @@ Another downside: the time that between a user release the last key press and th
 
 Although this design is common, UI/UX designers cannot actually control the timing of the signals.
 
-### Exceptions
-
-## Changing or persisting chat adapter
-
-Hiding the UI but keeping the chat adapter to continue to run in the background.
-
-In the chat UI, we need to make sure it is stateless, or its state can be derived from props.
-
-TBD.
+### Special cases
 
 ## Metadata associated with transcript
 
@@ -266,7 +267,165 @@ To simplify read receipts, the chat adapter only need to mark if "some" or "all"
 
 ### Alternatives considered
 
-### Exceptions
+### Special cases
+
+## Resending activity
+
+### Story
+
+If the network or service is offline while the user trying to send a message, we should show a "Send failed. Retry." prompt if the chat adapter supports resending activity. Otherwise, we should show a "Send failed." prompt.
+
+This story is to enable chat UI to show a button for the end-user to selectively resend activities. This story is not targetting auto-resend scenario.
+
+### Chat provider adaptations
+
+Chat providers may support this feature in a various ways:
+
+- Chat provider may not provide a meaningful ID before the activity is successfully sent
+  - Chat adapter is responsible to identifying every activity with a "client activity ID"
+  - In worst case where chat provider provides no ID to associate the sending activity in the transcript, use this mechanism to find out the association
+    1. Queue the outgoing activity on the network layer
+    1. Pause all other sends
+    1. Wait until the chat provider updated the transcript with an activity from us
+    1. Assume the activity is the one we just sent
+    1. Resume the next send
+
+If the chat adapter have an internal "client activity ID", it can also reuse that value as the tracking number.
+
+### Design
+
+```ts
+declare type ChatAdapter = {
+  /**
+   * Sends a text message with guaranteed delivery.
+   *
+   * @return {string} - A tracking number for tracking send status and for retries on failures.
+   */
+  sendMessage: (message: string) => string;
+
+  /**
+   * Resend a activity which failed to send.
+   *
+   * @param {string} trackingNumber - The tracking number of the activity which failed to send.
+   */
+  resend: (trackingNumber: string) => string;
+
+  sendEvent: (name: string, value: any) => string;
+  sendFiles: (files: (Blob | File)[]) => string;
+  sendMessageBack: (value: any, text: string, displayText: string) => string;
+  sendPostBack: (value: any) => string;
+};
+```
+
+On sending any types of activity with guaranteed delivery, the chat adapter must provide a "tracking number" synchronously. Guaranteed delivery is equals to send receipts.
+
+The chat adapter must have a way to notify the chat UI in case of send failures, by presenting the tracking number.
+
+The chat UI can request a resend by presenting the tracking number. In this case, it is optional for the chat adapter to create a new tracking number or reuse the existing one. If a new tracking number is provided, it must be provided in a synchronous manner.
+
+On resend, the chat adapter is responsible to update the local-outgoing activity, such as, updating [the delivery status and the tracking number](metadata-associated-with-transcript).
+
+### Alternatives considered
+
+```ts
+declare type ChatAdapter = {
+  /**
+   * Send a text message. Resolved means the message has received a send receipt from the chat provider.
+   *
+   * @param {() => void} onQueued - A callback, when called, indicates the message is queued or being sent on the underlying protocol.
+   */
+  sendMessage: (message: string, onQueued: () => void) => Promise<void>;
+};
+```
+
+This pattern have 2 issues:
+
+- It is difficult for the chat UI to associate the Promise rejection to an activity in the transcript array;
+- Resend means the chat UI will send another message with the same content. Without a key, it is difficult for chat adapter to dedupe it in the transcript array.
+
+### Special cases
+
+## All activities must have persistent key
+
+### Story
+
+All activity must have a key that never change during the lifetime of the activity.
+
+If the key is changed, to the chat UI, it means a deletion of an activity, plus an addition of an activity. And this will affect accessibility of the chat UI as the activity will get narrated twice.
+
+We call it a "key" instead of "ID" to emphasize the immutability of the value. This share the same philosophy with the "key" prop used in React.
+
+### Chat provider adaptations
+
+Chat providers may support this feature in a various ways:
+
+- Local-outgoing activity may not have a key before send receipt from the chat provider
+  - Chat adapter must generate a key when the local-outgoing activity appears in the transcript
+  - Chat adapter must track transcript updates from the chat provider and correlate it with the local-outgoing activity correctly, so the keep will not be changed
+  - Despite the chat provider may provide a new server-generated ID for the local-outgoing activity, the chat adapter must keep the key it generated when the activity first appears in the transcript
+- Chat adapter may also opt out from supporting local-outgoing activity
+  - All activities appears in the transcript are from the chat provider and should also appears in transcripts of other participants
+  - Chat adapter can use the server-generated ID as a key
+
+### Design
+
+For adapters that put the local-outgoing activity in the transcript:
+
+- When the local-outgoing activity appear in the transcript, the chat adapter must generate a "client activity ID" as the key;
+- When the activity is echoed back from the chat provider, despite the activity might have a new server-generated ID, the chat adapter must continue to use the "client activity ID" as the key.
+
+For adapter that does not put the local-outgoing activity in the transcript:
+
+- Use the server-generated ID as the key
+
+### Alternatives considered
+
+### Special cases
+
+On page refresh, activities will be redownloaded from the chat provider, thus, all "client activity ID" will be lost, and replaced by a server-generated ID.
+
+## Supporting local-outgoing activity
+
+### Story
+
+To improve UX, the local-outgoing activity should appears in the transcript as soon as possible.
+
+Some chat adapters, may opt out of local-outgoing activity because of its extra complexity.
+
+### Chat provider adaptations
+
+Chat providers may support this feature in a various ways:
+
+- Chat provider may return an ID as soon as the activity is sent, then a delivery report later
+- Chat provider may return an ID when the activity is sent to all participants
+
+### Design
+
+When an activity is being sent, the chat adapter must put the local-outgoing activity in the transcript immediately, along with a [persistent key](#all-activities-must-have-persistent-key).
+
+When the chat provider provides an update to the activity, the chat adapter must kept the same persistent key
+
+It is up to the chat adapter to decide whether a page refresh will flush all pending local-outgoing activities. Or keep them on the page via client storage.
+
+### Alternatives considered
+
+Chat UI to provide local-outgoing activity storage.
+
+Downside: all pending local-outgoing activities will be flushed on page refresh because the chat UI is designed to have a non-requirement on any forms of client storage. Chat adapter is designed for storage. It is not the best interests of the chat UI to provide storage.
+
+### Special cases
+
+If the chat adapter do not support local-outgoing activity, it should not support resend. This is because the activity does not appear in the transcript, there is no UI to allow the end-user to resend the activity.
+
+The chat UI cannot use capability detection to detect if the chat adapter supports local-outgoing activity or not.
+
+## Changing or persisting chat adapter
+
+Hiding the UI but keeping the chat adapter to continue to run in the background.
+
+In the chat UI, we need to make sure it is stateless, or its state can be derived from props.
+
+TBD.
 
 <!--
 
@@ -282,6 +441,6 @@ Chat providers may support this feature in a various ways:
 
 ### Alternatives considered
 
-### Exceptions
+### Special cases
 
 -->
