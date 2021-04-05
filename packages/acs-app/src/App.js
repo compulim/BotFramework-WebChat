@@ -73,7 +73,7 @@ const App = () => {
           )
         );
     })();
-  }, [abortController, setUserProfiles, threadId, token]);
+  }, [abortController, endpointURL, setUserProfiles, threadId, token]);
 
   const handleStartClick = useCallback(() => {
     setStarted(Date.now());
