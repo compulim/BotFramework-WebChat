@@ -21,24 +21,21 @@ type BaseActivity = {
     'acs:debug:client-message-id'?: string;
     'acs:debug:converted-at': string;
 
-    // TODO: Rename to "webchat:sender:initials"
-    /** Avatar initials of the sender. */
-    'webchat:avatar:initials'?: string;
-
-    // TODO: Rename to "webchat:sender:image"
-    /** Avatar image of the sender. */
-    'webchat:avatar:image'?: string;
-
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
-    // TODO: Rename to "webchat:sender:name"
+    /** Avatar image of the sender. */
+    'webchat:sender:image'?: string;
+
+    /** Avatar initials of the sender. */
+    'webchat:sender:initials'?: string;
+
     /** Display name of the sender. Set to "__BOT__" if the sender is an unnamed bot. */
-    'webchat:sender-name'?: string | '__BOT__';
+    'webchat:sender:name'?: string | '__BOT__';
 
     // TODO: Rename to "webchat:sender:who"
     /** Who the activity is send by. */
-    'webchat:who': Who;
+    'webchat:sender:who': Who;
   }>;
   conversationId?: string;
   from: {
@@ -59,7 +56,7 @@ type BaseActivity = {
 
 type ActivityFromOthers = BaseActivity & {
   channelData: {
-    'webchat:who': 'others';
+    'webchat:sender:who': 'others';
   };
   from: {
     role: 'bot';
@@ -78,7 +75,7 @@ type ActivityFromSelf = BaseActivity & {
     'webchat:tracking-number'?: string;
 
     /** This message was sent from us. */
-    'webchat:who': 'self';
+    'webchat:sender:who': 'self';
   };
   from: {
     role: 'user';
@@ -87,7 +84,7 @@ type ActivityFromSelf = BaseActivity & {
 
 export type ActivityFromService = BaseActivity & {
   channelData: {
-    'webchat:who': 'service';
+    'webchat:sender:who': 'service';
   };
   from: {
     role: 'channel';

@@ -49,9 +49,10 @@ Timestamp.defaultProps = {
 Timestamp.propTypes = {
   activity: PropTypes.shape({
     channelData: PropTypes.shape({
-      'webchat:read-at': PropTypes.any,
-      'webchat:who': PropTypes.oneOf(['channel', 'others', 'self'])
+      'webchat:read-by': PropTypes.oneOf(['all', 'some']),
+      'webchat:sender:who': PropTypes.oneOf(['channel', 'others', 'self'])
     }),
+    // TODO: Remove "from"
     from: PropTypes.shape({
       role: PropTypes.oneOf(['bot', 'channel', 'user'])
     }),

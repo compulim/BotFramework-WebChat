@@ -55,11 +55,11 @@ function usePatchActivities(directLineActivities, styleOptions) {
     useCallback(
       ([directLineActivity, avatarImage, avatarInitials, key, senderName, who]) =>
         chainUpdateIn(directLineActivity, [
-          [['channelData', 'webchat:avatar:image'], () => avatarImage],
-          [['channelData', 'webchat:avatar:initials'], () => avatarInitials],
           [['channelData', 'webchat:key'], () => key],
-          [['channelData', 'webchat:sender-name'], () => senderName],
-          [['channelData', 'webchat:who'], () => who]
+          [['channelData', 'webchat:sender:image'], () => avatarImage],
+          [['channelData', 'webchat:sender:initials'], () => avatarInitials],
+          [['channelData', 'webchat:sender:name'], () => senderName],
+          [['channelData', 'webchat:sender:who'], () => who]
         ]),
       []
     )

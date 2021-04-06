@@ -38,13 +38,13 @@ function patchActivity(activity) {
     }
   });
 
-  // Add "channelData['webchat:who']" based on "activity.from.role".
+  // Add "channelData['webchat:sender:who']" based on "activity.from.role".
 
   const {
     from: { role }
   } = activity;
 
-  activity = updateIn(activity, ['channelData', 'webchat:who'], () =>
+  activity = updateIn(activity, ['channelData', 'webchat:sender:who'], () =>
     role === 'channel' ? role : role === 'user' ? 'self' : 'others'
   );
 

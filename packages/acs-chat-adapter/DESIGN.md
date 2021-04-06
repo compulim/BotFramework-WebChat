@@ -266,26 +266,26 @@ Chat providers may support this feature in a various ways:
 ```ts
 type BaseActivity = {
   channelData: Expando<{
-    /** Avatar initials of the sender. */
-    'webchat:avatar:initials'?: string;
-
-    /** Avatar image of the sender. */
-    'webchat:avatar:image'?: string;
-
     /** Delivery status. If the provider does not support delivery report, must set to "sent". */
     'webchat:delivery-status'?: 'error' | 'sending' | 'sent';
 
     /** Read by who. If undefined, it is not read by anyone, or the provider does not support read receipts. */
     'webchat:read-by'?: 'some' | 'all';
 
+    /** Avatar image of the sender. */
+    'webchat:sender:image'?: string;
+
+    /** Avatar initials of the sender. */
+    'webchat:sender:initials'?: string;
+
     /** Display name of the sender. Set to "__BOT__" if the sender is an unnamed bot. */
-    'webchat:sender-name'?: string | '__BOT__';
+    'webchat:sender:name'?: string | '__BOT__';
 
     /** Tracking number. If undefined, the activity was sent from another session, or the chat adapter does not support resend. */
     'webchat:tracking-number'?: string;
 
     /** Who the activity is send by. */
-    'webchat:who': 'self' | 'others' | 'service';
+    'webchat:sender:who': 'self' | 'others' | 'service';
   }>;
 };
 ```

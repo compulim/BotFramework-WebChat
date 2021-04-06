@@ -55,7 +55,7 @@ export default function createACSMessageToWebChatActivityConverter({
       }
     }
 
-    const senderName = (userProfile || {}).name || senderDisplayName || communicationUserId;
+    const senderName = (userProfile || {}).name || senderDisplayName;
 
     const activityMetadata = {
       channelData: {
@@ -63,9 +63,9 @@ export default function createACSMessageToWebChatActivityConverter({
         'acs:debug:chat-message': acsChatMessage,
         'acs:debug:client-message-id': clientMessageId,
         'acs:debug:converted-at': now.toISOString(),
-        'webchat:avatar:initials': (userProfile || {}).initials,
         'webchat:key': clientMessageId || id,
-        'webchat:sender-name': senderName
+        'webchat:sender:initials': (userProfile || {}).initials,
+        'webchat:sender:name': senderName
       },
       conversationId: threadId,
       from: {
@@ -95,7 +95,7 @@ export default function createACSMessageToWebChatActivityConverter({
         ...activityMetadata,
         channelData: {
           ...activityMetadata.channelData,
-          'webchat:who': 'others'
+          'webchat:sender:who': 'others'
         },
         from: {
           ...activityMetadata.from,
@@ -109,7 +109,7 @@ export default function createACSMessageToWebChatActivityConverter({
         channelData: {
           ...activityMetadata.channelData,
           'webchat:delivery-status': createdOn ? 'sent' : 'sending', // If it contains "createdOn", it's sent.
-          'webchat:who': 'self'
+          'webchat:sender:who': 'self'
         },
         from: {
           ...activityMetadata.from,
@@ -124,7 +124,7 @@ export default function createACSMessageToWebChatActivityConverter({
       ...activityMetadata,
       channelData: {
         ...activityMetadata.channelData,
-        'webchat:who': 'service'
+        'webchat:sender:who': 'service'
       },
       from: {
         ...activityMetadata.from,

@@ -22,8 +22,8 @@ const ActivitiesComposer = ({ activities, children, honorReadReceipts, setHonorR
     activities.every(activity => activity.channelData) ||
       warn('🔥🔥🔥 All activities must have a property bag named "channelData".');
 
-    activities.every(activity => activity.channelData['webchat:who']) ||
-      warn(`🔥🔥🔥 All activities must have "channelData['webchat:who']" set.`);
+    activities.every(activity => activity.channelData['webchat:sender:who']) ||
+      warn(`🔥🔥🔥 All activities must have "channelData['webchat:sender:who']" set.`);
 
     activities.every(getActivityKey) || warn('🔥🔥🔥 All activities must have a key.');
 

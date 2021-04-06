@@ -1,10 +1,10 @@
 export default function getMetadata(activity) {
   const {
     channelData: {
-      'webchat:avatar:image': imageFromActivity,
-      'webchat:avatar:initials': initialsFromActivity,
-      'webchat:sender-name': senderName,
-      'webchat:who': who
+      'webchat:sender:image': imageFromActivity,
+      'webchat:sender:initials': initialsFromActivity,
+      'webchat:sender:name': senderName,
+      'webchat:sender:who': who
     },
     // TODO: Remove "from".
     from: { role } = {}
