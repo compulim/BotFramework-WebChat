@@ -9,7 +9,7 @@ import ActivitiesComposer from './composers/ActivitiesComposer';
 import ChatAdapter from './types/ChatAdapter';
 import createDebug from './utils/debug';
 import EmitTypingComposer from './composers/EmitTypingComposer';
-import HonorReadReceiptsComposer from './composers/HonorReadReceiptsCompose';
+import HonorReadReceiptsComposer from './composers/HonorReadReceiptsComposer';
 import resolveFunction from './utils/resolveFunction';
 import styleConsole from './utils/styleConsole';
 import TypingUsersComposer from './composers/TypingUsersComposer';
