@@ -1,6 +1,5 @@
-export default function fromWho(activity) {
-  const { channelData: { 'webchat:sender:who': who } = {}, from: { role } = {} } = activity;
+import getMetadata from './getMetadata';
 
-  // TODO: Deprecate this.
-  return who || (role === 'user' ? 'self' : 'others');
+export default function fromWho(activity) {
+  return getMetadata(activity).who;
 }
