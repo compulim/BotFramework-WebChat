@@ -1,23 +1,23 @@
 import './App.css';
 
 import { ACSChatAdapter } from 'botframework-webchat-chat-adapter-acs';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createCognitiveServicesSpeechServicesPonyfillFactory, createDirectLine } from 'botframework-webchat';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import ACSCredentials from './ui/ACSCredentials';
 import createFetchSpeechServicesCredentials from './util/createFetchSpeechServicesCredentials';
+import DirectLineCredentials from './ui/DirectLineCredentials';
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
-import DirectLineCredentials from './ui/DirectLineCredentials';
 
 const App = () => {
   const [acsEndpointURL, setACSEndpointURL] = useSessionState('', 'ACS_ENDPOINT_URL');
   const [acsIdentity, setACSIdentity] = useSessionState('', 'ACS_IDENTITY');
-  const [acsStarted, setStarted] = useState();
   const [acsThreadId, setACSThreadId] = useSessionState('', 'ACS_THREAD_ID');
   const [acsToken, setACSToken] = useSessionState('', 'ACS_TOKEN');
   const [directLine, setDirectLine] = useState();
   const [directLineToken, setDirectLineToken] = useSessionState('', 'DIRECT_LINE_TOKEN');
+  const [started, setStarted] = useState();
   const [userProfiles, setUserProfiles] = useState({});
 
   const handleACSCredentialsChange = useCallback(
@@ -93,7 +93,7 @@ const App = () => {
   const handleDirectLineStartClick = useCallback(() => {
     setStarted(Date.now());
     setDirectLine(createDirectLine({ token: directLineToken }));
-  }, [setDirectLine, setStarted]);
+  }, [directLineToken, setDirectLine, setStarted]);
 
   const styleOptions = useMemo(
     () => ({
@@ -143,8 +143,8 @@ const App = () => {
 
   return (
     <div className="app">
-      {acsStarted && (
-        <div className="app__webchat-box" key={acsStarted}>
+      {started && (
+        <div className="app__webchat-box" key={started}>
           {directLine ? (
             <WebChatWithDebug directLine={directLine} />
           ) : (
@@ -171,7 +171,7 @@ const App = () => {
           )}
         </div>
       )}
-      <div className="app__credentials" hidden={!!acsStarted}>
+      <div className="app__credentials" hidden={!!started}>
         <ACSCredentials
           endpointURL={acsEndpointURL}
           identity={acsIdentity}

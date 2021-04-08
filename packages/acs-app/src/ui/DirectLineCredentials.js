@@ -28,7 +28,7 @@ const DirectLineCredentials = ({ children, className, onChange, token }) => {
       const token = await fetchToken();
 
       if (!abortController.signal.aborted) {
-        setDisableFetchTokenButton(true);
+        setDisableFetchTokenButton(false);
         onChange && onChange({ token });
       }
     })();
