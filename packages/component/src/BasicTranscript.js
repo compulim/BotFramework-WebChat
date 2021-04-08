@@ -941,7 +941,8 @@ const InternalTranscriptScrollable = ({
   const [{ hideScrollToEndButton }] = useStyleOptions();
   const [animatingToEnd] = useAnimatingToEnd();
   const [sticky] = useSticky();
-  const lastVisibleActivityKey = getMetadata(visibleActivities[visibleActivities.length - 1]).key; // Activity ID of the last visible activity in the list.
+  const lastVisibleActivity = visibleActivities[visibleActivities.length - 1];
+  const lastVisibleActivityKey = lastVisibleActivity && getMetadata(lastVisibleActivity).key; // Activity ID of the last visible activity in the list.
   const localize = useLocalizer();
   const scrollToEndButtonRef = useRef();
 
