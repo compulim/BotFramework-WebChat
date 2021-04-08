@@ -61,7 +61,7 @@ const TypingComposer = ({
 
   // If chat adapter changed emitTyping(), we should send stop typing to the previous emitTyping() immediately.
   useEffect(() => {
-    let prevEmitTyping = emitTypingFromProps;
+    const prevEmitTyping = emitTypingFromProps;
 
     return () => {
       const { current: sendStopTypingTimeout } = sendStopTypingTimeoutRef;

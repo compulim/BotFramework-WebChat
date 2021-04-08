@@ -40,7 +40,7 @@ type BaseActivity = {
 
     /** This is the full name of the user. For bots, if this is same as `id`, assume it do not have a name. Web Chat do not use this name. */
     name?: string;
-    role?: 'bot' | 'channel' | 'user';
+    role: 'bot' | 'channel' | 'user';
   };
 
   // TODO: Can server ID be optional?

@@ -27,9 +27,9 @@ import usePrevious from './usePrevious';
 
 const EMIT_TYPING_INTERVAL = 3000;
 
-function chainUpdateIn<T>(target: T, chain: [string[], (value: any) => any][]): T {
-  return chain.reduce((target, [path, updater]) => updateIn(target, path, updater), target);
-}
+// function chainUpdateIn<T>(target: T, chain: [string[], (value: any) => any][]): T {
+//   return chain.reduce((target, [path, updater]) => updateIn(target, path, updater), target);
+// }
 
 function useSelectMap<T, U, V>(array: T[], data: U, selector: (entry: T, data: U) => V, updater: (value: V) => T): T[] {
   const entries = useMemoAll(selector, (select: (entry: T, data: U) => V) =>
@@ -187,16 +187,16 @@ const EmitTyping: FC<{
   children: ({ emitTyping }: { emitTyping: (started: boolean) => void }) => any;
 }> = ({ children }) => {
   const dispatch = useDispatch();
-  const dispatchRefForCallbacks = useRef<(action: any) => void>();
+  const dispatchForCallbacksRef = useRef<(action: any) => void>();
   const emitTypingIntervalRef = useRef<NodeJS.Timeout>();
 
-  dispatchRefForCallbacks.current = dispatch;
+  dispatchForCallbacksRef.current = dispatch;
 
   const pulseTyping = useCallback(() => {
-    const { current: dispatch } = dispatchRefForCallbacks;
+    const { current: dispatch } = dispatchForCallbacksRef;
 
     dispatch && dispatch(createEmitTypingIndicatorAction());
-  }, [dispatchRefForCallbacks]);
+  }, [dispatchForCallbacksRef]);
 
   useEffect(() => () => emitTypingIntervalRef.current && clearInterval(emitTypingIntervalRef.current), [
     emitTypingIntervalRef
@@ -255,10 +255,10 @@ const PostActivity: FC<{
     sendPostBack: (value: any) => string;
   }) => any;
 }> = ({ activities, children }) => {
-  const activitiesRefForCallback = useRef<any[]>();
+  const activitiesForCallbacksRef = useRef<any[]>();
   const dispatch = useDispatch();
 
-  activitiesRefForCallback.current = activities;
+  activitiesForCallbacksRef.current = activities;
 
   const postActivity = useCallback(
     (activity: any): string => {
@@ -270,6 +270,7 @@ const PostActivity: FC<{
       //       POST_ACTIVITY_FULFILLED = resolve
       // TODO: We should be diligent on what channelData to send, should we strip out "webchat:*"?
 
+      // eslint-disable-next-line no-magic-numbers
       const trackingNumber = `t-${random().toString(36).substr(2, 10)}`;
 
       dispatch(createPostActivityAction(updateMetadata(activity, { trackingNumber })));
@@ -282,7 +283,7 @@ const PostActivity: FC<{
 
   const resend = useCallback(
     (trackingNumber: string) => {
-      const activity = activitiesRefForCallback.current.find(
+      const activity = activitiesForCallbacksRef.current.find(
         activity => getMetadata(activity).trackingNumber === trackingNumber
       );
 
@@ -292,7 +293,7 @@ const PostActivity: FC<{
 
       return postActivity(activity);
     },
-    [activitiesRefForCallback, postActivity]
+    [activitiesForCallbacksRef, postActivity]
   );
 
   const sendEvent = useCallback(
@@ -386,14 +387,7 @@ const ConnectedLegacyChatAdapterBridge: FC<{
   };
   userId: string;
   username: string;
-  userProfiles: {
-    [userId: string]: {
-      image?: string;
-      initials?: string;
-      name?: string;
-    };
-  };
-}> = ({ children, directLine, styleOptions, userId: userIdFromProps, username: usernameFromProps, userProfiles }) => {
+}> = ({ children, directLine, styleOptions, userId: userIdFromProps, username: usernameFromProps }) => {
   const { id: userId, name: username } = useSelector(({ user }) => user);
   const directLineReferenceGrammarId = useSelector(({ referenceGrammarId }) => referenceGrammarId);
   const dispatch = useDispatch();
@@ -466,7 +460,8 @@ const ConnectedLegacyChatAdapterBridge: FC<{
 
 ConnectedLegacyChatAdapterBridge.defaultProps = {
   children: undefined,
-  userId: undefined
+  userId: undefined,
+  username: undefined
 };
 
 ConnectedLegacyChatAdapterBridge.propTypes = {
@@ -480,13 +475,7 @@ ConnectedLegacyChatAdapterBridge.propTypes = {
     userAvatarInitials: PropTypes.string
   }).isRequired,
   userId: PropTypes.string,
-  userProfiles: PropTypes.objectOf(
-    PropTypes.shape({
-      image: PropTypes.string,
-      initials: PropTypes.string,
-      name: PropTypes.string
-    })
-  ).isRequired
+  username: PropTypes.string
 };
 
 const LegacyChatAdapterBridge: FC<{
@@ -502,29 +491,22 @@ const LegacyChatAdapterBridge: FC<{
   };
   userId: string;
   username?: string;
-  userProfiles?: {
-    [userId: string]: {
-      image?: string;
-      initials?: string;
-      name?: string;
-    };
-  };
-}> = ({ children, directLine, store, styleOptions, userId, username, userProfiles }) => {
+}> = ({ children, directLine, store, styleOptions, userId, username }) => {
   const memoizedStore = useMemo(() => store || createStore(), [store]);
 
-  const { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials } = styleOptions;
+  // const { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials } = styleOptions;
 
-  const patchedUserProfiles = useMemo(
-    () =>
-      chainUpdateIn(userProfiles || {}, [
-        [[userId, 'image'], () => userAvatarImage],
-        [[userId, 'initials'], () => userAvatarInitials],
-        [[userId, 'name'], () => username],
-        [['__BOT__', 'image'], () => botAvatarImage],
-        [['__BOT__', 'initials'], () => botAvatarInitials]
-      ]),
-    [botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials, username, userProfiles]
-  );
+  // const patchedUserProfiles = useMemo(
+  //   () =>
+  //     chainUpdateIn(userProfiles || {}, [
+  //       [[userId, 'image'], () => userAvatarImage],
+  //       [[userId, 'initials'], () => userAvatarInitials],
+  //       [[userId, 'name'], () => username],
+  //       [['__BOT__', 'image'], () => botAvatarImage],
+  //       [['__BOT__', 'initials'], () => botAvatarInitials]
+  //     ]),
+  //   [botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials, username, userProfiles]
+  // );
 
   return (
     <Provider context={WebChatReduxContext} store={memoizedStore}>
@@ -533,7 +515,6 @@ const LegacyChatAdapterBridge: FC<{
         styleOptions={styleOptions}
         userId={userId}
         username={username}
-        userProfiles={patchedUserProfiles}
       >
         {children}
       </ConnectedLegacyChatAdapterBridge>
@@ -545,8 +526,7 @@ LegacyChatAdapterBridge.defaultProps = {
   children: undefined,
   store: undefined,
   userId: undefined,
-  username: undefined,
-  userProfiles: {}
+  username: undefined
 };
 
 LegacyChatAdapterBridge.propTypes = {
@@ -562,14 +542,7 @@ LegacyChatAdapterBridge.propTypes = {
     userAvatarInitials: PropTypes.string
   }).isRequired,
   userId: PropTypes.string,
-  username: PropTypes.string,
-  userProfiles: PropTypes.objectOf(
-    PropTypes.shape({
-      image: PropTypes.string,
-      initials: PropTypes.string,
-      name: PropTypes.string
-    })
-  )
+  username: PropTypes.string
 };
 
 export default LegacyChatAdapterBridge;

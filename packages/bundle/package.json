@@ -23,7 +23,7 @@
     "build:webpack": "webpack-cli",
     "eslint": "npm run precommit",
     "precommit": "npm run precommit:eslint && npm run precommit:typecheck -- --project ./src",
-    "precommit:eslint": "eslint src/**/*.{js,ts}",
+    "precommit:eslint": "eslint src/**/*.{js,ts,tsx}",
     "precommit:typecheck": "tsc --emitDeclarationOnly false --esModuleInterop true --noEmit",
     "start": "concurrently --kill-others --names \"babel,tsc,webpack\" \"npm run start:babel\" \"npm run start:typescript\" \"npm run start:webpack\"",
     "start:babel": "npm run build:babel -- --skip-initial-build --watch",

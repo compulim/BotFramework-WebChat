@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
 import { useFetchThreadMembers } from '@azure/acs-ui-sdk';
 import { useThreadMembers } from '@azure/acs-ui-sdk/dist/providers/ChatThreadProvider';
 import PropTypes from 'prop-types';
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 
 import ACSChatThreadMember from '../types/ACSChatThreadMember';
 import ACSThreadMembersContext from '../contexts/ACSThreadMembersContext';

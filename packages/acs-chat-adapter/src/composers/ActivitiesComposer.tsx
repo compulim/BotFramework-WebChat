@@ -34,10 +34,13 @@ type DeliveryReports = {
 };
 
 function generateTrackingNumber(): string {
+  // eslint-disable-next-line no-magic-numbers
   return `t-${random().toString(36).substr(2, 10)}`;
 }
 
-const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
+// TODO: We should type "children" prop.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'orange' }));
 
   const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
@@ -50,7 +53,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
 
   const numOtherUsers = useMemo(
     () => memberUserIds.filter(threadMember => threadMember.user.communicationUserId !== userId).length,
-    [memberUserIds]
+    [memberUserIds, userId]
   );
 
   const readOnEntries = useMemo<number[]>(
@@ -67,7 +70,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
           return readReceipts;
         }, {})
       ),
-    [acsReadReceipts]
+    [acsReadReceipts, userId]
   );
 
   const abortController = useMemo(() => new AbortController(), []);
@@ -83,6 +86,8 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
 
       setDeliveryReports(deliveryReports => updateIn(deliveryReports, [trackingNumber, 'message'], () => message));
 
+      // TODO: Prettier is conflicting with ESLint on "wrap-iife" rule.
+      // eslint-disable-next-line wrap-iife
       (async function () {
         let clientMessageId: string;
 
@@ -141,7 +146,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
 
       return trackingNumber;
     },
-    [acsSendMessageWithDelivery, setDeliveryReports]
+    [abortController, acsSendMessageWithDelivery, setDeliveryReports]
   );
 
   // Perf: decouple for callbacks
@@ -189,7 +194,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
         let resent;
         let trackingNumber;
 
-        if (!!clientMessageId) {
+        if (clientMessageId) {
           [trackingNumber, { deliveryStatus, resent } = { deliveryStatus: undefined, resent: undefined }] =
             Object.entries(deliveryReports).find(
               ([_, deliveryReport]) => deliveryReport.clientMessageId === clientMessageId
@@ -203,7 +208,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
 
         return entries;
       }, []),
-    [chatMessages, deliveryReports, readOnEntries]
+    [chatMessages, deliveryReports, numOtherUsers, readOnEntries]
   );
 
   // The "entries" array will be regenerated on every render loop.
@@ -281,6 +286,7 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
 ActivitiesComposer.defaultProps = {};
 
 ActivitiesComposer.propTypes = {
+  children: PropTypes.any.isRequired,
   userProfiles: PropTypes.objectOf(
     PropTypes.shape({
       image: PropTypes.string,

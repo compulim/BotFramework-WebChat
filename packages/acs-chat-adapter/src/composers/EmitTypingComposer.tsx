@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { FC, useMemo, useRef } from 'react';
 
 import createDebug from '../utils/debug';
@@ -9,7 +10,9 @@ const ACS_EMIT_TYPING_INTERVAL = 5000;
 
 let debug;
 
-const EmitTypingComposer: FC = ({ children }) => {
+// TODO: We should type "children" prop.
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+const EmitTypingComposer: FC<{ children: any }> = ({ children }) => {
   debug || (debug = createDebug('<EmitTypingComposer>', { backgroundColor: 'orange' }));
 
   const sendTypingIntervalRef = useRef<NodeJS.Timeout>();
@@ -45,6 +48,8 @@ const EmitTypingComposer: FC = ({ children }) => {
 
 EmitTypingComposer.defaultProps = {};
 
-EmitTypingComposer.propTypes = {};
+EmitTypingComposer.propTypes = {
+  children: PropTypes.any.isRequired
+};
 
 export default EmitTypingComposer;

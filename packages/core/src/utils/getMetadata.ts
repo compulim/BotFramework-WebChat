@@ -1,21 +1,8 @@
 import Activity from '../types/Activity';
-import DeliveryStatus from '../types/DeliveryStatus';
-import ReadBy from '../types/ReadBy';
+import ActivityMetadata from '../types/ActivityMetadata';
 import warn from './warn';
-import Who from '../types/Who';
 
-export default function getMetadata(
-  activity?: Activity
-): {
-  avatarImage?: string;
-  avatarInitials?: string;
-  deliveryStatus?: DeliveryStatus;
-  key: string;
-  readBy?: ReadBy;
-  senderName?: string;
-  trackingNumber?: string;
-  who?: Who;
-} {
+export default function getMetadata(activity?: Activity): ActivityMetadata {
   if (!activity) {
     return;
   }

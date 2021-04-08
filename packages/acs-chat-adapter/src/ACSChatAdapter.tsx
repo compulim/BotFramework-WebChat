@@ -26,6 +26,8 @@ import useTypingUsers from './hooks/useTypingUsers';
 let debug;
 let internalDebug;
 
+// TODO: We should type "children" prop.
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles: UserProfiles }> = ({
   children,
   userProfiles
@@ -77,6 +79,8 @@ InternalACSChatAdapter.propTypes = {
 type ResolvableToken = string | Promise<string> | (() => string) | (() => Promise<string>);
 
 const ACSChatAdapter: FC<{
+  // TODO: We should type "children" prop.
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   children: (adapter?: ChatAdapter) => any;
   endpointURL: string;
   threadId: string;
@@ -159,8 +163,8 @@ ACSChatAdapter.defaultProps = {
 ACSChatAdapter.propTypes = {
   children: PropTypes.func.isRequired,
   endpointURL: PropTypes.string.isRequired,
-  token: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
   threadId: PropTypes.string.isRequired,
+  token: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
   userProfiles: PropTypes.objectOf(
     PropTypes.shape({
       image: PropTypes.string,

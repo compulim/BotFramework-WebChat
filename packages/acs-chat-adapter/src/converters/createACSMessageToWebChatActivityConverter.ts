@@ -59,7 +59,7 @@ export default function createACSMessageToWebChatActivityConverter({
 
     const senderName = (userProfile || {}).name || senderDisplayName;
 
-    const activityMetadata = updateMetadata(
+    const baseActivity = updateMetadata(
       {
         channelData: {
           'acs:chat-message-id': acsChatMessage.id,
@@ -74,11 +74,14 @@ export default function createACSMessageToWebChatActivityConverter({
         },
         id: clientMessageId || id,
         timestamp: (createdOn ? (typeof createdOn === 'string' ? new Date(createdOn) : createdOn) : now).toISOString()
-      },
+        // We are constructing activity, after calling updateMetadata(), we should have a full activity that conforms to Activity type.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
       {
         avatarInitials: (userProfile || {}).initials,
         key: clientMessageId || id,
-        senderName
+        senderName,
+        who
       }
     );
 
@@ -97,47 +100,26 @@ export default function createACSMessageToWebChatActivityConverter({
           };
 
     if (who === 'others') {
-      return updateMetadata(
-        {
-          ...activityMetadata,
-          from: {
-            ...activityMetadata.from,
-            role: 'bot'
-          },
-          ...activityContent
-        },
-        { who: 'others' }
-      );
+      return {
+        ...baseActivity,
+        ...activityContent
+      };
     } else if (who === 'self') {
       return updateMetadata(
         {
-          ...activityMetadata,
-          from: {
-            ...activityMetadata.from,
-            role: 'user'
-          },
+          ...baseActivity,
           ...activityContent
         },
         {
-          deliveryStatus: createdOn ? 'sent' : 'sending', // If it contains "createdOn", it's sent.
-          who: 'self'
+          deliveryStatus: createdOn ? 'sent' : 'sending' // If it contains "createdOn", it's sent.
         }
       );
     }
 
     // who === 'service'
-    return updateMetadata(
-      {
-        ...activityMetadata,
-        from: {
-          ...activityMetadata.from,
-          role: 'channel'
-        },
-        type: 'event'
-      },
-      {
-        who: 'service'
-      }
-    );
+    return {
+      ...baseActivity,
+      type: 'event'
+    };
   };
 }

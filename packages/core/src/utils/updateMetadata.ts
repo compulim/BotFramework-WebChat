@@ -1,24 +1,10 @@
 /* eslint complexity: ["error", 30] */
 
 import Activity from '../types/Activity';
-import DeliveryStatus from '../types/DeliveryStatus';
-import ReadBy from '../types/ReadBy';
+import ActivityMetadata from '../types/ActivityMetadata';
 import updateIn from 'simple-update-in';
-import Who from '../types/Who';
 
-export default function updateMetadata(
-  activity: Activity,
-  partialMetadata: {
-    avatarImage?: string;
-    avatarInitials?: string;
-    deliveryStatus?: DeliveryStatus;
-    key?: string;
-    readBy?: ReadBy;
-    senderName?: string;
-    trackingNumber?: string;
-    who?: Who;
-  }
-): Activity {
+export default function updateMetadata<T extends Activity>(activity: T, partialMetadata: Partial<ActivityMetadata>): T {
   const { avatarImage, avatarInitials, deliveryStatus, key, readBy, senderName, trackingNumber, who } = partialMetadata;
 
   if (typeof avatarImage !== 'undefined') {

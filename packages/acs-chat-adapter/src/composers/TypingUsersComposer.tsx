@@ -11,7 +11,9 @@ import useDebugDeps from '../hooks/useDebugDeps';
 import usePrevious from '../hooks/usePrevious';
 import UserProfiles from '../types/UserProfiles';
 
-const TypingUsersComposer: FC<{ userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
+// TODO: We should type "children" prop.
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+const TypingUsersComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   const [acsTypingUsers] = useACSTypingUsers();
   const [userId] = useACSUserId();
 
@@ -53,13 +55,14 @@ const TypingUsersComposer: FC<{ userProfiles: UserProfiles }> = ({ children, use
 };
 
 TypingUsersComposer.propTypes = {
+  children: PropTypes.any.isRequired,
   userProfiles: PropTypes.objectOf(
     PropTypes.shape({
       image: PropTypes.string,
       initials: PropTypes.string,
       name: PropTypes.string
     })
-  )
+  ).isRequired
 };
 
 export default TypingUsersComposer;
