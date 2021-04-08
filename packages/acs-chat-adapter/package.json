@@ -42,6 +42,7 @@
     "@azure/acs-ui-sdk": "file:azure-acs-ui-sdk-0.1.0.tgz",
     "abort-controller": "3.0.0",
     "abort-controller-es5": "1.2.0",
+    "botframework-webchat-core": "^0.0.0-0",
     "core-js": "3.9.1",
     "math-random": "2.0.1",
     "p-defer": "3.0.0",

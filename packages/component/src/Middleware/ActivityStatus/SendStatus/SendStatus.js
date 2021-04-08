@@ -1,4 +1,4 @@
-import { Constants } from 'botframework-webchat-core';
+import { Constants, getMetadata } from 'botframework-webchat-core';
 import { hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -35,17 +35,14 @@ const connectSendStatus = (...selectors) =>
 
 const SendStatus = ({ activity, sendState }) => {
   const [{ sendStatus: sendStatusStyleSet }] = useStyleSet();
+  const { trackingNumber } = getMetadata(activity);
   const focus = useFocus();
   const localize = useLocalizer();
-  const resendActivity = useResend();
+  const resend = useResend();
 
   const sendingText = localize('ACTIVITY_STATUS_SEND_STATUS_ALT_SENDING');
 
   const label = localize('ACTIVITY_STATUS_SEND_STATUS_ALT', sendingText);
-
-  const {
-    channelData: { 'webchat:tracking-number': trackingNumber }
-  } = activity;
 
   // If no tracking number is provided, resend is disabled. And "handleRetryClick" will be falsy.
   const handleRetryClick = useMemo(
@@ -53,14 +50,14 @@ const SendStatus = ({ activity, sendState }) => {
       trackingNumber &&
       (() => {
         if (trackingNumber) {
-          resendActivity(trackingNumber);
+          resend(trackingNumber);
 
           // After clicking on "retry", the button will be gone and focus will be lost (back to document.body)
           // We want to make sure the user stay inside Web Chat
           focus('sendBoxWithoutKeyboard');
         }
       }),
-    [focus, resendActivity, trackingNumber]
+    [focus, resend, trackingNumber]
   );
 
   return (
@@ -87,7 +84,7 @@ SendStatus.propTypes = {
 
       // TODO: Rename "state" to "webchat:send-state".
       state: PropTypes.string,
-      'webchat:tracking-number': PropTypes.resetWarningCache
+      'webchat:tracking-number': PropTypes.string
     })
   }).isRequired,
   sendState: PropTypes.oneOf([SENDING, SEND_FAILED]).isRequired

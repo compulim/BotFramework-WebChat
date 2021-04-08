@@ -1,4 +1,4 @@
-import { fromWho, hooks } from 'botframework-webchat-api';
+import { getMetadata, hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -12,8 +12,8 @@ const { useStyleOptions } = hooks;
 const Timestamp = ({ activity, className }) => {
   const [{ timestamp: timestampStyleSet, sendStatus: sendStatusStyleSet }] = useStyleSet();
   const [{ timestampFormat }] = useStyleOptions();
-  const { channelData: { 'webchat:read-by': readBy } = {}, timestamp } = activity;
-  const who = fromWho(activity);
+  const { readBy, who } = getMetadata(activity);
+  const { timestamp } = activity;
 
   timestampStyleSet &&
     console.warn(

@@ -1,6 +1,6 @@
+import { getMetadata } from 'botframework-webchat-core';
 import { useMemo } from 'react';
 
-import fromWho from '../utils/fromWho';
 import useStyleOptions from './useStyleOptions';
 import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
@@ -10,11 +10,9 @@ export default function useCreateAvatarRenderer() {
 
   return useMemo(
     () => ({ activity }) => {
-      const who = fromWho(activity);
-
       const result = avatarRenderer({
         activity,
-        fromUser: who === 'self',
+        fromUser: getMetadata(activity).who === 'self',
         styleOptions
       });
 

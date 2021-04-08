@@ -130,33 +130,9 @@ declare type ChatAdapter = {
 };
 ```
 
-Chat adapter should provide the mentioned data structure, with the display name of the user. In US, the display name is likely to be the first name of the user. In Japan, the display name is likely to be the surname of the user.
-
-Display name differs from country to country. Chat adapter may need to know the locale to get the display name properly.
+Chat adapter should provide the mentioned data structure, with the display name of the user. It will be up to the chat adapter to provide a display name good for the locale the developer selected.
 
 If the chat UI need to know the time when typing started, such as for debouncing or ordering purpose, the UI should perform reconciliation and mark the time itself.
-
-### 🔥🔥🔥 Questions
-
-- Chat adapter or provider should not know about the locale
-  - It may be difficult to change the locale on-the-fly, as the chat adapter may potentially need to ask chat provider to change locale for that particular WebSocket connection
-- If chat UI is going to handle the localization of names, should chat adapter pass a complex name structure?
-  - It seems too complicated for normal developers
-
-```ts
-declare type TypingUsers = {
-  [userId: string]: {
-    name:
-      | string
-      | {
-          first: string;
-          last: string;
-          surname: string;
-          display: string;
-        };
-  };
-};
-```
 
 ### Special cases
 

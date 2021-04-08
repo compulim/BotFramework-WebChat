@@ -1,3 +1,5 @@
+import { updateMetadata } from 'botframework-webchat-core';
+
 import ACSChatMessage from '../types/ACSChatMessage';
 import Activity, { EventActivity, MessageActivity } from '../types/Activity';
 import createDebug from '../utils/debug';
@@ -57,24 +59,28 @@ export default function createACSMessageToWebChatActivityConverter({
 
     const senderName = (userProfile || {}).name || senderDisplayName;
 
-    const activityMetadata = {
-      channelData: {
-        'acs:chat-message-id': acsChatMessage.id,
-        'acs:debug:chat-message': acsChatMessage,
-        'acs:debug:client-message-id': clientMessageId,
-        'acs:debug:converted-at': now.toISOString(),
-        'webchat:key': clientMessageId || id,
-        'webchat:sender:initials': (userProfile || {}).initials,
-        'webchat:sender:name': senderName
+    const activityMetadata = updateMetadata(
+      {
+        channelData: {
+          'acs:chat-message-id': acsChatMessage.id,
+          'acs:debug:chat-message': acsChatMessage,
+          'acs:debug:client-message-id': clientMessageId,
+          'acs:debug:converted-at': now.toISOString()
+        },
+        conversationId: threadId,
+        from: {
+          id: communicationUserId,
+          name: senderName
+        },
+        id: clientMessageId || id,
+        timestamp: (createdOn ? (typeof createdOn === 'string' ? new Date(createdOn) : createdOn) : now).toISOString()
       },
-      conversationId: threadId,
-      from: {
-        id: communicationUserId,
-        name: senderName
-      },
-      id: clientMessageId || id,
-      timestamp: (createdOn ? (typeof createdOn === 'string' ? new Date(createdOn) : createdOn) : now).toISOString()
-    };
+      {
+        avatarInitials: (userProfile || {}).initials,
+        key: clientMessageId || id,
+        senderName
+      }
+    );
 
     const activityContent: EventActivity | MessageActivity =
       // For an outgoing message which is pending send, it does not have "type" field set.
@@ -91,46 +97,50 @@ export default function createACSMessageToWebChatActivityConverter({
           };
 
     if (who === 'others') {
-      return {
-        ...activityMetadata,
-        channelData: {
-          ...activityMetadata.channelData,
-          'webchat:sender:who': 'others'
+      return updateMetadata(
+        {
+          ...activityMetadata,
+          channelData: {
+            ...activityMetadata.channelData
+          },
+          from: {
+            ...activityMetadata.from,
+            role: 'bot'
+          },
+          ...activityContent
         },
-        from: {
-          ...activityMetadata.from,
-          role: 'bot'
-        },
-        ...activityContent
-      };
+        { who: 'others' }
+      );
     } else if (who === 'self') {
-      return {
-        ...activityMetadata,
-        channelData: {
-          ...activityMetadata.channelData,
-          'webchat:delivery-status': createdOn ? 'sent' : 'sending', // If it contains "createdOn", it's sent.
-          'webchat:sender:who': 'self'
+      return updateMetadata(
+        {
+          ...activityMetadata,
+          from: {
+            ...activityMetadata.from,
+            role: 'user'
+          },
+          ...activityContent
         },
-        from: {
-          ...activityMetadata.from,
-          role: 'user'
-        },
-        ...activityContent
-      };
+        {
+          deliveryStatus: createdOn ? 'sent' : 'sending', // If it contains "createdOn", it's sent.
+          who: 'self'
+        }
+      );
     }
 
     // who === 'service'
-    return {
-      ...activityMetadata,
-      channelData: {
-        ...activityMetadata.channelData,
-        'webchat:sender:who': 'service'
+    return updateMetadata(
+      {
+        ...activityMetadata,
+        from: {
+          ...activityMetadata.from,
+          role: 'channel'
+        },
+        type: 'event'
       },
-      from: {
-        ...activityMetadata.from,
-        role: 'channel'
-      },
-      type: 'event'
-    };
+      {
+        who: 'service'
+      }
+    );
   };
 }

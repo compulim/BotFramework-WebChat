@@ -1,24 +1,22 @@
 import { all, call, cancelled, put, race, select, take, takeEvery } from 'redux-saga/effects';
 
-import observeOnce from './effects/observeOnce';
-import whileConnected from './effects/whileConnected';
-
-import clockSkewAdjustmentSelector from '../selectors/clockSkewAdjustment';
-import combineSelectors from '../selectors/combineSelectors';
-import languageSelector from '../selectors/language';
-
-import deleteKey from '../utils/deleteKey';
-import sleep from '../utils/sleep';
-import uniqueID from '../utils/uniqueID';
-
+import { INCOMING_ACTIVITY } from '../actions/incomingActivity';
 import {
   POST_ACTIVITY,
   POST_ACTIVITY_FULFILLED,
   POST_ACTIVITY_PENDING,
   POST_ACTIVITY_REJECTED
 } from '../actions/postActivity';
-
-import { INCOMING_ACTIVITY } from '../actions/incomingActivity';
+import clockSkewAdjustmentSelector from '../selectors/clockSkewAdjustment';
+import combineSelectors from '../selectors/combineSelectors';
+import deleteKey from '../utils/deleteKey';
+import getMetadata from '../utils/getMetadata';
+import languageSelector from '../selectors/language';
+import observeOnce from './effects/observeOnce';
+import sleep from '../utils/sleep';
+import uniqueID from '../utils/uniqueID';
+import updateMetadata from '../utils/updateMetadata';
+import whileConnected from './effects/whileConnected';
 
 const SEND_TIMEOUT = 120000;
 
@@ -31,7 +29,13 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     combineSelectors({ clockSkewAdjustment: clockSkewAdjustmentSelector, locale: languageSelector })
   );
   const { attachments } = activity;
-  const clientActivityID = uniqueID();
+  const clientActivityID = getMetadata(activity).trackingNumber || uniqueID();
+
+  activity = updateMetadata(activity, {
+    deliveryStatus: 'sending',
+    key: clientActivityID,
+    trackingNumber: clientActivityID
+  });
 
   activity = {
     ...deleteKey(activity, 'id'),
@@ -92,7 +96,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
         const { channelData = {}, id } = activity;
 
         if (channelData.clientActivityID === clientActivityID && id) {
-          return activity;
+          return updateMetadata(activity, { deliveryStatus: 'sent' });
         }
       }
     });
@@ -107,6 +111,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     } = yield race({
       send: all({
         echoBack: echoBackCall,
+        // TODO: Should we remove most Web Chat-specific channelData except "webchat:tracking-number"?
         postActivity: observeOnce(directLine.postActivity(activity))
       }),
       timeout: call(() => sleep(SEND_TIMEOUT).then(() => Promise.reject(new Error('timeout'))))

@@ -1,7 +1,6 @@
+import { getMetadata } from 'botframework-webchat-core';
 import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
 
-import fromWho from '../utils/fromWho';
-import getActivityKey from '../utils/getActivityKey';
 import HonorReadReceiptsContext from '../contexts/HonorReadReceiptsContext';
 import useActivities from '../hooks/useActivities';
 import useReturnReadReceipt from '../hooks/useReturnReadReceipt';
@@ -16,12 +15,12 @@ const HonorReadReceiptsComposer: FC = ({ children }) => {
     for (let index = activities.length - 1; index >= 0; index--) {
       const activity = activities[index];
 
-      if (fromWho(activity) === 'others') {
-        const activityKey = getActivityKey(activity);
+      const { key, who } = getMetadata(activity);
 
-        if (lastReadActivityKeyRef.current !== activityKey) {
-          returnReadReceipt(activityKey);
-          lastReadActivityKeyRef.current = activityKey;
+      if (who === 'others') {
+        if (lastReadActivityKeyRef.current !== key) {
+          returnReadReceipt(key);
+          lastReadActivityKeyRef.current = key;
         }
 
         break;

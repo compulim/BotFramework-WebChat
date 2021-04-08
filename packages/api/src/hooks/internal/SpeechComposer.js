@@ -1,10 +1,8 @@
-import { Constants } from 'botframework-webchat-core';
+import { Constants, getMetadata } from 'botframework-webchat-core';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import createDebug from '../../utils/debug';
-import fromWho from '../../utils/fromWho';
-import getActivityKey from '../../utils/getActivityKey';
 import useActivities from '../useActivities';
 // import useGrammars from '../useGrammars';
 import useInputMode from '../useInputMode';
@@ -63,7 +61,7 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
         const { current: visibleActivities } = visibleActivitiesForCallbacksRef;
 
         const prevIndex = visibleActivities.findIndex(
-          activity => getActivityKey(activity) === prevSpeakAfterActivityKey
+          activity => getMetadata(activity).key === prevSpeakAfterActivityKey
         );
         let index = visibleActivities.indexOf(spokenActivity);
 
@@ -82,7 +80,7 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
             setRecognitionStartKey(Date.now());
           }
 
-          return getActivityKey(spokenActivity);
+          return getMetadata(spokenActivity).key;
         }
 
         index = prevIndex;
@@ -105,7 +103,7 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
     setSynthesizeAfterActivityKey(prevSpeakAfterActivityKey => {
       const { current: visibleActivities } = visibleActivitiesForCallbacksRef;
 
-      return prevSpeakAfterActivityKey || getActivityKey(visibleActivities[visibleActivities.length - 1]);
+      return prevSpeakAfterActivityKey || getMetadata(visibleActivities[visibleActivities.length - 1]).key;
     });
   }, [setSynthesizeAfterActivityKey, visibleActivitiesForCallbacksRef]);
 
@@ -210,13 +208,13 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
       return [];
     }
 
-    const index = visibleActivities.findIndex(activity => getActivityKey(activity) === synthesizeAfterActivityKey);
+    const index = visibleActivities.findIndex(activity => getMetadata(activity).key === synthesizeAfterActivityKey);
 
     if (!~index) {
       return [];
     }
 
-    return visibleActivities.slice(index + 1).filter(activity => fromWho(activity) !== 'self');
+    return visibleActivities.slice(index + 1).filter(activity => getMetadata(activity).who !== 'self');
   }, [inputMode, recognitionStartKey, supportSpeechSynthesis, synthesizeAfterActivityKey, visibleActivities]);
 
   const shouldSynthesizeActivityFromOthers = !!synthesizeAfterActivityKey;

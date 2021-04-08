@@ -1,9 +1,8 @@
 /* eslint react/prop-types: "off"*/
 
-import { Constants } from 'botframework-webchat-core';
+import { Constants, getMetadata } from 'botframework-webchat-core';
 import React, { useMemo } from 'react';
 
-import fromWho from '../utils/fromWho';
 // import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
 // import useTimePassed from './internal/useTimePassed';
 import useWebChatAPIContext from './internal/useWebChatAPIContext';
@@ -18,15 +17,9 @@ const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity 
 
   // SEND_FAILED from the activity is ignored, and is instead based on styleOptions.sendTimeout.
   // Note that the derived state is time-sensitive. The useTimePassed() hook is used to make sure it changes over time.
-  const {
-    // TODO: Rename "state" to "webchat:send-state"
-    // TODO: Rename "clientTimestamp" to "webchat:client-timestamp"
-    // channelData: { clientTimestamp = 0, state, 'webchat:delivery-status': deliveryStatus } = {},
-    channelData: { 'webchat:delivery-status': deliveryStatus } = {}
-    // from: { role }
-  } = activity;
 
-  const who = fromWho(activity);
+  // TODO: Rename "clientTimestamp" to "webchat:client-timestamp"
+  const { deliveryStatus, who } = getMetadata(activity);
 
   // const activitySent = typeof deliveryStatus === 'string' ? deliveryStatus === 'sent' : state !== SENDING && state !== SEND_FAILED;
   // const fromUser = role === 'user';

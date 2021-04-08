@@ -41,7 +41,7 @@
         }
       }
     ],
-    "@babel/react"
+    "@babel/preset-react"
   ],
   "sourceMaps": "inline",
   "sourceRoot": "component:///"

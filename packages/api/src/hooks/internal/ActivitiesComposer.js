@@ -1,8 +1,8 @@
+import { getMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo } from 'react';
 
 import createDebug from '../../utils/debug';
-import getActivityKey from '../../utils/getActivityKey';
 import useCreateActivityRenderer from '../useCreateActivityRenderer';
 import useCreateActivityStatusRenderer from '../useCreateActivityStatusRenderer';
 import useMemoAll from './useMemoAll';
@@ -22,21 +22,25 @@ const ActivitiesComposer = ({ activities, children, honorReadReceipts, setHonorR
     activities.every(activity => activity.channelData) ||
       warn('🔥🔥🔥 All activities must have a property bag named "channelData".');
 
-    activities.every(activity => activity.channelData['webchat:sender:who']) ||
+    activities.every(activity => getMetadata(activity).who) ||
       warn(`🔥🔥🔥 All activities must have "channelData['webchat:sender:who']" set.`);
 
-    activities.every(getActivityKey) || warn('🔥🔥🔥 All activities must have a key.');
+    activities.every(activity => getMetadata(activity).key) || warn('🔥🔥🔥 All activities must have a key.');
 
-    activities.every(
-      ({ channelData }) => !channelData['webchat:delivery-status'] || channelData['webchat:tracking-number']
-    ) ||
+    activities.every(activity => {
+      const { deliveryStatus, trackingNumber } = getMetadata(activity);
+
+      return !deliveryStatus || trackingNumber;
+    }) ||
       warn(
         `🔥🔥🔥 Activities which has "channelData['webchat:delivery-status']" must also set "channelData['webchat:tracking-number']".`
       );
 
-    activities.every(
-      ({ channelData }) => !channelData['webchat:tracking-number'] || channelData['webchat:delivery-status']
-    ) ||
+    activities.every(activity => {
+      const { deliveryStatus, trackingNumber } = getMetadata(activity);
+
+      return !trackingNumber || deliveryStatus;
+    }) ||
       warn(
         `🔥🔥🔥 Activities which has "channelData['webchat:tracking-number']" must also set "channelData['webchat:delivery-status']".`
       );

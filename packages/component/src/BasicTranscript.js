@@ -9,7 +9,7 @@ import {
   useScrollToEnd,
   useSticky
 } from 'react-scroll-to-bottom';
-import { fromWho, getMetadata, hooks } from 'botframework-webchat-api';
+import { getMetadata, hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import random from 'math-random';
@@ -20,7 +20,6 @@ import BasicTypingIndicator from './BasicTypingIndicator';
 import createDebug from './Utils/debug';
 import Fade from './Utils/Fade';
 import FocusRedirector from './Utils/FocusRedirector';
-import getActivityKey from './Utils/getActivityKey';
 import getTabIndex from './Utils/TypeFocusSink/getTabIndex';
 import inputtableKey from './Utils/TypeFocusSink/inputtableKey';
 import intersectionOf from './Utils/intersectionOf';
@@ -124,7 +123,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     () =>
       !!showAvatarForOthers &&
       activitiesWithRenderer.some(
-        ({ activity }) => fromWho(activity) === 'others' && getMetadata(activity).avatarInitials
+        ({ activity }) => getMetadata(activity).who === 'others' && getMetadata(activity).avatarInitials
       ),
     [activitiesWithRenderer, showAvatarForOthers]
   );
@@ -133,7 +132,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
     () =>
       !!showAvatarForSelf &&
       activitiesWithRenderer.some(
-        ({ activity }) => fromWho(activity) === 'self' && getMetadata(activity).avatarInitials
+        ({ activity }) => getMetadata(activity).who === 'self' && getMetadata(activity).avatarInitials
       ),
     [activitiesWithRenderer, showAvatarForSelf]
   );
@@ -239,8 +238,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             entry => entry.activity === activity
           );
 
-          const key = getActivityKey(activity);
-          const who = fromWho(activity);
+          const { key, who } = getMetadata(activity);
           const { channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {}, text } = activity;
 
           const topSideNub = who === 'self' ? topSideUserNub : topSideBotNub;
@@ -290,7 +288,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
             // When a child of the activity receives focus, notify the transcript to set the aria-activedescendant to this activity.
             handleFocus: () => {
-              setFocusedActivityKey(getActivityKey(activity));
+              setFocusedActivityKey(getMetadata(activity).key);
             },
 
             handleKeyDown: event => {
@@ -298,7 +296,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
                 event.preventDefault();
                 event.stopPropagation();
 
-                setFocusedActivityKey(getActivityKey(activity));
+                setFocusedActivityKey(getMetadata(activity).key);
 
                 const { current } = rootElementRef;
 
@@ -344,7 +342,7 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
 
       return {
         activity,
-        activityKey: getActivityKey(activity),
+        activityKey: getMetadata(activity).key,
         ariaLabelId: existingEntry
           ? existingEntry.ariaLabelId
           : `webchat__basic-transcript__activity-label-${random().toString(36).substr(2, 5)}`,
@@ -943,7 +941,7 @@ const InternalTranscriptScrollable = ({
   const [{ hideScrollToEndButton }] = useStyleOptions();
   const [animatingToEnd] = useAnimatingToEnd();
   const [sticky] = useSticky();
-  const lastVisibleActivityKey = getActivityKey(visibleActivities[visibleActivities.length - 1]); // Activity ID of the last visible activity in the list.
+  const lastVisibleActivityKey = getMetadata(visibleActivities[visibleActivities.length - 1]).key; // Activity ID of the last visible activity in the list.
   const localize = useLocalizer();
   const scrollToEndButtonRef = useRef();
 
@@ -961,13 +959,13 @@ const InternalTranscriptScrollable = ({
     const { current: visibleActivities } = visibleActivitiesForCallbacksRef;
 
     // After the "New message" button is clicked, focus on the first unread activity.
-    const index = visibleActivities.findIndex(activity => getActivityKey(activity) === lastReadActivityKeyRef.current);
+    const index = visibleActivities.findIndex(activity => getMetadata(activity).key === lastReadActivityKeyRef.current);
 
     if (~index) {
       const firstUnreadActivity = visibleActivities[index + 1];
 
       if (firstUnreadActivity) {
-        return onFocusActivity(getActivityKey(firstUnreadActivity));
+        return onFocusActivity(getMetadata(firstUnreadActivity).key);
       }
     }
 
@@ -1009,7 +1007,7 @@ const InternalTranscriptScrollable = ({
       return -1;
     }
 
-    return visibleActivities.findIndex(activity => getActivityKey(activity) === lastReadActivityKeyRef.current);
+    return visibleActivities.findIndex(activity => getMetadata(activity).key === lastReadActivityKeyRef.current);
   }, [allActivitiesRead, animatingToEnd, hideScrollToEndButton, lastReadActivityKeyRef, sticky, visibleActivities]);
 
   return (

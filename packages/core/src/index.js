@@ -26,6 +26,9 @@ import setNotification from './actions/setNotification';
 
 import * as ActivityClientState from './constants/ActivityClientState';
 import * as DictateState from './constants/DictateState';
+import getMetadata from './utils/getMetadata';
+import updateMetadata from './utils/updateMetadata';
+import warn from './utils/warn';
 
 const Constants = { ActivityClientState, DictateState };
 const version = process.env.npm_package_version;
@@ -39,6 +42,7 @@ export {
   disconnect,
   dismissNotification,
   emitTypingIndicator,
+  getMetadata,
   // markActivity,
   postActivity,
   // sendEvent,
@@ -58,5 +62,7 @@ export {
   // stopDictate,
   // stopSpeakingActivity,
   // submitSendBox,
-  version
+  updateMetadata,
+  version,
+  warn
 };

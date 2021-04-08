@@ -56,6 +56,8 @@
     "typescript": "^4.0.5"
   },
   "dependencies": {
+    "abort-controller": "3.0.0",
+    "abort-controller-es5": "1.2.0",
     "botframework-webchat-core": "^0.0.0-0",
     "event-target-shim": "5.0.1",
     "event-target-shim-es5": "1.2.0",

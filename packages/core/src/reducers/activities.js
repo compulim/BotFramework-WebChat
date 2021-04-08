@@ -8,7 +8,8 @@ import { MARK_ACTIVITY } from '../actions/markActivity';
 
 import { POST_ACTIVITY_FULFILLED, POST_ACTIVITY_PENDING, POST_ACTIVITY_REJECTED } from '../actions/postActivity';
 
-import { SEND_FAILED, SENDING, SENT } from '../constants/ActivityClientState';
+import getMetadata from '../utils/getMetadata';
+import updateMetadata from '../utils/updateMetadata';
 
 const DEFAULT_STATE = [];
 const DIRECT_LINE_PLACEHOLDER_URL =
@@ -44,15 +45,13 @@ function patchActivity(activity) {
     from: { role }
   } = activity;
 
-  activity = updateIn(activity, ['channelData', 'webchat:sender:who'], () =>
-    role === 'channel' ? role : role === 'user' ? 'self' : 'others'
-  );
+  activity = updateMetadata(activity, { who: role === 'user' ? 'self' : role === 'channel' ? 'service' : 'others' });
 
   // Add "channelData['webchat:key']" based on coalesce of "activity.channelData.clientActivityId" and "activity.id".
 
   const { channelData: { clientActivityID } = {}, id } = activity;
 
-  activity = updateIn(activity, ['channelData', 'webchat:key'], () => clientActivityID || id);
+  activity = updateMetadata(activity, { key: clientActivityID || id });
 
   return activity;
 }
@@ -73,10 +72,11 @@ function upsertActivityWithSort(activities, nextActivity) {
   // Then, find the right (sorted) place to insert the new activity at, based on timestamp
   // Since clockskew might happen, we will ignore timestamp on messages that are sending
 
-  const indexToInsert = nextActivities.findIndex(
-    ({ channelData: { state } = {}, timestamp }) =>
-      Date.parse(timestamp) > nextTimestamp && state !== SENDING && state !== SEND_FAILED
-  );
+  const indexToInsert = nextActivities.findIndex(activity => {
+    const { deliveryStatus } = getMetadata(activity);
+
+    return Date.parse(activity.timestamp) > nextTimestamp && deliveryStatus !== 'sending' && deliveryStatus !== 'error';
+  });
 
   // If no right place are found, append it
   nextActivities.splice(~indexToInsert ? indexToInsert : nextActivities.length, 0, nextActivity);
@@ -99,24 +99,20 @@ export default function activities(state = DEFAULT_STATE, { meta, payload, type 
       break;
 
     case POST_ACTIVITY_PENDING:
-      state = upsertActivityWithSort(
-        state,
-        updateIn(payload.activity, ['channelData', 'state'], () => SENDING)
-      );
+      state = upsertActivityWithSort(state, updateMetadata(payload.activity, { deliveryStatus: 'sending' }));
       break;
 
     case POST_ACTIVITY_REJECTED:
-      state = updateIn(
-        state,
-        [findByClientActivityID(meta.clientActivityID), 'channelData', 'state'],
-        () => SEND_FAILED
+      // TODO: Move from "clientActivityID" to "trackingNumber".
+      state = updateIn(state, [findByClientActivityID(meta.clientActivityID)], activity =>
+        updateMetadata(activity, { deliveryStatus: 'error' })
       );
       break;
 
     case POST_ACTIVITY_FULFILLED:
       state = updateIn(state, [findByClientActivityID(meta.clientActivityID)], () =>
         // We will replace the activity with the version from the server
-        updateIn(patchActivity(payload.activity), ['channelData', 'state'], () => SENT)
+        updateMetadata(patchActivity(payload.activity), { deliveryStatus: 'sent' })
       );
 
       break;

@@ -1,3 +1,4 @@
+import { updateMetadata } from 'botframework-webchat-core';
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
 import random from 'math-random';
@@ -237,15 +238,15 @@ const ActivitiesComposer: FC<{ userProfiles: UserProfiles }> = ({ children, user
     ]) => {
       let activity = convert(chatMessage);
 
-      activity = updateIn(activity, ['channelData', 'webchat:read-by'], () => readBy);
+      activity = updateMetadata(activity, {
+        // If "deliveryStatus" is set to "undefined", "updateMetadata" will not touch/falsify this field.
+        deliveryStatus: deliveryStatus || undefined,
 
-      if (deliveryStatus) {
-        activity = updateIn(activity, ['channelData', 'webchat:delivery-status'], () => deliveryStatus);
-      }
+        readBy,
 
-      if (trackingNumber) {
-        activity = updateIn(activity, ['channelData', 'webchat:tracking-number'], () => trackingNumber);
-      }
+        // If "trackingNumber" is set to "undefined", "updateMetadata" will not touch/falsify this field.
+        trackingNumber: trackingNumber || undefined
+      });
 
       debugConversionsRef.current.push({ activity, chatMessage, readBy, deliveryStatus, trackingNumber });
 

@@ -1,9 +1,8 @@
-import { fromWho, hooks } from 'botframework-webchat-api';
+import { getMetadata, hooks } from 'botframework-webchat-api';
 import { useMemo, useRef } from 'react';
 import { useSticky } from 'react-scroll-to-bottom';
 
 import findLastIndex from '../../Utils/findLastIndex';
-import getActivityKey from '../../Utils/getActivityKey';
 import useChanged from './useChanged';
 
 const { useActivities } = hooks;
@@ -40,7 +39,7 @@ export default function useAcknowledgedActivity() {
 
   const lastStickyActivityKey = useMemo(() => {
     if (stickyChangedToSticky) {
-      lastStickyActivityKeyRef.current = getActivityKey(visibleActivities[visibleActivities.length - 1] || {});
+      lastStickyActivityKeyRef.current = getMetadata(visibleActivities[visibleActivities.length - 1] || {}).key;
     }
 
     return lastStickyActivityKeyRef.current;
@@ -48,10 +47,10 @@ export default function useAcknowledgedActivity() {
 
   return useMemo(() => {
     const lastStickyActivityIndex = visibleActivities.findIndex(
-      activity => getActivityKey(activity) === lastStickyActivityKey
+      activity => getMetadata(activity).key === lastStickyActivityKey
     );
 
-    const lastEgressActivityIndex = findLastIndex(visibleActivities, activity => fromWho(activity) === 'self');
+    const lastEgressActivityIndex = findLastIndex(visibleActivities, activity => getMetadata(activity).who === 'self');
 
     // As described above, if no activities were acknowledged through egress activity, we will assume everything is acknowledged.
     const lastAcknowledgedActivityIndex = !~lastEgressActivityIndex

@@ -1,9 +1,8 @@
+import { getMetadata } from 'botframework-webchat-core';
 import { useCallback, useRef } from 'react';
 
 import Activity from '../types/Activity';
 import createDebug from '../utils/debug';
-import fromWho from '../utils/fromWho';
-import getActivityKey from '../utils/getActivityKey';
 import styleConsole from '../utils/styleConsole';
 import useACSSendReadReceipt from './useACSSendReadReceipt';
 import useActivities from './useActivities';
@@ -27,13 +26,13 @@ export default function useReturnReadReceipt(): (activityKey: string) => void {
     (activityKey: string): void => {
       const { current: activities } = activitiesForCallbacksRef;
 
-      const activity = activities.find(activity => getActivityKey(activity) === activityKey);
+      const activity = activities.find(activity => getMetadata(activity).key === activityKey);
 
       if (!activity) {
         warn(`Cannot find activity with key "${activityKey}".`);
       }
 
-      const who = fromWho(activity);
+      const { who } = getMetadata(activity);
 
       if (who !== 'others') {
         return warn('Cannot return read receipt for a message from "channel" or "self".', [{ who }]);

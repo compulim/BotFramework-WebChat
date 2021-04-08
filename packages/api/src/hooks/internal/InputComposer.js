@@ -1,8 +1,8 @@
+import { getMetadata } from 'botframework-webchat-core';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import createDebug from '../../utils/debug';
-import fromWho from '../../utils/fromWho';
 import useActivities from '../useActivities';
 import useForceRender from './useForceRender';
 import useTrackEvent from '../useTrackEvent';
@@ -129,7 +129,7 @@ const InputComposer = ({ children, resend, sendEvent, sendFiles, sendMessage, se
         nextLastVisibleActivity &&
         nextLastVisibleActivity.suggestedActions &&
         nextLastVisibleActivity.suggestedActions.actions &&
-        fromWho(nextLastVisibleActivity) !== 'self'
+        getMetadata(nextLastVisibleActivity).who !== 'self'
       ) {
         suggestedActionsRef.current = nextLastVisibleActivity.suggestedActions.actions || [];
       } else {

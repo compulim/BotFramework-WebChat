@@ -1,5 +1,7 @@
 import { useContext } from '../contexts/internal/TypingContext';
 
+// TODO: Should we have a newer "useActiveTyping" instead to stay backcompat?
+//       Or if the first argument is not passed, we assume it is Infinity?
 function useActiveTyping(): [
   {
     [userId: string]: {
