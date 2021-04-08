@@ -1,9 +1,9 @@
+import { Notification } from 'botframework-webchat-core';
 import { useEffect, useState } from 'react';
 import { useFetchMessages } from '@azure/acs-ui-sdk';
 import AbortController from 'abort-controller-es5';
 
 import createDebug from '../utils/debug';
-import Notification from '../types/Notification';
 import styleConsole from '../utils/styleConsole';
 
 let debug;

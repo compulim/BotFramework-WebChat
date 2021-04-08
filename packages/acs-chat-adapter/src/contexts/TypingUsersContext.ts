@@ -1,6 +1,5 @@
 import { createContext } from 'react';
-
-import TypingUsers from '../types/TypingUsers';
+import { TypingUsers } from 'botframework-webchat-core';
 
 const TypingUsersContext = createContext<[TypingUsers]>(undefined);
 

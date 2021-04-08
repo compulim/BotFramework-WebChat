@@ -1,10 +1,10 @@
+import { TypingUsers } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React, { FC, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
 import { default as TypingUsersContext } from '../contexts/TypingUsersContext';
 import diffArray from '../utils/diffArray';
-import TypingUsers from '../types/TypingUsers';
 import useACSTypingUsers from '../hooks/useACSTypingUsers';
 import useACSUserId from '../hooks/useACSUserId';
 import useDebugDeps from '../hooks/useDebugDeps';

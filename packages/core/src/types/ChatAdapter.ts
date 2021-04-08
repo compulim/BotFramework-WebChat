@@ -33,11 +33,39 @@ type ChatAdapter = {
   resend?: (trackingNumber: string) => string;
 
   /**
+   * Send an event.
+   *
+   * @return {string} Tracking number of the message. Can be used to resend the event.
+   */
+  sendEvent?: (name: string, value: any) => string;
+
+  /**
+   * Send files.
+   *
+   * @return {string} Tracking number of the message. Can be used to resend files.
+   */
+  sendFiles?: (files: (Blob | File)[]) => string;
+
+  /**
    * Sends a message.
    *
    * @return {string} Tracking number of the message. Can be used to resend the message.
    */
   sendMessage?: (message: string) => string;
+
+  /**
+   * Sends a message back.
+   *
+   * @return {string} Tracking number of the message. Can be used to resend the message back.
+   */
+  sendMessageBack?: (value: any, text?: string, displayText?: string) => string;
+
+  /**
+   * Sends a post back
+   *
+   * @return {string} Tracking number of the message. Can be used to resend the post back.
+   */
+  sendPostBack?: (value: any) => string;
 
   /**
    * Set if the chat adapter should honor read receipts. When set to `true`, the chat adapter will immediately send read receipts for all current activities.

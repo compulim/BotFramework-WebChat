@@ -1,6 +1,6 @@
+import { Notification } from 'botframework-webchat-core';
 import { useMemo } from 'react';
 
-import Notification from '../types/Notification';
 import useConnectionNotification from './useConnectionNotification';
 
 export default function useNotifications(): [Notification[]] {

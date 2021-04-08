@@ -26,6 +26,12 @@ import setNotification from './actions/setNotification';
 
 import * as ActivityClientState from './constants/ActivityClientState';
 import * as DictateState from './constants/DictateState';
+
+import Activity, { ActivityFromService, EventActivity, MessageActivity } from './types/Activity';
+import ChatAdapter from './types/ChatAdapter';
+import Notification from './types/Notification';
+import TypingUsers from './types/TypingUsers';
+
 import DeliveryStatus from './types/DeliveryStatus';
 import getMetadata from './utils/getMetadata';
 import ReadBy from './types/ReadBy';
@@ -37,7 +43,19 @@ import Who from './types/Who';
 const Constants = { ActivityClientState, DictateState };
 const version = process.env.npm_package_version;
 
-export type { DeliveryStatus, ReadBy, TextFormat, Who };
+export type {
+  Activity,
+  ActivityFromService,
+  ChatAdapter,
+  DeliveryStatus,
+  EventActivity,
+  MessageActivity,
+  Notification,
+  ReadBy,
+  TextFormat,
+  TypingUsers,
+  Who
+};
 
 export {
   // clearSuggestedActions,

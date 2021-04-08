@@ -1,3 +1,4 @@
+import { ChatAdapter } from 'botframework-webchat-core';
 import { ChatProvider } from '@azure/acs-ui-sdk';
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
@@ -6,7 +7,6 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 're
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
-import ChatAdapter from './types/ChatAdapter';
 import createDebug from './utils/debug';
 import EmitTypingComposer from './composers/EmitTypingComposer';
 import HonorReadReceiptsComposer from './composers/HonorReadReceiptsComposer';

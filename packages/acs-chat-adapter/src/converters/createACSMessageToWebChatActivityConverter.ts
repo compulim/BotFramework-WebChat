@@ -1,7 +1,7 @@
-import { updateMetadata } from 'botframework-webchat-core';
+import { EventActivity, MessageActivity, updateMetadata } from 'botframework-webchat-core';
 
 import ACSChatMessage from '../types/ACSChatMessage';
-import Activity, { EventActivity, MessageActivity } from '../types/Activity';
+import Activity from '../types/Activity';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
 import UserProfiles from '../types/UserProfiles';
@@ -100,9 +100,6 @@ export default function createACSMessageToWebChatActivityConverter({
       return updateMetadata(
         {
           ...activityMetadata,
-          channelData: {
-            ...activityMetadata.channelData
-          },
           from: {
             ...activityMetadata.from,
             role: 'bot'
