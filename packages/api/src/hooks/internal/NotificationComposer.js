@@ -28,7 +28,7 @@ const NotificationComposer = ({ chatAdapterNotifications, children }) => {
         });
 
       // Add notifications that are added or modified.
-      chatAdapterNotifications
+      (chatAdapterNotifications || [])
         .filter(notification => !prevChatAdapterNotifications.includes(notification))
         .forEach(addedOrModifiedNotification => {
           ourChatAdapterNotificationsRef.current = {

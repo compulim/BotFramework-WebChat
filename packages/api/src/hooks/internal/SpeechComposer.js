@@ -195,7 +195,7 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
     recognizedCallback: handleSpeechRecognitionRecognized
   });
 
-  const supportSpeechSynthesis = !!webSpeechPonyfill.speechSynthesis;
+  const supportSpeechSynthesis = !!(webSpeechPonyfill && webSpeechPonyfill.speechSynthesis);
 
   const synthesizingActivities = useMemo(() => {
     // Only synthesize if:

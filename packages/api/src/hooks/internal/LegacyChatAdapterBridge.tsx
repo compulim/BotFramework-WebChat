@@ -8,8 +8,7 @@ import {
   emitTypingIndicator as createEmitTypingIndicatorAction,
   getMetadata,
   postActivity as createPostActivityAction,
-  updateMetadata,
-  Who
+  updateMetadata
 } from 'botframework-webchat-core';
 import { Provider } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -129,7 +128,7 @@ const TypingUsers: FC<{
     Object.entries(typing).filter(([, { at, role }]) => Date.now() < at + typingAnimationDuration && role !== 'user')
   );
 
-  const prevTyping = usePrevious(normalizedTyping);
+  const prevTyping = usePrevious(normalizedTyping) || {};
   const typingUsersRef = useRef({});
   let { current: nextTypingUsers } = typingUsersRef;
 
@@ -205,6 +204,12 @@ EmitTyping.propTypes = {
 const Notifications: FC<{
   children: ({ notifications }: { notifications: any[] }) => any;
 }> = ({ children }) => {
+  // TODO: Convert to "connectivitystatus" notification.
+  // type ConnectionNotification = Pick<BaseNotification, 'data' | 'id'> & {
+  //   data: 'connecting' | 'connected' | 'fatal';
+  //   id: 'connectivitystatus';
+  // };
+
   const notifications = useSelector(({ notifications }) => notifications);
 
   return children({ notifications });

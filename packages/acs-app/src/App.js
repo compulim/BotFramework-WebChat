@@ -2,29 +2,39 @@ import './App.css';
 
 import { ACSChatAdapter } from 'botframework-webchat-chat-adapter-acs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { createCognitiveServicesSpeechServicesPonyfillFactory } from 'botframework-webchat';
+import { createCognitiveServicesSpeechServicesPonyfillFactory, createDirectLine } from 'botframework-webchat';
 
 import ACSCredentials from './ui/ACSCredentials';
 import createFetchSpeechServicesCredentials from './util/createFetchSpeechServicesCredentials';
 import useSessionState from './ui/hooks/useSessionState';
 import WebChatWithDebug from './ui/WebChatWithDebug';
+import DirectLineCredentials from './ui/DirectLineCredentials';
 
 const App = () => {
-  const [endpointURL, setEndpointURL] = useSessionState('', 'ACS_ENDPOINT_URL');
-  const [identity, setIdentity] = useSessionState('', 'ACS_IDENTITY');
-  const [started, setStarted] = useState();
-  const [threadId, setThreadId] = useSessionState('', 'ACS_THREAD_ID');
-  const [token, setToken] = useSessionState('', 'ACS_TOKEN');
+  const [acsEndpointURL, setACSEndpointURL] = useSessionState('', 'ACS_ENDPOINT_URL');
+  const [acsIdentity, setACSIdentity] = useSessionState('', 'ACS_IDENTITY');
+  const [acsStarted, setStarted] = useState();
+  const [acsThreadId, setACSThreadId] = useSessionState('', 'ACS_THREAD_ID');
+  const [acsToken, setACSToken] = useSessionState('', 'ACS_TOKEN');
+  const [directLine, setDirectLine] = useState();
+  const [directLineToken, setDirectLineToken] = useSessionState('', 'DIRECT_LINE_TOKEN');
   const [userProfiles, setUserProfiles] = useState({});
 
   const handleACSCredentialsChange = useCallback(
     ({ endpointURL, identity, threadId, token }) => {
-      setEndpointURL(endpointURL);
-      setIdentity(identity);
-      setThreadId(threadId);
-      setToken(token);
+      setACSEndpointURL(endpointURL);
+      setACSIdentity(identity);
+      setACSThreadId(threadId);
+      setACSToken(token);
     },
-    [setEndpointURL, setIdentity, setThreadId, setToken]
+    [setACSEndpointURL, setACSIdentity, setACSThreadId, setACSToken]
+  );
+
+  const handleDirectLineCredentialsChange = useCallback(
+    ({ token }) => {
+      setDirectLineToken(token);
+    },
+    [setDirectLineToken]
   );
 
   // TODO: issueToken has some service side issues, returning 404 sometimes and very unreliable
@@ -39,16 +49,16 @@ const App = () => {
   useEffect(() => () => abortController.abort(), [abortController]);
 
   const refreshUserProfiles = useCallback(() => {
-    if (!threadId || !token) {
+    if (!acsThreadId || !acsToken) {
       return;
     }
 
     (async function () {
       const res = await fetch(
-        new URL(`/chat/threads/${threadId}/members?api-version=2020-09-21-preview2`, endpointURL),
+        new URL(`/chat/threads/${acsThreadId}/members?api-version=2020-09-21-preview2`, acsEndpointURL),
         {
           headers: {
-            authorization: `Bearer ${token}`,
+            authorization: `Bearer ${acsToken}`,
             'content-type': 'application/json'
           }
         }
@@ -73,12 +83,17 @@ const App = () => {
           )
         );
     })();
-  }, [abortController, endpointURL, setUserProfiles, threadId, token]);
+  }, [abortController, acsEndpointURL, setUserProfiles, acsThreadId, acsToken]);
 
-  const handleStartClick = useCallback(() => {
+  const handleACSStartClick = useCallback(() => {
     setStarted(Date.now());
     refreshUserProfiles();
   }, [refreshUserProfiles, setStarted]);
+
+  const handleDirectLineStartClick = useCallback(() => {
+    setStarted(Date.now());
+    setDirectLine(createDirectLine({ token: directLineToken }));
+  }, [setDirectLine, setStarted]);
 
   const styleOptions = useMemo(
     () => ({
@@ -128,40 +143,57 @@ const App = () => {
 
   return (
     <div className="app">
-      {started && (
-        <div className="app__webchat-box" key={started}>
-          <ACSChatAdapter endpointURL={endpointURL} threadId={threadId} token={token} userProfiles={userProfiles}>
-            {chatAdapterProps =>
-              chatAdapterProps ? (
-                <WebChatWithDebug
-                  {...chatAdapterProps}
-                  className="app__webchat"
-                  styleOptions={styleOptions}
-                  // typingUsers={dummyTypingUsers}
-                  webSpeechPonyfillFactory={webSpeechPonyfillFactory}
-                />
-              ) : (
-                <div>Connecting to ACS&hellip;</div>
-              )
-            }
-          </ACSChatAdapter>
+      {acsStarted && (
+        <div className="app__webchat-box" key={acsStarted}>
+          {directLine ? (
+            <WebChatWithDebug directLine={directLine} />
+          ) : (
+            <ACSChatAdapter
+              endpointURL={acsEndpointURL}
+              threadId={acsThreadId}
+              token={acsToken}
+              userProfiles={userProfiles}
+            >
+              {chatAdapterProps =>
+                chatAdapterProps ? (
+                  <WebChatWithDebug
+                    {...chatAdapterProps}
+                    className="app__webchat"
+                    styleOptions={styleOptions}
+                    // typingUsers={dummyTypingUsers}
+                    webSpeechPonyfillFactory={webSpeechPonyfillFactory}
+                  />
+                ) : (
+                  <div>Connecting to ACS&hellip;</div>
+                )
+              }
+            </ACSChatAdapter>
+          )}
         </div>
       )}
-      <div className="app__credentials" hidden={!!started}>
+      <div className="app__credentials" hidden={!!acsStarted}>
         <ACSCredentials
-          endpointURL={endpointURL}
-          identity={identity}
+          endpointURL={acsEndpointURL}
+          identity={acsIdentity}
           onChange={handleACSCredentialsChange}
-          threadId={threadId}
-          token={token}
+          threadId={acsThreadId}
+          token={acsToken}
         >
           <div>
             {/* eslint-disable-next-line jsx-a11y/no-access-key */}
-            <button accessKey="s" onClick={handleStartClick} type="button">
-              Start
+            <button accessKey="s" onClick={handleACSStartClick} type="button">
+              Start ACS
             </button>
           </div>
         </ACSCredentials>
+        <DirectLineCredentials onChange={handleDirectLineCredentialsChange} token={directLineToken}>
+          <div>
+            {/* eslint-disable-next-line jsx-a11y/no-access-key */}
+            <button accessKey="d" onClick={handleDirectLineStartClick} type="button">
+              Start Direct Line
+            </button>
+          </div>
+        </DirectLineCredentials>
       </div>
     </div>
   );
