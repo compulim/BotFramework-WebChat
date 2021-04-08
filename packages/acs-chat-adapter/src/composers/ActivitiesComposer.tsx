@@ -1,4 +1,4 @@
-import { updateMetadata } from 'botframework-webchat-core';
+import { DeliveryStatus, ReadBy, updateMetadata } from 'botframework-webchat-core';
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
 import random from 'math-random';
@@ -10,8 +10,6 @@ import ActivitiesContext from '../contexts/ActivitiesContext';
 import Activity from '../types/Activity';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
 import createDebug from '../utils/debug';
-import DeliveryStatus from '../types/DeliveryStatus';
-import ReadBy from '../types/ReadBy';
 import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';

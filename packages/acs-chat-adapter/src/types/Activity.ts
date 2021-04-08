@@ -1,8 +1,5 @@
 import { ChatMessage } from '@azure/communication-chat';
-import DeliveryStatus from './DeliveryStatus';
-import ReadBy from './ReadBy';
-import TextFormat from './TextFormat';
-import Who from './Who';
+import { DeliveryStatus, ReadBy, TextFormat, Who } from 'botframework-webchat-core';
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
@@ -33,7 +30,6 @@ type BaseActivity = {
     /** Display name of the sender. Set to "__BOT__" if the sender is an unnamed bot. */
     'webchat:sender:name'?: string | '__BOT__';
 
-    // TODO: Rename to "webchat:sender:who"
     /** Who the activity is send by. */
     'webchat:sender:who': Who;
   }>;

@@ -1,4 +1,4 @@
-import { Constants, getMetadata } from 'botframework-webchat-core';
+import { getMetadata } from 'botframework-webchat-core';
 import { hooks } from 'botframework-webchat-api';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -11,10 +11,6 @@ import useFocus from '../../../hooks/useFocus';
 import useStyleSet from '../../../hooks/useStyleSet';
 
 const { useLocalizer, useResend } = hooks;
-
-const {
-  ActivityClientState: { SEND_FAILED, SENDING }
-} = Constants;
 
 const connectSendStatus = (...selectors) =>
   connectToWebChat(
@@ -33,9 +29,9 @@ const connectSendStatus = (...selectors) =>
     ...selectors
   );
 
-const SendStatus = ({ activity, sendState }) => {
+const SendStatus = ({ activity }) => {
   const [{ sendStatus: sendStatusStyleSet }] = useStyleSet();
-  const { trackingNumber } = getMetadata(activity);
+  const { deliveryStatus, trackingNumber } = getMetadata(activity);
   const focus = useFocus();
   const localize = useLocalizer();
   const resend = useResend();
@@ -64,9 +60,9 @@ const SendStatus = ({ activity, sendState }) => {
     <span className={classNames('webchat__activity-status', sendStatusStyleSet + '')}>
       <ScreenReaderText text={label} />
       <span aria-hidden={true}>
-        {sendState === SENDING ? (
+        {deliveryStatus === 'sending' ? (
           sendingText
-        ) : sendState === SEND_FAILED ? (
+        ) : deliveryStatus === 'error' ? (
           <SendFailedRetry onRetryClick={handleRetryClick} />
         ) : (
           false
@@ -86,8 +82,7 @@ SendStatus.propTypes = {
       state: PropTypes.string,
       'webchat:tracking-number': PropTypes.string
     })
-  }).isRequired,
-  sendState: PropTypes.oneOf([SENDING, SEND_FAILED]).isRequired
+  }).isRequired
 };
 
 export default SendStatus;

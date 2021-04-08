@@ -26,12 +26,18 @@ import setNotification from './actions/setNotification';
 
 import * as ActivityClientState from './constants/ActivityClientState';
 import * as DictateState from './constants/DictateState';
+import DeliveryStatus from './types/DeliveryStatus';
 import getMetadata from './utils/getMetadata';
+import ReadBy from './types/ReadBy';
+import TextFormat from './types/TextFormat';
 import updateMetadata from './utils/updateMetadata';
 import warn from './utils/warn';
+import Who from './types/Who';
 
 const Constants = { ActivityClientState, DictateState };
 const version = process.env.npm_package_version;
+
+export type { DeliveryStatus, ReadBy, TextFormat, Who };
 
 export {
   // clearSuggestedActions,

@@ -1,18 +1,21 @@
 /* eslint complexity: ["error", 30] */
 
+import DeliveryStatus from '../types/DeliveryStatus';
+import ReadBy from '../types/ReadBy';
 import updateIn from 'simple-update-in';
+import Who from '../types/Who';
 
 export default function updateMetadata(
   activity,
   partialMetadata: {
     avatarImage?: string;
     avatarInitials?: string;
-    deliveryStatus?: 'sending' | 'sent';
+    deliveryStatus?: DeliveryStatus;
     key?: string;
-    readBy?: 'some' | 'all';
+    readBy?: ReadBy;
     senderName?: string;
     trackingNumber?: string;
-    who?: string;
+    who?: Who;
   }
 ) {
   const { avatarImage, avatarInitials, deliveryStatus, key, readBy, senderName, trackingNumber, who } = partialMetadata;

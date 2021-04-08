@@ -28,7 +28,7 @@ function createEnhancerAndSagaMiddleware(getStore, ...middlewares) {
   };
 }
 
-export default function createStore(initialState, ...middlewares) {
+export default function createStore(initialState?: any, ...middlewares: any[]): any {
   const { enhancer, sagaMiddleware } = createEnhancerAndSagaMiddleware(() => store, ...middlewares);
   const store = createReduxStore(reducer, initialState || {}, enhancer);
 
@@ -37,7 +37,7 @@ export default function createStore(initialState, ...middlewares) {
   return store;
 }
 
-export function withDevTools(initialState, ...middlewares) {
+export function withDevTools(initialState?: any, ...middlewares: any[]): any {
   const { enhancer, sagaMiddleware } = createEnhancerAndSagaMiddleware(() => store, ...middlewares);
   const store = createReduxStore(reducer, initialState || {}, composeWithDevTools(enhancer));
 

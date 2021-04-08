@@ -1,15 +1,18 @@
+import DeliveryStatus from '../types/DeliveryStatus';
+import ReadBy from '../types/ReadBy';
 import warn from './warn';
+import Who from '../types/Who';
 
 export default function getMetadata(activity?: {
   channelData?: {
     clientActivityID?: string;
-    'webchat:delivery-status'?: 'sending' | 'sent';
+    'webchat:delivery-status'?: DeliveryStatus;
     'webchat:key'?: string;
-    'webchat:read-by'?: 'some' | 'all';
+    'webchat:read-by'?: ReadBy;
     'webchat:sender:image'?: string;
     'webchat:sender:initials'?: string;
     'webchat:sender:name'?: string;
-    'webchat:sender:who'?: 'others' | 'self' | 'service';
+    'webchat:sender:who'?: Who;
     'webchat:tracking-number'?: string;
   };
   from?: {
