@@ -29,12 +29,12 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     combineSelectors({ clockSkewAdjustment: clockSkewAdjustmentSelector, locale: languageSelector })
   );
   const { attachments } = activity;
-  const clientActivityID = getMetadata(activity).trackingNumber || uniqueID();
+  const trackingNumber = getMetadata(activity).trackingNumber || uniqueID();
 
   activity = updateMetadata(activity, {
     deliveryStatus: 'sending',
-    key: clientActivityID,
-    trackingNumber: clientActivityID
+    key: trackingNumber,
+    trackingNumber
   });
 
   activity = {
@@ -49,7 +49,6 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
       })),
     channelData: {
       ...deleteKey(activity.channelData, 'state'),
-      clientActivityID,
       // This is unskewed local timestamp for estimating clock skew.
       // TODO: Rename "clientTimestamp" to "webchat:client-timestamp".
       clientTimestamp: getTimestamp()
@@ -80,7 +79,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     ];
   }
 
-  const meta = { clientActivityID, method };
+  const meta = { method, trackingNumber };
 
   yield put({ type: POST_ACTIVITY_PENDING, meta, payload: { activity } });
 
@@ -93,9 +92,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
         const {
           payload: { activity }
         } = yield take(INCOMING_ACTIVITY);
-        const { channelData = {}, id } = activity;
-
-        if (channelData.clientActivityID === clientActivityID && id) {
+        if (getMetadata(activity).trackingNumber === trackingNumber && activity.id) {
           return updateMetadata(activity, { deliveryStatus: 'sent' });
         }
       }

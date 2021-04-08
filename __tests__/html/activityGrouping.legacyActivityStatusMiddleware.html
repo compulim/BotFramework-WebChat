@@ -26,7 +26,7 @@
 
       const clock = lolex.install();
 
-      (async function() {
+      (async function () {
         const activityStatusMiddleware = () => next => (...args) => {
           const [
             {
@@ -83,13 +83,23 @@
                 type: 'message'
               },
               {
-                channelData: { clientActivityID: '2.1', clientTimestamp: -20001, state: 'sending' },
+                channelData: {
+                  'webchat:delivery-status': 'sending',
+                  'webchat:key': '2.1',
+                  'webchat:tracking-number': '2.1',
+                  clientTimestamp: -20001
+                },
                 from: { role: 'user' },
                 text: 'This message should have status "Send failed".',
                 type: 'message'
               },
               {
-                channelData: { clientActivityID: '2.2', clientTimestamp: 0, state: 'sending' },
+                channelData: {
+                  'webchat:delivery-status': 'sending',
+                  'webchat:key': '2.2',
+                  'webchat:tracking-number': '2.2',
+                  clientTimestamp: 0
+                },
                 from: { role: 'user' },
                 text: 'This message should have status "Sending...", then turn to "Send failed".',
                 type: 'message'

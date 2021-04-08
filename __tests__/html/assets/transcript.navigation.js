@@ -176,9 +176,10 @@ function generateTranscript() {
       ...(fromUser
         ? {
             channelData: {
-              clientActivityID: index + '',
               clientTimestamp: 0,
-              state: 'sent'
+              'webchat:delivery-status': 'sent',
+              'webchat:key': index + '',
+              'webchat:tracking-number': index + ''
             }
           }
         : {}),

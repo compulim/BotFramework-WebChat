@@ -23,7 +23,7 @@
 
       function createDirectLineForTest(options) {
         const workingDirectLine = window.WebChat.createDirectLine(options);
-        const bannedClientActivityIDs = [];
+        const bannedTrackingNumbers = [];
         const { activity$, postActivity } = workingDirectLine;
 
         workingDirectLine.activity$ = shareObservable(
@@ -32,11 +32,11 @@
               complete: () => observer.complete(),
               error: err => observer.error(err),
               next: activity => {
-                const { channelData: { clientActivityID } = {} } = activity;
+                const { channelData: { 'webchat:tracking-number': trackingNumber } = {} } = activity;
 
                 // We are removing "replyToId" from the bot.
                 // Otherwise, since the outgoing message is not ACK-ed, the bot response will not be rendered on-screen until 5000 ms of timeout (activity order rectification).
-                !bannedClientActivityIDs.includes(clientActivityID) && observer.next({ ...activity, replyToId: '' });
+                !bannedTrackingNumbers.includes(trackingNumber) && observer.next({ ...activity, replyToId: '' });
               }
             });
 
@@ -46,11 +46,11 @@
 
         workingDirectLine.postActivity = activity => {
           const {
-            channelData: { clientActivityID },
+            channelData: { 'webchat:tracking-number': trackingNumber },
             type
           } = activity;
 
-          type === 'message' && bannedClientActivityIDs.push(clientActivityID);
+          type === 'message' && bannedTrackingNumbers.push(trackingNumber);
 
           return postActivity.call(workingDirectLine, activity);
         };
@@ -58,7 +58,7 @@
         return workingDirectLine;
       }
 
-      (async function() {
+      (async function () {
         const clock = lolex.install();
 
         window.clock = clock;

@@ -9,7 +9,6 @@ export default function getMetadata(activity?: Activity): ActivityMetadata {
 
   const {
     channelData: {
-      clientActivityID: clientActivityId,
       'webchat:delivery-status': deliveryStatus,
       'webchat:key': key,
       'webchat:read-by': readBy,
@@ -18,10 +17,7 @@ export default function getMetadata(activity?: Activity): ActivityMetadata {
       'webchat:sender:name': senderName,
       'webchat:sender:who': who,
       'webchat:tracking-number': trackingNumber
-    } = {},
-    // TODO: Remove "from".
-    from: { role } = {},
-    id
+    } = {}
   } = activity;
 
   if (!activity.channelData) {
@@ -37,11 +33,11 @@ export default function getMetadata(activity?: Activity): ActivityMetadata {
     avatarInitials: initialsFromActivity,
     deliveryStatus,
     // TODO: Deprecate this.
-    key: key || clientActivityId || id,
+    key,
     readBy,
     senderName,
     trackingNumber,
     // TODO: Deprecate this.
-    who: who || (role === 'user' ? 'self' : 'others')
+    who
   };
 }

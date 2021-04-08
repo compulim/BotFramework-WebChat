@@ -48,50 +48,27 @@ function usePatchActivities(
     userAvatarInitials?: string;
   }
 ) {
-  // TODO: Patch the followings:
-  //       - webchat:delivery-status
-  //       - webchat:tracking-number
   return useSelectMap(
     directLineActivities,
     styleOptions,
     useCallback(
       (directLineActivity: Activity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
-        const {
-          channelData: { clientActivityID } = { clientActivityID: undefined },
-          from: { id, name, role }
-        } = directLineActivity;
-        const { who } = getMetadata(directLineActivity);
-
-        const senderName = role === 'bot' ? (id === name ? '__BOT__' : name) : name;
-        const self = who === 'self';
+        // If possible, patch it in the activities reducer instead.
+        const self = getMetadata(directLineActivity).who === 'self';
 
         return [
           directLineActivity,
           self ? userAvatarImage : botAvatarImage,
-          self ? userAvatarInitials : botAvatarInitials,
-          // TODO: Key should be patched by activities reducer.
-          clientActivityID || directLineActivity.id,
-          senderName,
-          who
+          self ? userAvatarInitials : botAvatarInitials
         ];
       },
       []
     ),
     useCallback(
-      ([directLineActivity, avatarImage, avatarInitials, key, senderName, who]: [
-        Activity,
-        string,
-        string,
-        string,
-        string,
-        Who
-      ]) =>
+      ([directLineActivity, avatarImage, avatarInitials]: [Activity, string, string]) =>
         updateMetadata(directLineActivity, {
           avatarImage,
-          avatarInitials,
-          key,
-          senderName,
-          who
+          avatarInitials
         }),
       []
     )

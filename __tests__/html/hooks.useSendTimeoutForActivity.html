@@ -39,7 +39,7 @@
         }
       } = window;
 
-      (async function() {
+      (async function () {
         const directLine = createDirectLineWithTranscript([]);
         const store = createStore();
 
@@ -67,7 +67,12 @@
         await expect(
           renderWithFunction(() =>
             useSendTimeoutForActivity({
-              channelData: { clientActivityID: '1.0', clientTimestamp: 0, state: 'sending' },
+              channelData: {
+                'webchat:delivery-status': 'sending',
+                'webchat:key': '1.0',
+                'webchat:tracking-number': '1.0',
+                clientTimestamp: 0
+              },
               from: { role: 'user' },
               text: 'Dolore deserunt tempor dolore et culpa nulla consequat.',
               timestamp: 0,
@@ -86,7 +91,12 @@
                     'https://raw.githubusercontent.com/compulim/BotFramework-MockBot/master/public/assets/surface1.jpg'
                 }
               ],
-              channelData: { clientActivityID: '2.0', clientTimestamp: 0, state: 'sending' },
+              channelData: {
+                'webchat:delivery-status': 'sending',
+                'webchat:key': '2.0',
+                'webchat:tracking-number': '2.0',
+                clientTimestamp: 0
+              },
               from: { role: 'user' },
               text: 'Ullamco ipsum irure culpa eu labore nulla id laborum nostrud et.',
               timestamp: 0,

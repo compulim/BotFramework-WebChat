@@ -14,7 +14,7 @@
         WebChatTest: { conditions, createDirectLineWithTranscript, createStore, host, pageObjects, timeouts, token }
       } = window;
 
-      (async function() {
+      (async function () {
         const clock = lolex.install();
         const directLine = await createDirectLineWithTranscript([
           {
@@ -33,13 +33,23 @@
             type: 'message'
           },
           {
-            channelData: { clientActivityID: '2.1', clientTimestamp: -300001, state: 'sending' },
+            channelData: {
+              'webchat:delivery-status': 'sending',
+              'webchat:key': '2.1',
+              'webchat:tracking-number': '2.1',
+              clientTimestamp: -300001
+            },
             from: { role: 'user' },
             text: 'Elit adipisicing laborum sit anim.',
             type: 'message'
           },
           {
-            channelData: { clientActivityID: '2.2', clientTimestamp: -5001, state: 'sending' },
+            channelData: {
+              'webchat:delivery-status': 'sending',
+              'webchat:key': '2.2',
+              'webchat:tracking-number': '2.1',
+              clientTimestamp: -5001
+            },
             from: { role: 'user' },
             text: 'Nostrud enim enim ipsum pariatur commodo.',
             type: 'message'
@@ -96,7 +106,12 @@
         await host.snapshot();
 
         directLine.activityDeferredObservable.next({
-          channelData: { clientActivityID: '2.1', clientTimestamp: -300001, state: 'sent' },
+          channelData: {
+            'webchat:delivery-status': 'sent',
+            'webchat:key': '2.1',
+            'webchat:tracking-number': '2.1',
+            clientTimestamp: -300001
+          },
           from: { role: 'user' },
           id: '2.1',
           text: 'Elit adipisicing laborum sit anim.',
@@ -105,7 +120,12 @@
         });
 
         directLine.activityDeferredObservable.next({
-          channelData: { clientActivityID: '2.2', clientTimestamp: -5001, state: 'sent' },
+          channelData: {
+            'webchat:delivery-status': 'sent',
+            'webchat:key': '2.2',
+            'webchat:tracking-number': '2.2',
+            clientTimestamp: -5001
+          },
           from: { role: 'user' },
           id: '2.2',
           text: 'Nostrud enim enim ipsum pariatur commodo.',

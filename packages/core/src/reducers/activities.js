@@ -15,12 +15,8 @@ const DEFAULT_STATE = [];
 const DIRECT_LINE_PLACEHOLDER_URL =
   'https://docs.botframework.com/static/devportal/client/images/bot-framework-default-placeholder.png';
 
-function getClientActivityID({ channelData: { clientActivityID } = {} }) {
-  return clientActivityID;
-}
-
-function findByClientActivityID(clientActivityID) {
-  return activity => getClientActivityID(activity) === clientActivityID;
+function findByTrackingNumber(trackingNumber) {
+  return activity => getMetadata(activity).trackingNumber === trackingNumber;
 }
 
 function patchActivity(activity) {
@@ -39,35 +35,39 @@ function patchActivity(activity) {
     }
   });
 
-  // Add "channelData['webchat:sender:who']" based on "activity.from.role".
+  // Direct Line use "id" and "role", we convert them to "key" and "role".
+  const { from: { id: userID, name, role } = {}, id } = activity;
+  const { trackingNumber } = getMetadata(activity);
 
-  const {
-    from: { role }
-  } = activity;
+  if (role === 'user' && !trackingNumber) {
+    throw new Error('[ASSERTION] botframework-webchat: "trackingNumber" must be set for all user activities.');
+  } else if (role === 'bot' && trackingNumber) {
+    throw new Error('[ASSERTION] botframework-webchat: "trackingNumber" must NOT be set for all bot activities.');
+  }
 
-  activity = updateMetadata(activity, { who: role === 'user' ? 'self' : role === 'channel' ? 'service' : 'others' });
-
-  // Add "channelData['webchat:key']" based on coalesce of "activity.channelData.clientActivityId" and "activity.id".
-
-  const { channelData: { clientActivityID } = {}, id } = activity;
-
-  activity = updateMetadata(activity, { key: clientActivityID || id });
-
-  return activity;
+  return updateMetadata(
+    activity,
+    role === 'user'
+      ? { key: trackingNumber, name, who: 'self' }
+      : { key: id, name: userID === name ? '__BOT__' : name, who: 'others' }
+  );
 }
 
 function upsertActivityWithSort(activities, nextActivity) {
   nextActivity = patchActivity(nextActivity);
 
-  const { channelData: { clientActivityID: nextClientActivityID } = {} } = nextActivity;
+  const { trackingNumber: nextTrackingNumber } = getMetadata(nextActivity);
 
   const nextTimestamp = Date.parse(nextActivity.timestamp);
-  const nextActivities = activities.filter(
-    ({ channelData: { clientActivityID } = {}, id }) =>
-      // We will remove all "sending messages" activities and activities with same ID
-      // "clientActivityID" is unique and used to track if the message has been sent and echoed back from the server
-      !(nextClientActivityID && clientActivityID === nextClientActivityID) && !(id && id === nextActivity.id)
-  );
+  const nextActivities = activities.filter(activity => {
+    // We will remove all "sending messages" activities and activities with same ID
+    // "trackingNumber" is unique and used to track if the message has been sent and echoed back from the server
+
+    const { id } = activity;
+    const { trackingNumber } = getMetadata(activity);
+
+    return !(nextTrackingNumber && trackingNumber === nextTrackingNumber) && !(id && id === nextActivity.id);
+  });
 
   // Then, find the right (sorted) place to insert the new activity at, based on timestamp
   // Since clockskew might happen, we will ignore timestamp on messages that are sending
@@ -103,14 +103,13 @@ export default function activities(state = DEFAULT_STATE, { meta, payload, type 
       break;
 
     case POST_ACTIVITY_REJECTED:
-      // TODO: Move from "clientActivityID" to "trackingNumber".
-      state = updateIn(state, [findByClientActivityID(meta.clientActivityID)], activity =>
+      state = updateIn(state, [findByTrackingNumber(meta.trackingNumber)], activity =>
         updateMetadata(activity, { deliveryStatus: 'error' })
       );
       break;
 
     case POST_ACTIVITY_FULFILLED:
-      state = updateIn(state, [findByClientActivityID(meta.clientActivityID)], () =>
+      state = updateIn(state, [findByTrackingNumber(meta.trackingNumber)], () =>
         // We will replace the activity with the version from the server
         updateMetadata(patchActivity(payload.activity), { deliveryStatus: 'sent' })
       );
