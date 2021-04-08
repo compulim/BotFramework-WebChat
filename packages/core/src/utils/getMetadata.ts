@@ -1,27 +1,23 @@
+import Activity from '../types/Activity';
 import DeliveryStatus from '../types/DeliveryStatus';
 import ReadBy from '../types/ReadBy';
 import warn from './warn';
 import Who from '../types/Who';
 
-export default function getMetadata(activity?: {
-  channelData?: {
-    clientActivityID?: string;
-    'webchat:delivery-status'?: DeliveryStatus;
-    'webchat:key'?: string;
-    'webchat:read-by'?: ReadBy;
-    'webchat:sender:image'?: string;
-    'webchat:sender:initials'?: string;
-    'webchat:sender:name'?: string;
-    'webchat:sender:who'?: Who;
-    'webchat:tracking-number'?: string;
-  };
-  from?: {
-    role: 'bot' | 'channel' | 'user';
-  };
-  id?: string;
-}) {
+export default function getMetadata(
+  activity?: Activity
+): {
+  avatarImage?: string;
+  avatarInitials?: string;
+  deliveryStatus?: DeliveryStatus;
+  key: string;
+  readBy?: ReadBy;
+  senderName?: string;
+  trackingNumber?: string;
+  who?: Who;
+} {
   if (!activity) {
-    return {};
+    return;
   }
 
   const {

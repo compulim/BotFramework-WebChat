@@ -12,6 +12,13 @@ type BaseActivity = {
   //       IMO, since we are not returning RR for a specific message (a.k.a. we don't care what the message that RR is referring to, we just care about time)
   //       We may not need this one. Every time a RR is sent, just grab the last others' message ID and send it out.
   channelData: Expando<{
+    /**
+     * Local ID for local-outgoing activity.
+     *
+     * @deprecated
+     */
+    clientActivityID?: string;
+
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
@@ -33,7 +40,7 @@ type BaseActivity = {
 
     /** This is the full name of the user. For bots, if this is same as `id`, assume it do not have a name. Web Chat do not use this name. */
     name?: string;
-    role: 'bot' | 'channel' | 'user';
+    role?: 'bot' | 'channel' | 'user';
   };
 
   // TODO: Can server ID be optional?

@@ -1,12 +1,13 @@
 /* eslint complexity: ["error", 30] */
 
+import Activity from '../types/Activity';
 import DeliveryStatus from '../types/DeliveryStatus';
 import ReadBy from '../types/ReadBy';
 import updateIn from 'simple-update-in';
 import Who from '../types/Who';
 
 export default function updateMetadata(
-  activity,
+  activity: Activity,
   partialMetadata: {
     avatarImage?: string;
     avatarInitials?: string;
@@ -17,7 +18,7 @@ export default function updateMetadata(
     trackingNumber?: string;
     who?: Who;
   }
-) {
+): Activity {
   const { avatarImage, avatarInitials, deliveryStatus, key, readBy, senderName, trackingNumber, who } = partialMetadata;
 
   if (typeof avatarImage !== 'undefined') {

@@ -1,13 +1,15 @@
 // TODO: Should we move this bridge to bf-wc-core?
 
 import {
+  Activity,
   connect as createConnectAction,
   createStore,
   disconnect as createDisconnectAction,
   emitTypingIndicator as createEmitTypingIndicatorAction,
   getMetadata,
   postActivity as createPostActivityAction,
-  updateMetadata
+  updateMetadata,
+  Who
 } from 'botframework-webchat-core';
 import { Provider } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -29,7 +31,7 @@ function chainUpdateIn<T>(target: T, chain: [string[], (value: any) => any][]): 
   return chain.reduce((target, [path, updater]) => updateIn(target, path, updater), target);
 }
 
-function useSelectMap<T, U, V>(array: T[], data: U, selector: (entry: T, data: U) => V, updater: (value: V) => V) {
+function useSelectMap<T, U, V>(array: T[], data: U, selector: (entry: T, data: U) => V, updater: (value: V) => T): T[] {
   const entries = useMemoAll(selector, (select: (entry: T, data: U) => V) =>
     array.map(element => select(element, data))
   );
@@ -38,7 +40,7 @@ function useSelectMap<T, U, V>(array: T[], data: U, selector: (entry: T, data: U
 }
 
 function usePatchActivities(
-  directLineActivities: any[],
+  directLineActivities: Activity[],
   styleOptions: {
     botAvatarImage?: string;
     botAvatarInitials?: string;
@@ -52,27 +54,38 @@ function usePatchActivities(
   return useSelectMap(
     directLineActivities,
     styleOptions,
-    useCallback((directLineActivity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
-      const {
-        channelData: { clientActivityID } = { clientActivityID: undefined },
-        from: { id, name, role }
-      } = directLineActivity;
-      const { who } = getMetadata(directLineActivity);
-
-      const senderName = role === 'bot' ? (id === name ? '__BOT__' : name) : name;
-      const self = who === 'self';
-
-      return [
-        directLineActivity,
-        self ? userAvatarImage : botAvatarImage,
-        self ? userAvatarInitials : botAvatarInitials,
-        clientActivityID || directLineActivity.id,
-        senderName,
-        who
-      ];
-    }, []),
     useCallback(
-      ([directLineActivity, avatarImage, avatarInitials, key, senderName, who]) =>
+      (directLineActivity: Activity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
+        const {
+          channelData: { clientActivityID } = { clientActivityID: undefined },
+          from: { id, name, role }
+        } = directLineActivity;
+        const { who } = getMetadata(directLineActivity);
+
+        const senderName = role === 'bot' ? (id === name ? '__BOT__' : name) : name;
+        const self = who === 'self';
+
+        return [
+          directLineActivity,
+          self ? userAvatarImage : botAvatarImage,
+          self ? userAvatarInitials : botAvatarInitials,
+          // TODO: Key should be patched by activities reducer.
+          clientActivityID || directLineActivity.id,
+          senderName,
+          who
+        ];
+      },
+      []
+    ),
+    useCallback(
+      ([directLineActivity, avatarImage, avatarInitials, key, senderName, who]: [
+        Activity,
+        string,
+        string,
+        string,
+        string,
+        Who
+      ]) =>
         updateMetadata(directLineActivity, {
           avatarImage,
           avatarInitials,
