@@ -46,7 +46,22 @@ type ChatAdapter = {
    *
    * @return {string} Tracking number of the message. Can be used to resend files.
    */
-  sendFiles?: (files: (Blob | File)[]) => string;
+  sendFiles?: (
+    // TODO: We should update this signature to use ArrayBuffer instead.
+    files: {
+      /** Name of the file. */
+      name?: string;
+
+      /** Size (in bytes) of the file. */
+      size?: number;
+
+      /** URL of the thumbnail. */
+      thumbnail?: string;
+
+      /** URL of the file. */
+      url: string;
+    }[]
+  ) => string;
 
   /**
    * Sends a message.

@@ -26,7 +26,11 @@ export default function updateMetadata<T extends Partial<Activity>>(
   if (typeof attachmentSizes !== 'undefined') {
     if (
       Array.isArray(attachmentSizes) &&
-      attachmentSizes.every(size => typeof size === 'number' && size >= 0) &&
+      attachmentSizes.every(size => {
+        const type = typeof size;
+
+        return type === 'undefined' || (type === 'number' && size >= 0);
+      }) &&
       attachmentSizes.length === activity.attachments.length
     ) {
       activity = updateIn(

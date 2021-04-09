@@ -252,7 +252,13 @@ const PostActivity: FC<{
   }: {
     resend: (trackingNumber: string) => string;
     sendEvent: (name: string, value: any) => string;
-    sendFiles: (files: any[]) => string; // TODO: We should change it to ArrayBuffer with types.
+    sendFiles: (
+      files: {
+        buffer: ArrayBuffer;
+        contentType: string;
+        name: string;
+      }[]
+    ) => string;
     sendMessage: (text: string) => string;
     sendMessageBack: (value: any, text: string, displayText: string) => string;
     sendPostBack: (value: string) => string;
@@ -309,10 +315,16 @@ const PostActivity: FC<{
   const sendFiles = useCallback(
     files => {
       if (files && files.length) {
+        const filesWithBlobScheme = files.filter(({ url }) => /^blob:/iu.test(url));
+
+        if (filesWithBlobScheme.length !== files.length) {
+          warn('🔥🔥🔥 Only files with blob: scheme will be sent.', { files, filesWithBlobScheme });
+        }
+
         return postActivity(
           updateMetadata(
             {
-              attachments: [].map.call(files, ({ name, thumbnail, url }) => ({
+              attachments: filesWithBlobScheme.map(({ name, thumbnail, url }) => ({
                 contentType: mime.getType(name) || 'application/octet-stream',
                 contentUrl: url,
                 name,
@@ -321,7 +333,7 @@ const PostActivity: FC<{
               type: 'message'
             },
             {
-              attachmentSizes: [].map.call(files, ({ size }) => size)
+              attachmentSizes: filesWithBlobScheme.map(({ size }) => size)
             }
           )
         );

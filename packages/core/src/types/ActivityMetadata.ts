@@ -5,7 +5,7 @@ import ReadBy, { ReadByPropTypes } from './ReadBy';
 import Who, { WhoPropTypes } from './Who';
 
 type ActivityMetadata = {
-  attachmentSizes?: number[];
+  attachmentSizes?: (number | undefined)[];
   avatarImage?: string;
   avatarInitials?: string;
   deliveryStatus?: DeliveryStatus;

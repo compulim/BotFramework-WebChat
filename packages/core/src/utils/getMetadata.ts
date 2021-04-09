@@ -36,7 +36,11 @@ export default function getMetadata(activity: Activity, skipWarning?: boolean): 
   if (
     attachmentSizes &&
     (!Array.isArray(attachmentSizes) ||
-      !attachmentSizes.every(size => typeof size === 'number') ||
+      !attachmentSizes.every(size => {
+        const type = typeof size;
+
+        return type === 'number' || type === 'undefined';
+      }) ||
       attachmentSizes.length !== activity.attachments.length)
   ) {
     attachmentSizes = undefined;

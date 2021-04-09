@@ -22,7 +22,7 @@ type BaseActivity = {
   //       We may not need this one. Every time a RR is sent, just grab the last others' message ID and send it out.
   channelData: Expando<{
     /** Size (in bytes) of every attachment. */
-    'webchat:attachment:sizes'?: number[];
+    'webchat:attachment:sizes'?: (number | undefined)[];
 
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
