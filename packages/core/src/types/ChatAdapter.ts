@@ -27,6 +27,7 @@ type ChatAdapter = {
   honorReadReceipts?: boolean;
 
   /** List of notifications, including connectivity status. */
+  // TODO: Why not using a map instead of array?
   notifications?: Notification[];
 
   /** Resends an activity by its tracking number. */

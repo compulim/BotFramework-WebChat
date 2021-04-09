@@ -7,6 +7,7 @@ import {
   disconnect as createDisconnectAction,
   emitTypingIndicator as createEmitTypingIndicatorAction,
   getMetadata,
+  Notification,
   postActivity as createPostActivityAction,
   updateMetadata
 } from 'botframework-webchat-core';
@@ -216,15 +217,24 @@ EmitTyping.propTypes = {
 const Notifications: FC<{
   children: ({ notifications }: { notifications: any[] }) => any;
 }> = ({ children }) => {
-  // TODO: Convert to "connectivitystatus" notification.
-  // type ConnectionNotification = Pick<BaseNotification, 'data' | 'id'> & {
-  //   data: 'connecting' | 'connected' | 'fatal';
-  //   id: 'connectivitystatus';
-  // };
+  const notificationMap = useSelector(({ notifications }) => notifications);
 
-  const notifications = useSelector(({ notifications }) => notifications);
+  const notificationArray = useMemo(
+    () => [
+      ...Object.entries(notificationMap).map(([id, notification]: [string, Notification]) => ({
+        ...notification,
+        id
+      })),
+      {
+        id: 'directline:welcome',
+        message: 'You are now connected via Direct Line protocol.',
+        level: 'success'
+      }
+    ],
+    [notificationMap]
+  );
 
-  return children({ notifications });
+  return children({ notifications: notificationArray });
 };
 
 Notifications.propTypes = {
@@ -382,6 +392,7 @@ const ConnectedLegacyChatAdapterBridge: FC<{
   userId: string;
   username: string;
 }> = ({ children, directLine, styleOptions, userId: userIdFromProps, username: usernameFromProps }) => {
+  // TODO: We should move the "rectify user ID" code here, so we can get the "user ID" sooner than after we call connect.
   const { id: userId, name: username } = useSelector(({ user }) => user);
   const directLineReferenceGrammarId = useSelector(({ referenceGrammarId }) => referenceGrammarId);
   const dispatch = useDispatch();
