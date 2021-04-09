@@ -1,8 +1,10 @@
 import { put } from 'redux-saga/effects';
 import updateIn from 'simple-update-in';
 
+import getMetadata from '../utils/getMetadata';
 import observeEach from './effects/observeEach';
 import queueIncomingActivity from '../actions/queueIncomingActivity';
+import updateMetadata from '../utils/updateMetadata';
 import whileConnected from './effects/whileConnected';
 
 const PASSTHRU_FN = value => value;
@@ -56,10 +58,40 @@ function patchNullAsUndefined(activity) {
   }, activity);
 }
 
+function patchMetadata(activity) {
+  const { from: { id: userIDFromActivity, name: usernameFromActivity, role } = {}, id: idFromActivity } = activity;
+  // We can skip warning for getMetadata() because the activity just arrived from the network and is not patched yet.
+  const { trackingNumber } = getMetadata(activity, true);
+
+  const self = role === 'user';
+
+  const key = self ? trackingNumber : idFromActivity;
+  const who = self ? 'self' : 'others';
+
+  // [NO-MULTIUSER] Based on the Direct Line protocol, we cannot know if the "activity.from" is another user or a bot.
+  // Thus, we assume all activities not from us and does not have sender's name, is a bot.
+  const senderName = !self && userIDFromActivity === usernameFromActivity ? '__BOT__' : usernameFromActivity;
+
+  if (self && !trackingNumber) {
+    throw new Error('[ASSERTION] botframework-webchat: "trackingNumber" must be set for all user activities.');
+  } else if (!self && trackingNumber) {
+    throw new Error('[ASSERTION] botframework-webchat: "trackingNumber" must NOT be set for all bot activities.');
+  }
+
+  return updateMetadata(activity, {
+    key,
+    senderName,
+    who
+  });
+}
+
 function* observeActivity({ directLine, userID }) {
   yield observeEach(directLine.activity$, function* observeActivity(activity) {
+    // We are patching the activity in here as much as we could.
+    // For things we cannot, such as, patch based on styleOptions, we will patch it later on.
     activity = patchNullAsUndefined(activity);
     activity = patchActivityWithFromRole(activity, userID);
+    activity = patchMetadata(activity);
 
     yield put(queueIncomingActivity(activity));
   });

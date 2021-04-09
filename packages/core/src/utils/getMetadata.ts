@@ -2,7 +2,7 @@ import Activity from '../types/Activity';
 import ActivityMetadata from '../types/ActivityMetadata';
 import warn from './warn';
 
-export default function getMetadata(activity?: Activity): ActivityMetadata {
+export default function getMetadata(activity: Activity, skipWarning: boolean): ActivityMetadata {
   if (!activity) {
     return;
   }
@@ -20,12 +20,14 @@ export default function getMetadata(activity?: Activity): ActivityMetadata {
     } = {}
   } = activity;
 
-  if (!activity.channelData) {
-    warn('"channelData" must be set.');
-  }
+  if (!skipWarning) {
+    if (!activity.channelData) {
+      warn('🔥🔥🔥 "channelData" must be set.', { activity });
+    }
 
-  if (!key) {
-    warn('"key" must be set.');
+    if (!key) {
+      warn('🔥🔥🔥 "key" must be set.', { activity });
+    }
   }
 
   return {

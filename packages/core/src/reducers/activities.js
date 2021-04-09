@@ -35,24 +35,7 @@ function patchActivity(activity) {
     }
   });
 
-  // Direct Line use "id" and "role", we convert them to "key" and "role".
-  const { from: { id: userID, name, role } = {}, id } = activity;
-  const { trackingNumber } = getMetadata(activity);
-
-  if (role === 'user' && !trackingNumber) {
-    throw new Error('[ASSERTION] botframework-webchat: "trackingNumber" must be set for all user activities.');
-  } else if (role === 'bot' && trackingNumber) {
-    throw new Error('[ASSERTION] botframework-webchat: "trackingNumber" must NOT be set for all bot activities.');
-  }
-
-  return updateMetadata(
-    activity,
-    role === 'user'
-      ? { key: trackingNumber, name, who: 'self' }
-      : // If bot's name is not set (id === name), use the default bot's name for display name "__BOT__".
-        // "__BOT__" is a special name that will be replaced by a localized string, e.g. "Bot".
-        { key: id, name: userID === name ? '__BOT__' : name, who: 'others' }
-  );
+  return activity;
 }
 
 function upsertActivityWithSort(activities, nextActivity) {

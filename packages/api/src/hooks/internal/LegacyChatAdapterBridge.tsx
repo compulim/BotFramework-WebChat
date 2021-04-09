@@ -30,8 +30,13 @@ const EMIT_TYPING_INTERVAL = 3000;
 //   return chain.reduce((target, [path, updater]) => updateIn(target, path, updater), target);
 // }
 
-function useSelectMap<T, U, V>(array: T[], data: U, selector: (entry: T, data: U) => V, updater: (value: V) => T): T[] {
-  const entries = useMemoAll(selector, (select: (entry: T, data: U) => V) =>
+function useSelectMap<T, U, V>(
+  array: T[],
+  data: U,
+  selector: (entry: T, data?: U) => V,
+  updater: (value: V) => T
+): T[] {
+  const entries = useMemoAll(selector, (select: (entry: T, data?: U) => V) =>
     array.map(element => select(element, data))
   );
 
@@ -39,39 +44,41 @@ function useSelectMap<T, U, V>(array: T[], data: U, selector: (entry: T, data: U
 }
 
 function usePatchActivities(
-  directLineActivities: Activity[],
-  styleOptions: {
+  activities: Activity[],
+  options: {
     botAvatarImage?: string;
     botAvatarInitials?: string;
     userAvatarImage?: string;
     userAvatarInitials?: string;
   }
 ) {
-  return useSelectMap(
-    directLineActivities,
-    styleOptions,
-    useCallback(
-      (directLineActivity: Activity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
-        // If possible, patch it in the activities reducer instead.
-        const self = getMetadata(directLineActivity).who === 'self';
+  const mapCountRef = useRef<number>();
+  const selectCountRef = useRef<number>();
 
-        return [
-          directLineActivity,
-          self ? userAvatarImage : botAvatarImage,
-          self ? userAvatarInitials : botAvatarInitials
-        ];
-      },
-      []
-    ),
-    useCallback(
-      ([directLineActivity, avatarImage, avatarInitials]: [Activity, string, string]) =>
-        updateMetadata(directLineActivity, {
-          avatarImage,
-          avatarInitials
-        }),
-      []
-    )
+  mapCountRef.current = 0;
+  selectCountRef.current = 0;
+
+  const selector = useCallback(
+    (activity: Activity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
+      const self = activity.from.role === 'user';
+
+      selectCountRef.current++;
+
+      return [activity, self ? userAvatarImage : botAvatarImage, self ? userAvatarInitials : botAvatarInitials];
+    },
+    []
   );
+
+  const mapper = useCallback(([directLineActivity, avatarImage, avatarInitials]: [Activity, string, string]) => {
+    mapCountRef.current++;
+
+    return updateMetadata(directLineActivity, {
+      avatarImage,
+      avatarInitials
+    });
+  }, []);
+
+  return useSelectMap(activities, options, selector, mapper);
 }
 
 const Activities: FC<{
@@ -80,9 +87,10 @@ const Activities: FC<{
   children: ({ activities }) => any;
   userAvatarImage?: string;
   userAvatarInitials?: string;
+  userID?: string;
 }> = ({ botAvatarImage, botAvatarInitials, children, userAvatarImage, userAvatarInitials }) => {
   const activities = useSelector(({ activities }) => activities);
-  const styleOptions = useMemo(
+  const options = useMemo(
     () => ({
       botAvatarImage,
       botAvatarInitials,
@@ -92,7 +100,7 @@ const Activities: FC<{
     [botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials]
   );
 
-  const patchedActivities = usePatchActivities(activities, styleOptions);
+  const patchedActivities = usePatchActivities(activities, options);
 
   return children({ activities: patchedActivities });
 };
@@ -124,25 +132,29 @@ const TypingUsers: FC<{
     };
   } = useSelector(({ typing }) => typing);
 
-  const normalizedTyping = Object.fromEntries(
+  const typingExcludingSelfAndNotExpired = Object.fromEntries(
     Object.entries(typing).filter(([, { at, role }]) => Date.now() < at + typingAnimationDuration && role !== 'user')
   );
 
-  const prevTyping = usePrevious(normalizedTyping) || {};
+  const prevTypingExcludingSelfAndNotExpired = usePrevious(typingExcludingSelfAndNotExpired) || {};
   const typingUsersRef = useRef({});
   let { current: nextTypingUsers } = typingUsersRef;
 
-  Object.entries(diffMap(prevTyping, normalizedTyping)).forEach(([userId, [, to]]) => {
-    if (to) {
-      nextTypingUsers = updateIn(nextTypingUsers, [userId, 'name'], () => to.name);
-    } else {
-      nextTypingUsers = updateIn(nextTypingUsers, [userId]);
+  Object.entries(diffMap(prevTypingExcludingSelfAndNotExpired, typingExcludingSelfAndNotExpired)).forEach(
+    ([userId, [, to]]) => {
+      if (to) {
+        // [NO-MULTIUSER]: All typing users are from others, and since we cannot distinguish whether it is "bot" or other users, we assume it is bot.
+        nextTypingUsers = updateIn(nextTypingUsers, [userId, 'name'], () => (userId === to.name ? '__BOT__' : to.name));
+      } else {
+        nextTypingUsers = updateIn(nextTypingUsers, [userId]);
+      }
     }
-  });
+  );
 
   typingUsersRef.current = nextTypingUsers;
 
-  const nextRefreshAt = Math.min(...Object.values(normalizedTyping).map(({ at }) => at)) + typingAnimationDuration;
+  const nextRefreshAt =
+    Math.min(...Object.values(typingExcludingSelfAndNotExpired).map(({ at }) => at)) + typingAnimationDuration;
   const forceRender = useForceRender();
 
   useEffect(() => {

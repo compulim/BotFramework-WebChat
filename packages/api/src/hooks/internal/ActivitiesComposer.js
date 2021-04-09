@@ -17,32 +17,45 @@ const ActivitiesComposer = ({ activities, children, honorReadReceipts, setHonorR
 
   // Validate every activity
   useMemoWithPrevious(() => {
-    activities.every(activity => activity) || warn('🔥🔥🔥 All activities must be present, no falsies.');
+    activities.every(activity => activity) ||
+      warn('🔥🔥🔥 All activities must be present, no falsies.', { activities });
 
-    activities.every(activity => activity.channelData) ||
-      warn('🔥🔥🔥 All activities must have a property bag named "channelData".');
+    const activitiesWithoutChannelData = activities.filter(activity => !activity.channelData);
 
-    activities.every(activity => getMetadata(activity).who) ||
-      warn(`🔥🔥🔥 All activities must have "channelData['webchat:sender:who']" set.`);
+    activitiesWithoutChannelData.length &&
+      warn('🔥🔥🔥 All activities must have a property bag named "channelData".', { activitiesWithoutChannelData });
 
-    activities.every(activity => getMetadata(activity).key) || warn('🔥🔥🔥 All activities must have a key.');
+    const activitiesWithoutWho = activities.filter(activity => !getMetadata(activity).who);
 
-    activities.every(activity => {
+    activitiesWithoutWho.length &&
+      warn(`🔥🔥🔥 All activities must have "channelData['webchat:sender:who']" set.`, { activitiesWithoutWho });
+
+    const activitiesWithoutKey = activities.filter(activity => !getMetadata(activity).key);
+
+    activitiesWithoutKey.length && warn('🔥🔥🔥 All activities must have a key.', { activitiesWithoutKey });
+
+    const activitiesWithTrackingNumberWithoutDeliveryStatus = activities.filter(activity => {
       const { deliveryStatus, trackingNumber } = getMetadata(activity);
 
-      return !deliveryStatus || trackingNumber;
-    }) ||
+      return deliveryStatus && !trackingNumber;
+    });
+
+    activitiesWithTrackingNumberWithoutDeliveryStatus.length &&
       warn(
-        `🔥🔥🔥 Activities which has "channelData['webchat:delivery-status']" must also set "channelData['webchat:tracking-number']".`
+        `🔥🔥🔥 Activities which has "channelData['webchat:delivery-status']" must also set "channelData['webchat:tracking-number']".`,
+        { activitiesWithTrackingNumberWithoutDeliveryStatus }
       );
 
-    activities.every(activity => {
+    const activitiesWithoutTrackingNumberWithDeliveryStatus = activities.filter(activity => {
       const { deliveryStatus, trackingNumber } = getMetadata(activity);
 
-      return !trackingNumber || deliveryStatus;
-    }) ||
+      return trackingNumber && !deliveryStatus;
+    });
+
+    activitiesWithoutTrackingNumberWithDeliveryStatus.length &&
       warn(
-        `🔥🔥🔥 Activities which has "channelData['webchat:tracking-number']" must also set "channelData['webchat:delivery-status']".`
+        `🔥🔥🔥 Activities which has "channelData['webchat:tracking-number']" must also set "channelData['webchat:delivery-status']".`,
+        { activitiesWithoutTrackingNumberWithDeliveryStatus }
       );
 
     // TODO: For accessibility, no activities can be inserted at start or in the midway
