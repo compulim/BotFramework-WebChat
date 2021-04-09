@@ -119,7 +119,7 @@ const EventActivityFromOthers = PropTypes.shape({
     'webchat:sender:who': PropTypes.oneOf(['others'])
   }),
   conversationId: PropTypes.string,
-  from: PropTypes.oneOf({
+  from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
     role: PropTypes.oneOf(['bot'])
@@ -143,7 +143,7 @@ const EventActivityFromSelf = PropTypes.shape({
     'webchat:tracking-number': PropTypes.string
   }),
   conversationId: PropTypes.string,
-  from: PropTypes.oneOf({
+  from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
     role: PropTypes.oneOf(['user'])
@@ -164,7 +164,7 @@ const EventActivityFromService = PropTypes.shape({
     'webchat:sender:who': PropTypes.oneOf(['service'])
   }),
   conversationId: PropTypes.string,
-  from: PropTypes.oneOf({
+  from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
     role: PropTypes.oneOf(['channel'])
@@ -185,7 +185,7 @@ const MessageActivityFromOthers = PropTypes.shape({
     'webchat:sender:who': PropTypes.oneOf(['others'])
   }),
   conversationId: PropTypes.string,
-  from: PropTypes.oneOf({
+  from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
     role: PropTypes.oneOf(['bot'])
@@ -209,7 +209,7 @@ const MessageActivityFromSelf = PropTypes.shape({
     'webchat:tracking-number': PropTypes.string
   }),
   conversationId: PropTypes.string,
-  from: PropTypes.oneOf({
+  from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
     role: PropTypes.oneOf(['user'])
