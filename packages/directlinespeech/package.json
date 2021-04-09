@@ -14,7 +14,7 @@
     "build:webpack:development": "cross-env node_env=development webpack-cli",
     "build:webpack:production": "cross-env node_env=production webpack-cli",
     "eslint": "npm run precommit",
-    "precommit": "concurrently \"npm run precommit:*\"",
+    "precommit": "concurrently --raw \"npm run precommit:*\"",
     "precommit:eslint": "eslint src/**/*.{js,ts}",
     "prettier": "prettier --check src/**/*.{js,ts}",
     "prestart": "npm run build:babel",

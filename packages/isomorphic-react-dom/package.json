@@ -8,7 +8,7 @@
     "build:babel": "babel src --out-dir lib --verbose",
     "build:webpack": "webpack-cli",
     "eslint": "npm run precommit",
-    "precommit": "concurrently \"npm run precommit:*\"",
+    "precommit": "concurrently --raw \"npm run precommit:*\"",
     "precommit:eslint": "eslint src/**/*.{js,ts,tsx}",
     "prettier": "prettier --check src/**/*.{js,ts,tsx}",
     "start": "npm run start:note && npm run start:babel && npm run start:webpack",
