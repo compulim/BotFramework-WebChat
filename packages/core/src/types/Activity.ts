@@ -60,10 +60,16 @@ type ActivityFromSelf = BaseActivity & {
     /** Delivery status. If the provider does not support delivery report, must set to "sent". */
     'webchat:delivery-status': DeliveryStatus;
 
-    /** Read by who. If undefined, it is not read by anyone, or the provider does not support read receipts. */
+    /** Text to preserve in the transcript. */
+    'webchat:message-back:display-text'?: string;
+
+    /** Message subtype. If `undefined`, this is a normal message. */
+    'webchat:message:subtype'?: 'imBack' | 'messageBack' | 'postBack';
+
+    /** Read by who. If `undefined`, it is not read by anyone, or the provider does not support read receipts. */
     'webchat:read-by'?: ReadBy;
 
-    /** Tracking number. If undefined, the activity was sent from another session, or the chat adapter does not support resend. */
+    /** Tracking number. If `undefined`, the activity was sent from another session, or the chat adapter does not support resend. */
     'webchat:tracking-number'?: string;
 
     /** This message was sent from us. */
@@ -90,18 +96,64 @@ export type EventActivity = {
   value?: any;
 };
 
+// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#im-back
+export type IMBackActivity = {
+  channelData: {
+    'webchat:message:subtype': 'imBack';
+  };
+  text?: string; // This is (action.title || typeof action.value === 'string' ? action.value : undefined).
+  textFormat: 'plain';
+  type: 'message';
+};
+
 export type MessageActivity = {
+  channelData: {
+    'webchat:message:subtype': undefined;
+  };
   text?: string;
   textFormat: TextFormat;
   type: 'message';
 };
+
+// In the latest version of Direct Line schema, this is the only activity that support JSON value.
+// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#message-back
+export type MessageBackActivity = {
+  channelData: {
+    'webchat:message-back:display-text'?: string; // Same as action.displayText
+    'webchat:message:subtype': 'messageBack';
+  };
+  text?: string; // Same as action.text
+  type: 'message';
+  value?: any; // This is (typeof action.value !== 'boolean/number/string' ? action.value : undefined).
+};
+
+// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#post-back
+type BasePostBackActivity = {
+  channelData: {
+    'webchat:message:subtype': 'postBack'; // This flag is used to hide the postBack activity from the transcript.
+  };
+  type: 'message';
+};
+
+// This is no longer supported in latest version of Direct Line schema.
+// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#post-back
+type PostBackAsJSONActivity = BasePostBackActivity & {
+  value: any;
+};
+
+// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#post-back
+type PostBackAsTextActivity = BasePostBackActivity & {
+  text: string; // This is (typeof action.value === 'string' ? action.value : undefined).
+};
+
+export type PostBackActivity = PostBackAsJSONActivity | PostBackAsTextActivity;
 
 type Activity =
   // Supported activity type from others: event, message
   | (ActivityFromOthers & (EventActivity | MessageActivity))
 
   // Supported activity type from self: event, message
-  | (ActivityFromSelf & (EventActivity | MessageActivity))
+  | (ActivityFromSelf & (EventActivity | IMBackActivity | MessageActivity | MessageBackActivity | PostBackActivity))
 
   // Supported activity type from service: event
   | (ActivityFromService & EventActivity);
@@ -116,18 +168,18 @@ const EventActivityFromOthers = PropTypes.shape({
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
     'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
-    'webchat:sender:who': PropTypes.oneOf(['others'])
+    'webchat:sender:who': PropTypes.oneOf(['others']).isRequired
   }),
   conversationId: PropTypes.string,
   from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
-    role: PropTypes.oneOf(['bot'])
+    role: PropTypes.oneOf(['bot']).isRequired
   }),
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['event']),
+  type: PropTypes.oneOf(['event']).isRequired,
   value: PropTypes.any
 });
 
@@ -138,20 +190,20 @@ const EventActivityFromSelf = PropTypes.shape({
     'webchat:read-by': ReadByPropTypes,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
-    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
-    'webchat:sender:who': PropTypes.oneOf(['self']),
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
     'webchat:tracking-number': PropTypes.string
   }),
   conversationId: PropTypes.string,
   from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
-    role: PropTypes.oneOf(['user'])
+    role: PropTypes.oneOf(['user']).isRequired
   }),
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['event']),
+  type: PropTypes.oneOf(['event']).isRequired,
   value: PropTypes.any
 });
 
@@ -160,20 +212,45 @@ const EventActivityFromService = PropTypes.shape({
     'webchat:key': PropTypes.string.isRequired,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
-    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
-    'webchat:sender:who': PropTypes.oneOf(['service'])
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['service']).isRequired
   }),
   conversationId: PropTypes.string,
   from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
-    role: PropTypes.oneOf(['channel'])
+    role: PropTypes.oneOf(['channel']).isRequired
   }),
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['event']),
+  type: PropTypes.oneOf(['event']).isRequired,
   value: PropTypes.any
+});
+
+const IMBackActivityFromSelf = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:delivery-status': DeliveryStatusPropTypes,
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:message:subtype': PropTypes.oneOf(['imBack']).isRequired,
+    'webchat:read-by': ReadByPropTypes,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
+    'webchat:tracking-number': PropTypes.string
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['user']).isRequired
+  }),
+  id: PropTypes.string.isRequired,
+  text: PropTypes.string,
+  textFormat: PropTypes.oneOf(['plain']),
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']).isRequired
 });
 
 const MessageActivityFromOthers = PropTypes.shape({
@@ -182,19 +259,19 @@ const MessageActivityFromOthers = PropTypes.shape({
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
     'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
-    'webchat:sender:who': PropTypes.oneOf(['others'])
+    'webchat:sender:who': PropTypes.oneOf(['others']).isRequired
   }),
   conversationId: PropTypes.string,
   from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
-    role: PropTypes.oneOf(['bot'])
+    role: PropTypes.oneOf(['bot']).isRequired
   }),
   id: PropTypes.string.isRequired,
-  timestamp: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['message']),
   text: PropTypes.string,
-  textFormat: TextFormatPropTypes
+  textFormat: TextFormatPropTypes,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']).isRequired
 });
 
 const MessageActivityFromSelf = PropTypes.shape({
@@ -204,27 +281,108 @@ const MessageActivityFromSelf = PropTypes.shape({
     'webchat:read-by': ReadByPropTypes,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
-    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
-    'webchat:sender:who': PropTypes.oneOf(['self']),
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
     'webchat:tracking-number': PropTypes.string
   }),
   conversationId: PropTypes.string,
   from: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string,
-    role: PropTypes.oneOf(['user'])
+    role: PropTypes.oneOf(['user']).isRequired
+  }),
+  id: PropTypes.string.isRequired,
+  text: PropTypes.string,
+  textFormat: TextFormatPropTypes,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']).isRequired
+});
+
+const MessageBackActivityFromSelf = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:delivery-status': DeliveryStatusPropTypes,
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:message-back:display-text': PropTypes.string,
+    'webchat:message:subtype': PropTypes.oneOf(['messageBack']).isRequired,
+    'webchat:read-by': ReadByPropTypes,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
+    'webchat:tracking-number': PropTypes.string
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['user']).isRequired
   }),
   id: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['message']),
   text: PropTypes.string,
-  textFormat: TextFormatPropTypes
+  textFormat: PropTypes.oneOf(['plain']),
+  type: PropTypes.oneOf(['message']).isRequired,
+  value: PropTypes.any
+});
+
+const PostBackAsJSONActivityFromSelf = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:delivery-status': DeliveryStatusPropTypes,
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:message:subtype': PropTypes.oneOf(['postBack']).isRequired,
+    'webchat:read-by': ReadByPropTypes,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
+    'webchat:tracking-number': PropTypes.string
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['user']).isRequired
+  }),
+  id: PropTypes.string.isRequired,
+  textFormat: PropTypes.oneOf(['plain']),
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']).isRequired,
+  value: PropTypes.any
+});
+
+const PostBackAsTextActivityFromSelf = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:delivery-status': DeliveryStatusPropTypes,
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:message:subtype': PropTypes.oneOf(['postBack']).isRequired,
+    'webchat:read-by': ReadByPropTypes,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.string,
+    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
+    'webchat:tracking-number': PropTypes.string
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['user']).isRequired
+  }),
+  id: PropTypes.string.isRequired,
+  text: PropTypes.string,
+  textFormat: PropTypes.oneOf(['plain']),
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']).isRequired
 });
 
 export const ActivityPropTypes = PropTypes.oneOf([
   EventActivityFromOthers,
   EventActivityFromSelf,
   EventActivityFromService,
+  IMBackActivityFromSelf,
   MessageActivityFromOthers,
-  MessageActivityFromSelf
+  MessageActivityFromSelf,
+  MessageBackActivityFromSelf,
+  PostBackAsJSONActivityFromSelf,
+  PostBackAsTextActivityFromSelf
 ]) as PropTypes.Validator<Activity>;

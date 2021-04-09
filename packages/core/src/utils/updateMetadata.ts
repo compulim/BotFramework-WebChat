@@ -5,7 +5,18 @@ import ActivityMetadata from '../types/ActivityMetadata';
 import updateIn from 'simple-update-in';
 
 export default function updateMetadata<T extends Activity>(activity: T, partialMetadata: Partial<ActivityMetadata>): T {
-  const { avatarImage, avatarInitials, deliveryStatus, key, readBy, senderName, trackingNumber, who } = partialMetadata;
+  const {
+    avatarImage,
+    avatarInitials,
+    deliveryStatus,
+    key,
+    messageBackDisplayText,
+    messageSubType,
+    readBy,
+    senderName,
+    trackingNumber,
+    who
+  } = partialMetadata;
 
   if (typeof avatarImage !== 'undefined') {
     activity = updateIn(activity, ['channelData', 'webchat:sender:image'], avatarImage ? () => avatarImage : undefined);
@@ -36,6 +47,22 @@ export default function updateMetadata<T extends Activity>(activity: T, partialM
 
   if (typeof key !== 'undefined') {
     activity = updateIn(activity, ['channelData', 'webchat:key'], key ? () => key : undefined);
+  }
+
+  if (typeof messageBackDisplayText !== 'undefined') {
+    activity = updateIn(
+      activity,
+      ['channelData', 'webchat:message-back:display-text'],
+      messageBackDisplayText ? () => messageBackDisplayText : undefined
+    );
+  }
+
+  if (typeof messageSubType !== 'undefined') {
+    activity = updateIn(
+      activity,
+      ['channelData', 'webchat:message:subtype'],
+      messageSubType ? () => messageSubType : undefined
+    );
   }
 
   if (typeof readBy !== 'undefined') {

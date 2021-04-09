@@ -29,7 +29,7 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     combineSelectors({ clockSkewAdjustment: clockSkewAdjustmentSelector, locale: languageSelector })
   );
   const { attachments } = activity;
-  const trackingNumber = uniqueID();
+  const trackingNumber = `t-${uniqueID()}`;
 
   activity = updateMetadata(activity, {
     deliveryStatus: 'sending',
