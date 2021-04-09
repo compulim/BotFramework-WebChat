@@ -181,7 +181,7 @@ const App = () => {
         >
           <div>
             {/* eslint-disable-next-line jsx-a11y/no-access-key */}
-            <button accessKey="s" onClick={handleACSStartClick} type="button">
+            <button accessKey="s" disabled={!acsToken || !acsThreadId} onClick={handleACSStartClick} type="button">
               Start ACS
             </button>
           </div>
@@ -189,7 +189,7 @@ const App = () => {
         <DirectLineCredentials onChange={handleDirectLineCredentialsChange} token={directLineToken}>
           <div>
             {/* eslint-disable-next-line jsx-a11y/no-access-key */}
-            <button accessKey="d" onClick={handleDirectLineStartClick} type="button">
+            <button accessKey="d" disabled={!directLineToken} onClick={handleDirectLineStartClick} type="button">
               Start Direct Line
             </button>
           </div>
