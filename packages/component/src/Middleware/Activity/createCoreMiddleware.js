@@ -1,4 +1,5 @@
 /* eslint-disable complexity */
+import { getMetadata } from 'botframework-webchat-core';
 import React from 'react';
 
 import CarouselLayout from '../../Activity/CarouselLayout';
@@ -17,13 +18,14 @@ export default function createCoreMiddleware() {
       if (type === 'conversationUpdate' || type === 'event' || type === 'invoke' || type === 'typing') {
         return false;
       } else if (type === 'message') {
-        const { attachments = [], channelData, text } = activity;
+        const { attachments = [], text } = activity;
+        const { messageBackDisplayText, messageSubType } = getMetadata(activity);
 
         if (
           // Do not show postback
-          (channelData && channelData.postBack) ||
+          messageSubType === 'postBack' ||
           // Do not show messageBack if displayText is undefined
-          (channelData && channelData.messageBack && !channelData.messageBack.displayText) ||
+          (messageSubType === 'messageBack' && !messageBackDisplayText) ||
           // Do not show empty bubbles (no text and attachments, and not "typing")
           !(text || attachments.length)
         ) {

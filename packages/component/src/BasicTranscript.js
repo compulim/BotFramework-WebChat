@@ -238,8 +238,8 @@ const InternalTranscript = ({ activityElementsRef, className }) => {
             entry => entry.activity === activity
           );
 
-          const { key, who } = getMetadata(activity);
-          const { channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {}, text } = activity;
+          const { key, messageBackDisplayText, who } = getMetadata(activity);
+          const { text } = activity;
 
           const topSideNub = who === 'self' ? topSideUserNub : topSideBotNub;
 

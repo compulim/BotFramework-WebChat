@@ -7,7 +7,6 @@ import Who from './Who';
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type Expando<T> = Omit<any, keyof T> & T;
-
 type BaseActivity = {
   attachments?: {
     content?: string;
@@ -75,7 +74,7 @@ type ActivityFromSelf = BaseActivity & {
     'webchat:message-back:display-text'?: string;
 
     /** Message subtype. If `undefined`, this is a normal message. */
-    'webchat:message:subtype'?: 'imBack' | 'messageBack' | 'postBack';
+    'webchat:message:sub-type'?: 'messageBack' | 'postBack';
 
     /** Read by who. If `undefined`, it is not read by anyone, or the provider does not support read receipts. */
     'webchat:read-by'?: ReadBy;
@@ -107,31 +106,25 @@ export type EventActivity = {
   value?: any;
 };
 
-// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#im-back
-export type IMBackActivity = {
-  channelData: {
-    'webchat:message:subtype': 'imBack';
-  };
-  text?: string; // This is (action.title || typeof action.value === 'string' ? action.value : undefined).
-  textFormat: 'plain';
-  type: 'message';
-};
-
 export type MessageActivity = {
   channelData?: {
-    'webchat:message:subtype': undefined;
+    'webchat:message:sub-type': undefined;
   };
   text?: string;
   textFormat: TextFormat;
   type: 'message';
 };
 
+// IMBack activity cannot be distinguished from normal message activity.
+// https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#im-back
+export type IMBackActivity = MessageActivity;
+
 // In the latest version of Direct Line schema, this is the only activity that support JSON value.
 // https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#message-back
 export type MessageBackActivity = {
   channelData: {
     'webchat:message-back:display-text'?: string; // Same as action.displayText
-    'webchat:message:subtype': 'messageBack';
+    'webchat:message:sub-type': 'messageBack';
   };
   text?: string; // Same as action.text
   type: 'message';
@@ -141,13 +134,14 @@ export type MessageBackActivity = {
 // https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#post-back
 type BasePostBackActivity = {
   channelData: {
-    'webchat:message:subtype': 'postBack'; // This flag is used to hide the postBack activity from the transcript.
+    'webchat:message:sub-type': 'postBack'; // This flag is used to hide the postBack activity from the transcript.
   };
   type: 'message';
 };
 
 // This is no longer supported in latest version of Direct Line schema.
 // https://github.com/Microsoft/botframework-sdk/blob/main/specs/botframework-activity/botframework-activity.md#post-back
+/** @deprecated Please use `MessageBackActivity` instead. */
 type PostBackAsJSONActivity = BasePostBackActivity & {
   value: any;
 };
@@ -269,41 +263,6 @@ const EventActivityFromService = PropTypes.shape({
   value: PropTypes.any
 });
 
-const IMBackActivityFromSelf = PropTypes.shape({
-  attachments: PropTypes.arrayOf(
-    PropTypes.shape({
-      content: PropTypes.string,
-      contentType: PropTypes.string.isRequired,
-      contentUrl: PropTypes.string,
-      name: PropTypes.string,
-      thumbnailUrl: PropTypes.string
-    })
-  ),
-  channelData: PropTypes.shape({
-    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
-    'webchat:delivery-status': DeliveryStatusPropTypes,
-    'webchat:key': PropTypes.string.isRequired,
-    'webchat:message:subtype': PropTypes.oneOf(['imBack']).isRequired,
-    'webchat:read-by': ReadByPropTypes,
-    'webchat:sender:image': PropTypes.string,
-    'webchat:sender:initials': PropTypes.string,
-    'webchat:sender:name': PropTypes.string,
-    'webchat:sender:who': PropTypes.oneOf(['self']).isRequired,
-    'webchat:tracking-number': PropTypes.string
-  }),
-  conversationId: PropTypes.string,
-  from: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string,
-    role: PropTypes.oneOf(['user']).isRequired
-  }),
-  id: PropTypes.string.isRequired,
-  text: PropTypes.string,
-  textFormat: PropTypes.oneOf(['plain']),
-  timestamp: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['message']).isRequired
-});
-
 const MessageActivityFromOthers = PropTypes.shape({
   attachments: PropTypes.arrayOf(
     PropTypes.shape({
@@ -384,7 +343,7 @@ const MessageBackActivityFromSelf = PropTypes.shape({
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:message-back:display-text': PropTypes.string,
-    'webchat:message:subtype': PropTypes.oneOf(['messageBack']).isRequired,
+    'webchat:message:sub-type': PropTypes.oneOf(['messageBack']).isRequired,
     'webchat:read-by': ReadByPropTypes,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
@@ -420,7 +379,7 @@ const PostBackAsJSONActivityFromSelf = PropTypes.shape({
     'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
-    'webchat:message:subtype': PropTypes.oneOf(['postBack']).isRequired,
+    'webchat:message:sub-type': PropTypes.oneOf(['postBack']).isRequired,
     'webchat:read-by': ReadByPropTypes,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
@@ -455,7 +414,7 @@ const PostBackAsTextActivityFromSelf = PropTypes.shape({
     'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
-    'webchat:message:subtype': PropTypes.oneOf(['postBack']).isRequired,
+    'webchat:message:sub-type': PropTypes.oneOf(['postBack']).isRequired,
     'webchat:read-by': ReadByPropTypes,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
@@ -480,7 +439,6 @@ export const ActivityPropTypes = PropTypes.oneOf([
   EventActivityFromOthers,
   EventActivityFromSelf,
   EventActivityFromService,
-  IMBackActivityFromSelf,
   MessageActivityFromOthers,
   MessageActivityFromSelf,
   MessageBackActivityFromSelf,

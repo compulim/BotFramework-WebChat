@@ -11,7 +11,7 @@ export default function getMetadata(activity: Activity, skipWarning?: boolean): 
     channelData: {
       'webchat:delivery-status': deliveryStatus,
       'webchat:message-back:display-text': messageBackDisplayText,
-      'webchat:message:subtype': messageSubType,
+      'webchat:message:sub-type': messageSubType,
       'webchat:key': key,
       'webchat:read-by': readBy,
       'webchat:sender:image': imageFromActivity,

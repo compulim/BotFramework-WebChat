@@ -9,7 +9,8 @@ import {
   getMetadata,
   Notifications,
   postActivity as createPostActivityAction,
-  updateMetadata
+  updateMetadata,
+  warn
 } from 'botframework-webchat-core';
 import { Provider } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -254,7 +255,7 @@ const PostActivity: FC<{
     sendFiles: (files: any[]) => string; // TODO: We should change it to ArrayBuffer with types.
     sendMessage: (text: string) => string;
     sendMessageBack: (value: any, text: string, displayText: string) => string;
-    sendPostBack: (value: any) => string;
+    sendPostBack: (value: string) => string;
   }) => any;
 }> = ({ activities, children }) => {
   const activitiesForCallbacksRef = useRef<any[]>();
@@ -287,7 +288,7 @@ const PostActivity: FC<{
       );
 
       if (!activity) {
-        throw new Error(`Resend cannot find activity with tracking number "${trackingNumber}"`);
+        throw new Error(`Failed to resend; cannot find activity with tracking number "${trackingNumber}".`);
       }
 
       return postActivity(activity);
@@ -330,42 +331,61 @@ const PostActivity: FC<{
   );
 
   const sendMessage = useCallback(
-    text =>
-      postActivity({
+    text => {
+      if (typeof text !== 'string') {
+        warn(
+          '❗ To comply with latest version of Direct Line schema, in future version, we may ignore sending non-text activity of type "message". Please use "messageBack" activity instead.'
+        );
+      }
+
+      return postActivity({
         text,
         textFormat: 'plain',
         type: 'message'
-      }),
+      });
+    },
     [postActivity]
   );
 
   const sendMessageBack = useCallback(
     (value, text, displayText) =>
-      postActivity({
-        channelData: {
-          // TODO: Rename to "webchat:message-back:display-text"
-          messageBack: {
-            displayText
+      postActivity(
+        updateMetadata(
+          {
+            text,
+            type: 'message',
+            value
+          },
+          {
+            messageBackDisplayText: displayText,
+            messageSubType: 'messageBack'
           }
-        },
-        text,
-        type: 'message',
-        value
-      }),
+        )
+      ),
     [postActivity]
   );
 
   const sendPostBack = useCallback(
-    value =>
-      postActivity({
-        channelData: {
-          // TODO: Rename to "webchat:post-back"
-          postBack: true
-        },
-        text: typeof value === 'string' ? value : undefined,
-        type: 'message',
-        value: typeof value !== 'string' ? value : undefined
-      }),
+    value => {
+      if (typeof value !== 'string') {
+        warn(
+          '❗ To comply with latest version of Direct Line schema, in future version, we may ignore sending non-text activity of type "message". Please use "messageBack" activity instead.'
+        );
+      }
+
+      return postActivity(
+        updateMetadata(
+          {
+            text: typeof value === 'string' ? value : undefined,
+            type: 'message',
+            value: typeof value !== 'string' ? value : undefined
+          },
+          {
+            messageSubType: 'postBack'
+          }
+        )
+      );
+    },
     [postActivity]
   );
 

@@ -126,14 +126,9 @@ const CarouselFilmStrip = ({
   const [{ bubbleNubOffset, bubbleNubSize, bubbleFromUserNubOffset, bubbleFromUserNubSize }] = useStyleOptions();
   const [{ carouselFilmStrip: carouselFilmStripStyleSet }] = useStyleSet();
   const [direction] = useDirection();
-  const {
-    attachments = [],
-    channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-    text,
-    textFormat
-  } = activity;
+  const { attachments = [], text, textFormat } = activity;
   const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
-  const { senderName, who } = getMetadata(activity);
+  const { messageBackDisplayText, senderName, who } = getMetadata(activity);
   const ariaLabelId = useUniqueId('webchat__carousel-filmstrip__id');
   const itemContainerCallbackRef = useItemContainerCallbackRef();
   const localize = useLocalizer();
@@ -270,12 +265,6 @@ CarouselFilmStrip.defaultProps = {
 CarouselFilmStrip.propTypes = {
   activity: PropTypes.shape({
     attachments: PropTypes.array,
-    channelData: PropTypes.shape({
-      messageBack: PropTypes.shape({
-        displayText: PropTypes.string
-      }),
-      state: PropTypes.string
-    }),
     from: PropTypes.shape({
       role: PropTypes.string.isRequired
     }).isRequired,

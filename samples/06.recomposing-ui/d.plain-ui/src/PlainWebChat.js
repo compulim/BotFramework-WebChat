@@ -42,7 +42,7 @@ const PlainWebChat = () => {
           .map(activity => ({
             ...activity,
             attachments: activity.attachments || [],
-            text: getValueOrUndefined(activity, 'channelData', 'messageBack', 'displayText') || activity.text
+            text: getValueOrUndefined(activity, 'channelData', 'webchat:message-back:display-text') || activity.text
           }))
           // Filter out all empty messages (no attachments or text)
           .filter(({ attachments, text }) => attachments.length || text)

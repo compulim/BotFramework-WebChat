@@ -9,7 +9,6 @@ export default function createDefaultCardActionMiddleware() {
     switch (type) {
       case 'imBack':
         if (typeof value === 'string') {
-          // TODO: [P4] Instead of calling dispatch, we should move to dispatchers instead for completeness
           sendMessage(value);
         } else {
           throw new Error('cannot send "imBack" with a non-string value');

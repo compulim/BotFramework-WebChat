@@ -83,7 +83,7 @@ export default function updateMetadata<T extends Partial<Activity>>(
   if (typeof messageSubType !== 'undefined') {
     activity = updateIn(
       activity,
-      ['channelData', 'webchat:message:subtype'],
+      ['channelData', 'webchat:message:sub-type'],
       messageSubType ? () => messageSubType : undefined
     );
   }

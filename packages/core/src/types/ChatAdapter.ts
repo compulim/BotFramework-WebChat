@@ -63,11 +63,11 @@ type ChatAdapter = {
   sendMessageBack?: (value: any, text?: string, displayText?: string) => string;
 
   /**
-   * Sends a post back
+   * Sends a post back.
    *
    * @return {string} Tracking number of the message. Can be used to resend the post back.
    */
-  sendPostBack?: (value: any) => string;
+  sendPostBack?: (value: string) => string;
 
   /**
    * Set if the chat adapter should honor read receipts. When set to `true`, the chat adapter will immediately send read receipts for all current activities.

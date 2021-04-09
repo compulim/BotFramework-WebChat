@@ -95,14 +95,9 @@ const StackedLayout = ({
 }) => {
   const [{ bubbleNubOffset, bubbleNubSize, bubbleFromUserNubOffset, bubbleFromUserNubSize }] = useStyleOptions();
   const [{ stackedLayout: stackedLayoutStyleSet }] = useStyleSet();
-  const {
-    attachments = [],
-    channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-    text,
-    textFormat
-  } = activity;
+  const { attachments = [], text, textFormat } = activity;
   const { hasOthersAvatar, hasSelfAvatar } = useContext(TranscriptContext);
-  const { senderName, who } = getMetadata(activity);
+  const { messageBackDisplayText, senderName, who } = getMetadata(activity);
   const ariaLabelId = useUniqueId('webchat__stacked-layout__id');
   const localize = useLocalizer();
   const rootClassName = useStyleToEmotionObject()(ROOT_STYLE) + '';
@@ -226,11 +221,6 @@ StackedLayout.defaultProps = {
 StackedLayout.propTypes = {
   activity: PropTypes.shape({
     attachments: PropTypes.array,
-    channelData: PropTypes.shape({
-      messageBack: PropTypes.shape({
-        displayText: PropTypes.string
-      })
-    }),
     from: PropTypes.shape({
       role: PropTypes.string.isRequired
     }).isRequired,

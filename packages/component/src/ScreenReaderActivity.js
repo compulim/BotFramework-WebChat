@@ -36,14 +36,8 @@ const ACTIVITY_NUM_ATTACHMENTS_ALT_IDS = {
 // That means, it will only render "2 attachments", instead of "image attachment".
 // This is used in the visual transcript, where we render "Press ENTER to interact."
 const ScreenReaderActivity = ({ activity, children, id, renderAttachments }) => {
-  const {
-    attachments = [],
-    channelData: { messageBack: { displayText: messageBackDisplayText } = {} } = {},
-    text,
-    textFormat,
-    timestamp
-  } = activity;
-  const { senderName, who } = getMetadata(activity);
+  const { attachments = [], text, textFormat, timestamp } = activity;
+  const { messageBackDisplayText, senderName, who } = getMetadata(activity);
   const createAttachmentForScreenReaderRenderer = useCreateAttachmentForScreenReaderRenderer();
   const formatDate = useDateFormatter();
   const localize = useLocalizer();

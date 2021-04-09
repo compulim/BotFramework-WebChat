@@ -18,17 +18,15 @@ export default function usePostActivity() {
 
   return useCallback(
     activity => {
-      // TODO: How to handle channel data?
-      const { channelData = {} } = activity;
+      const { messageBackDisplayText, messageSubType } = getMetadata(activity);
 
-      // TODO: Rename to "webchat:message-back:display-text"
-      if (channelData.messageBack) {
+      if (messageSubType === 'messageBack') {
         if (sendMessageBack) {
-          return sendMessageBack(activity.value, activity.text, channelData.messageBack.displayText);
+          return sendMessageBack(activity.value, activity.text, messageBackDisplayText);
         }
 
         return warn('This chat adapter does not support sending "messageBack" activity.');
-      } else if (channelData.postBack) {
+      } else if (messageSubType === 'postBack') {
         if (sendPostBack) {
           return sendPostBack(activity.text || activity.value);
         }
