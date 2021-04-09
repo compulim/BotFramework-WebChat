@@ -1,5 +1,5 @@
 import Activity from './Activity';
-import Notification from './Notification';
+import Notifications from './Notifications';
 import TypingUsers from './TypingUsers';
 
 type ChatAdapter = {
@@ -27,8 +27,7 @@ type ChatAdapter = {
   honorReadReceipts?: boolean;
 
   /** List of notifications, including connectivity status. */
-  // TODO: Why not using a map instead of array?
-  notifications?: Notification[];
+  notifications?: Notifications;
 
   /** Resends an activity by its tracking number. */
   resend?: (trackingNumber: string) => string;
@@ -90,3 +89,5 @@ type ChatAdapter = {
 };
 
 export default ChatAdapter;
+
+// TODO: Implement PropTypes.

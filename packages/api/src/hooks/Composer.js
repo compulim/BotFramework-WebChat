@@ -1,3 +1,4 @@
+import { PropTypes as WebChatPropTypes } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
@@ -614,15 +615,7 @@ Composer.propTypes = {
   honorReadReceipts: PropTypes.bool,
   internalErrorBoxClass: PropTypes.func, // This is for internal use only. We don't allow customization of error box.
   locale: PropTypes.string,
-  notifications: PropTypes.arrayOf(
-    PropTypes.shape({
-      alt: PropTypes.string,
-      data: PropTypes.any,
-      id: PropTypes.string.isRequired,
-      level: PropTypes.string,
-      message: PropTypes.string
-    })
-  ),
+  notifications: WebChatPropTypes.Notifications,
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
   renderMarkdown: PropTypes.func,

@@ -2,7 +2,7 @@ import Activity from '../types/Activity';
 import ActivityMetadata from '../types/ActivityMetadata';
 import warn from './warn';
 
-export default function getMetadata(activity: Activity, skipWarning: boolean): ActivityMetadata {
+export default function getMetadata(activity: Activity, skipWarning?: boolean): ActivityMetadata {
   if (!activity) {
     return;
   }

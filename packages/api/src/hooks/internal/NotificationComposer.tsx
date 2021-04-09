@@ -1,66 +1,60 @@
+import { Notifications, PropTypes as WebChatPropTypes, warn } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
+import updateIn from 'simple-update-in';
 
 import createDebug from '../../utils/debug';
+import diffMap from '../../utils/diffMap';
 import styleConsole from '../../utils/styleConsole';
 import useForceRender from './useForceRender';
-import useMemoWithPrevious from './useMemoWithPrevious';
+import usePrevious from './usePrevious';
 import WebChatNotificationContext from './WebChatNotificationContext';
 
 let debug;
 
-const NotificationComposer = ({ chatAdapterNotifications, children }) => {
+const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; children: any }> = ({
+  chatAdapterNotifications,
+  children
+}) => {
   debug || (debug = createDebug('<NotificationComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const [localNotifications, setLocalNotifications] = useState({});
-  const forceRender = useForceRender();
-  const ourChatAdapterNotificationsRef = useRef({});
-
-  useMemoWithPrevious(
-    (prevChatAdapterNotifications = []) => {
-      // Remove notifications that are deleted or modified.
-      prevChatAdapterNotifications
-        .filter(notification => !chatAdapterNotifications.includes(notification))
-        .forEach(({ id }) => {
-          const { [id]: _, ...ourChatAdapterNotifications } = ourChatAdapterNotificationsRef.current;
-
-          ourChatAdapterNotificationsRef.current = ourChatAdapterNotifications;
-        });
-
-      // Add notifications that are added or modified.
-      (chatAdapterNotifications || [])
-        .filter(notification => !prevChatAdapterNotifications.includes(notification))
-        .forEach(addedOrModifiedNotification => {
-          ourChatAdapterNotificationsRef.current = {
-            ...ourChatAdapterNotificationsRef.current,
-            [addedOrModifiedNotification.id]: addedOrModifiedNotification
-          };
-        });
-
-      return chatAdapterNotifications;
-    },
-    [chatAdapterNotifications, ourChatAdapterNotificationsRef]
+  const notificationsWithMismatchId = Object.entries(chatAdapterNotifications).filter(
+    ([id, { id: idInNotification }]) => id !== idInNotification
   );
+
+  notificationsWithMismatchId.length &&
+    warn('🔥🔥🔥 "id" field in element must match the key in "notifications" map.', { notificationsWithMismatchId });
+
+  const [localNotifications, setLocalNotifications] = useState<Notifications>({});
+  const forceRender = useForceRender();
+  const ourChatAdapterNotificationsRef = useRef<Notifications>({});
+  const prevChatAdapterNotifications = usePrevious(chatAdapterNotifications) || {};
+
+  let { current: nextOurChatAdapterNotifications } = ourChatAdapterNotificationsRef;
+
+  Object.entries(diffMap(prevChatAdapterNotifications, chatAdapterNotifications)).forEach(([id, [, to]]) => {
+    if (to) {
+      nextOurChatAdapterNotifications = updateIn(nextOurChatAdapterNotifications, [id], () =>
+        // Make sure the "id" field in the notification is set and is same as the key.
+        updateIn(to, ['id'], () => id)
+      );
+    } else {
+      nextOurChatAdapterNotifications = updateIn(nextOurChatAdapterNotifications, [id]);
+    }
+  });
+
+  ourChatAdapterNotificationsRef.current = nextOurChatAdapterNotifications;
 
   const dismissNotification = useCallback(
     id => {
-      // Delete notification with key "id".
-      const {
-        [id]: deletedChatAdapterNotification,
-        ...otherChatAdapterNotifications
-      } = ourChatAdapterNotificationsRef.current;
+      const nextOurChatAdapterNotifications = updateIn(ourChatAdapterNotificationsRef.current, [id]);
 
-      if (deletedChatAdapterNotification) {
-        ourChatAdapterNotificationsRef.current = otherChatAdapterNotifications;
+      if (nextOurChatAdapterNotifications !== ourChatAdapterNotificationsRef.current) {
+        ourChatAdapterNotificationsRef.current = nextOurChatAdapterNotifications;
         forceRender();
       }
 
-      setLocalNotifications(localNotifications => {
-        // Delete notification with key "id".
-        const { [id]: _, ...otherLocalNotifications } = localNotifications;
-
-        return otherLocalNotifications;
-      });
+      setLocalNotifications(localNotifications => updateIn(localNotifications, [id]));
     },
     [forceRender, ourChatAdapterNotificationsRef, setLocalNotifications]
   );
@@ -130,17 +124,7 @@ NotificationComposer.defaultProps = {
 };
 
 NotificationComposer.propTypes = {
-  chatAdapterNotifications: PropTypes.arrayOf(
-    PropTypes.shape({
-      alt: PropTypes.string,
-      data: PropTypes.any,
-      id: PropTypes.string.isRequired,
-      level: PropTypes.oneOf(['error', 'info', 'success', 'warn']),
-      message: PropTypes.string,
-      // TODO: Should we remove "timestamp"? It was added by reducer on SET_NOTIFICATION.
-      timestamp: PropTypes.number
-    })
-  ),
+  chatAdapterNotifications: WebChatPropTypes.Notifications,
   children: PropTypes.any
 };
 

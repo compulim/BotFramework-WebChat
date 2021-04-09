@@ -36,7 +36,7 @@ function useDebouncedNotifications() {
   }
 
   // For any changes, update notifications or mark them to be updated if debouncing.
-  for (const [, { alt, data, id, level, message, timestamp }] of Object.entries(notifications)) {
+  for (const [id, { alt, data, level, message, timestamp }] of Object.entries(notifications)) {
     debouncedNotificationsRef.current = updateIn(debouncedNotificationsRef.current, [id], debouncedNotification => {
       if (
         debouncedNotification &&

@@ -105,3 +105,5 @@ type Activity =
   | (ActivityFromService & EventActivity);
 
 export default Activity;
+
+// TODO: Implement PropTypes.

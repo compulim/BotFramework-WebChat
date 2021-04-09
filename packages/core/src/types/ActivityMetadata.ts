@@ -1,6 +1,8 @@
-import DeliveryStatus from './DeliveryStatus';
-import ReadBy from './ReadBy';
-import Who from './Who';
+import PropTypes from 'prop-types';
+
+import DeliveryStatus, { DeliveryStatusPropTypes } from './DeliveryStatus';
+import ReadBy, { ReadByPropTypes } from './ReadBy';
+import Who, { WhoPropTypes } from './Who';
 
 type ActivityMetadata = {
   avatarImage?: string;
@@ -14,3 +16,14 @@ type ActivityMetadata = {
 };
 
 export default ActivityMetadata;
+
+export const ActivityMetadataPropTypes = PropTypes.shape({
+  avatarImage: PropTypes.string,
+  avatarInitials: PropTypes.string,
+  deliveryStatus: DeliveryStatusPropTypes,
+  key: PropTypes.string.isRequired,
+  readBy: ReadByPropTypes,
+  senderName: PropTypes.string,
+  trackingNumber: PropTypes.string,
+  who: WhoPropTypes
+});

@@ -29,30 +29,46 @@ import * as DictateState from './constants/DictateState';
 
 import Activity, { ActivityFromService, EventActivity, MessageActivity } from './types/Activity';
 import ChatAdapter from './types/ChatAdapter';
-import Notification from './types/Notification';
-import TypingUsers from './types/TypingUsers';
-
-import DeliveryStatus from './types/DeliveryStatus';
+import ConnectivityStatus, { ConnectivityStatusPropTypes } from './types/ConnectivityStatus';
+import DeliveryStatus, { DeliveryStatusPropTypes } from './types/DeliveryStatus';
 import getMetadata from './utils/getMetadata';
-import ReadBy from './types/ReadBy';
-import TextFormat from './types/TextFormat';
+import Notification, { NotificationPropTypes } from './types/Notification';
+import Notifications, { NotificationsPropTypes } from './types/Notifications';
+import ReadBy, { ReadByPropTypes } from './types/ReadBy';
+import TextFormat, { TextFormatPropTypes } from './types/TextFormat';
+import TypingUser, { TypingUserPropTypes } from './types/TypingUser';
+import TypingUsers, { TypingUsersPropTypes } from './types/TypingUsers';
 import updateMetadata from './utils/updateMetadata';
 import warn from './utils/warn';
-import Who from './types/Who';
+import Who, { WhoPropTypes } from './types/Who';
 
 const Constants = { ActivityClientState, DictateState };
+const PropTypes = {
+  ConnectivityStatus: ConnectivityStatusPropTypes,
+  DeliveryStatus: DeliveryStatusPropTypes,
+  Notification: NotificationPropTypes,
+  Notifications: NotificationsPropTypes,
+  ReadBy: ReadByPropTypes,
+  TextFormat: TextFormatPropTypes,
+  TypingUser: TypingUserPropTypes,
+  TypingUsers: TypingUsersPropTypes,
+  Who: WhoPropTypes
+};
 const version = process.env.npm_package_version;
 
 export type {
   Activity,
   ActivityFromService,
   ChatAdapter,
+  ConnectivityStatus,
   DeliveryStatus,
   EventActivity,
   MessageActivity,
   Notification,
+  Notifications,
   ReadBy,
   TextFormat,
+  TypingUser,
   TypingUsers,
   Who
 };
@@ -68,6 +84,7 @@ export {
   emitTypingIndicator,
   getMetadata,
   // markActivity,
+  PropTypes,
   postActivity,
   // sendEvent,
   // sendFiles,

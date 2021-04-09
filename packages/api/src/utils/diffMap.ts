@@ -9,7 +9,9 @@ export default function diffMap<T>(
   return Array.from(
     new Set<string>([...Object.keys(from), ...Object.keys(to)])
   ).reduce((result, key) => {
-    result[key] = [from[key], to[key]];
+    if (!Object.is(from[key], to[key])) {
+      result[key] = [from[key], to[key]];
+    }
 
     return result;
   }, {});

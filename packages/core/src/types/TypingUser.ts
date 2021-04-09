@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 type TypingUser = {
   /**
    * User's name to display in the typing indicator.
@@ -10,3 +12,7 @@ type TypingUser = {
 };
 
 export default TypingUser;
+
+export const TypingUserPropTypes = {
+  name: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])])
+};

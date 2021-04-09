@@ -7,7 +7,7 @@ import clockSkewAdjustment from './reducers/clockSkewAdjustment';
 // import dictateState from './reducers/dictateState';
 // import language from './reducers/language';
 // import lastTypingAt from './reducers/lastTypingAt';
-import notifications from './reducers/notifications2';
+import notifications from './reducers/notifications';
 // import readyState from './reducers/readyState';
 import referenceGrammarID from './reducers/referenceGrammarID';
 // import sendBoxValue from './reducers/sendBoxValue';

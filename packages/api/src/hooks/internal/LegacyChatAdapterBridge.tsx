@@ -7,7 +7,7 @@ import {
   disconnect as createDisconnectAction,
   emitTypingIndicator as createEmitTypingIndicatorAction,
   getMetadata,
-  Notification,
+  Notifications,
   postActivity as createPostActivityAction,
   updateMetadata
 } from 'botframework-webchat-core';
@@ -26,10 +26,6 @@ import useMemoAll from './useMemoAll';
 import usePrevious from './usePrevious';
 
 const EMIT_TYPING_INTERVAL = 3000;
-
-// function chainUpdateIn<T>(target: T, chain: [string[], (value: any) => any][]): T {
-//   return chain.reduce((target, [path, updater]) => updateIn(target, path, updater), target);
-// }
 
 function useSelectMap<T, U, V>(
   array: T[],
@@ -214,30 +210,32 @@ EmitTyping.propTypes = {
   children: PropTypes.func.isRequired
 };
 
-const Notifications: FC<{
-  children: ({ notifications }: { notifications: any[] }) => any;
+const ChatAdapterNotifications: FC<{
+  children: ({ notifications }: { notifications: Notifications }) => any;
 }> = ({ children }) => {
-  const notificationMap = useSelector(({ notifications }) => notifications);
-
-  const notificationArray = useMemo(
-    () => [
-      ...Object.entries(notificationMap).map(([id, notification]: [string, Notification]) => ({
-        ...notification,
-        id
-      })),
-      {
-        id: 'directline:welcome',
-        message: 'You are now connected via Direct Line protocol.',
-        level: 'success'
-      }
-    ],
-    [notificationMap]
+  const notifications = useSelector(({ notifications }) => notifications);
+  const welcomeNotification = useMemo(
+    () => ({
+      id: 'directline:welcome',
+      message: 'You are connected via Direct Line protocol.',
+      level: 'success'
+    }),
+    []
   );
 
-  return children({ notifications: notificationArray });
+  // TODO: Remove this.
+  const mergedNotifications = useMemo(
+    () => ({
+      ...notifications,
+      'directline:welcome': welcomeNotification
+    }),
+    [notifications, welcomeNotification]
+  );
+
+  return children({ notifications: mergedNotifications });
 };
 
-Notifications.propTypes = {
+ChatAdapterNotifications.propTypes = {
   children: PropTypes.func.isRequired
 };
 
@@ -431,7 +429,7 @@ const ConnectedLegacyChatAdapterBridge: FC<{
               {({ emitTyping }) => (
                 <TypingUsers typingAnimationDuration={styleOptions.typingAnimationDuration}>
                   {({ typingUsers }) => (
-                    <Notifications>
+                    <ChatAdapterNotifications>
                       {({ notifications }) =>
                         children &&
                         children({
@@ -451,7 +449,7 @@ const ConnectedLegacyChatAdapterBridge: FC<{
                           username
                         })
                       }
-                    </Notifications>
+                    </ChatAdapterNotifications>
                   )}
                 </TypingUsers>
               )}
@@ -498,20 +496,6 @@ const LegacyChatAdapterBridge: FC<{
   username?: string;
 }> = ({ children, directLine, store, styleOptions, userId, username }) => {
   const memoizedStore = useMemo(() => store || createStore(), [store]);
-
-  // const { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials } = styleOptions;
-
-  // const patchedUserProfiles = useMemo(
-  //   () =>
-  //     chainUpdateIn(userProfiles || {}, [
-  //       [[userId, 'image'], () => userAvatarImage],
-  //       [[userId, 'initials'], () => userAvatarInitials],
-  //       [[userId, 'name'], () => username],
-  //       [['__BOT__', 'image'], () => botAvatarImage],
-  //       [['__BOT__', 'initials'], () => botAvatarInitials]
-  //     ]),
-  //   [botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials, username, userProfiles]
-  // );
 
   return (
     <Provider context={WebChatReduxContext} store={memoizedStore}>
