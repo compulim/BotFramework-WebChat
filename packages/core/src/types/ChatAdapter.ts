@@ -1,6 +1,8 @@
-import Activity from './Activity';
-import Notifications from './Notifications';
-import TypingUsers from './TypingUsers';
+import PropTypes from 'prop-types';
+
+import Activity, { ActivityPropTypes } from './Activity';
+import Notifications, { NotificationsPropTypes } from './Notifications';
+import TypingUsers, { TypingUsersPropTypes } from './TypingUsers';
 
 type ChatAdapter = {
   /**
@@ -90,4 +92,19 @@ type ChatAdapter = {
 
 export default ChatAdapter;
 
-// TODO: Implement PropTypes.
+export const ChatAdapterPropTypes = PropTypes.shape({
+  activities: PropTypes.arrayOf(ActivityPropTypes),
+  emitTyping: PropTypes.func,
+  honorReadReceipts: PropTypes.bool,
+  notifications: NotificationsPropTypes,
+  resend: PropTypes.func,
+  sendEvent: PropTypes.func,
+  sendFiles: PropTypes.func,
+  sendMessage: PropTypes.func,
+  sendMessageBack: PropTypes.func,
+  sendPostBack: PropTypes.func,
+  setHonorReadReceipts: PropTypes.func,
+  typingUsers: TypingUsersPropTypes,
+  userId: PropTypes.string,
+  username: PropTypes.string
+}) as PropTypes.Validator<ChatAdapter>;

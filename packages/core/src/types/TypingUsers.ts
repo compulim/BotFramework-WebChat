@@ -7,4 +7,4 @@ type TypingUsers = {
 
 export default TypingUsers;
 
-export const TypingUsersPropTypes = PropTypes.objectOf(TypingUserPropTypes);
+export const TypingUsersPropTypes = PropTypes.objectOf(TypingUserPropTypes) as PropTypes.Validator<TypingUsers>;

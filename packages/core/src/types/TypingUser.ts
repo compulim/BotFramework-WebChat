@@ -15,4 +15,4 @@ export default TypingUser;
 
 export const TypingUserPropTypes = {
   name: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])])
-};
+} as PropTypes.Validator<TypingUser>;

@@ -26,4 +26,4 @@ export const ActivityMetadataPropTypes = PropTypes.shape({
   senderName: PropTypes.string,
   trackingNumber: PropTypes.string,
   who: WhoPropTypes
-});
+}) as PropTypes.Validator<ActivityMetadata>;

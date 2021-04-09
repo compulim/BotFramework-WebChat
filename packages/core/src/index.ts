@@ -27,8 +27,8 @@ import setNotification from './actions/setNotification';
 import * as ActivityClientState from './constants/ActivityClientState';
 import * as DictateState from './constants/DictateState';
 
-import Activity, { ActivityFromService, EventActivity, MessageActivity } from './types/Activity';
-import ChatAdapter from './types/ChatAdapter';
+import Activity, { ActivityFromService, ActivityPropTypes, EventActivity, MessageActivity } from './types/Activity';
+import ChatAdapter, { ChatAdapterPropTypes } from './types/ChatAdapter';
 import ConnectivityStatus, { ConnectivityStatusPropTypes } from './types/ConnectivityStatus';
 import DeliveryStatus, { DeliveryStatusPropTypes } from './types/DeliveryStatus';
 import getMetadata from './utils/getMetadata';
@@ -44,6 +44,8 @@ import Who, { WhoPropTypes } from './types/Who';
 
 const Constants = { ActivityClientState, DictateState };
 const PropTypes = {
+  Activity: ActivityPropTypes,
+  ChatAdapter: ChatAdapterPropTypes,
   ConnectivityStatus: ConnectivityStatusPropTypes,
   DeliveryStatus: DeliveryStatusPropTypes,
   Notification: NotificationPropTypes,

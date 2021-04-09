@@ -8,4 +8,4 @@ type Notifications = {
 
 export default Notifications;
 
-export const NotificationsPropTypes = PropTypes.objectOf(NotificationPropTypes);
+export const NotificationsPropTypes = PropTypes.objectOf(NotificationPropTypes) as PropTypes.Validator<Notifications>;

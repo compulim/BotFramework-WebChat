@@ -1,6 +1,8 @@
-import DeliveryStatus from './DeliveryStatus';
-import ReadBy from './ReadBy';
-import TextFormat from './TextFormat';
+import PropTypes from 'prop-types';
+
+import DeliveryStatus, { DeliveryStatusPropTypes } from './DeliveryStatus';
+import ReadBy, { ReadByPropTypes } from './ReadBy';
+import TextFormat, { TextFormatPropTypes } from './TextFormat';
 import Who from './Who';
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -107,3 +109,122 @@ type Activity =
 export default Activity;
 
 // TODO: Implement PropTypes.
+
+const EventActivityFromOthers = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
+    'webchat:sender:who': PropTypes.oneOf(['others'])
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.oneOf({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['bot'])
+  }),
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['event']),
+  value: PropTypes.any
+});
+
+const EventActivityFromSelf = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:delivery-status': DeliveryStatusPropTypes,
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:read-by': ReadByPropTypes,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
+    'webchat:sender:who': PropTypes.oneOf(['self']),
+    'webchat:tracking-number': PropTypes.string
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.oneOf({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['user'])
+  }),
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['event']),
+  value: PropTypes.any
+});
+
+const EventActivityFromService = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
+    'webchat:sender:who': PropTypes.oneOf(['service'])
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.oneOf({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['channel'])
+  }),
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['event']),
+  value: PropTypes.any
+});
+
+const MessageActivityFromOthers = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
+    'webchat:sender:who': PropTypes.oneOf(['others'])
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.oneOf({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['bot'])
+  }),
+  id: PropTypes.string.isRequired,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']),
+  text: PropTypes.string,
+  textFormat: TextFormatPropTypes
+});
+
+const MessageActivityFromSelf = PropTypes.shape({
+  channelData: PropTypes.shape({
+    'webchat:delivery-status': DeliveryStatusPropTypes,
+    'webchat:key': PropTypes.string.isRequired,
+    'webchat:read-by': ReadByPropTypes,
+    'webchat:sender:image': PropTypes.string,
+    'webchat:sender:initials': PropTypes.string,
+    'webchat:sender:name': PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['__BOT__'])]),
+    'webchat:sender:who': PropTypes.oneOf(['self']),
+    'webchat:tracking-number': PropTypes.string
+  }),
+  conversationId: PropTypes.string,
+  from: PropTypes.oneOf({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    role: PropTypes.oneOf(['user'])
+  }),
+  id: PropTypes.string.isRequired,
+  timestamp: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['message']),
+  text: PropTypes.string,
+  textFormat: TextFormatPropTypes
+});
+
+export const ActivityPropTypes = PropTypes.oneOf([
+  EventActivityFromOthers,
+  EventActivityFromSelf,
+  EventActivityFromService,
+  MessageActivityFromOthers,
+  MessageActivityFromSelf
+]) as PropTypes.Validator<Activity>;
