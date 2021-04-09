@@ -9,16 +9,18 @@ import useTrackEvent from '../useTrackEvent';
 import WebChatInputContext from './WebChatInputContext';
 
 let debug;
+let EMPTY_ARRAY;
 
 const InputComposer = ({ children, resend, sendEvent, sendFiles, sendMessage, sendMessageBack, sendPostBack }) => {
   debug || (debug = createDebug('<InputComposer>', { backgroundColor: 'yellow', color: 'black' }));
+  EMPTY_ARRAY || (EMPTY_ARRAY = []);
 
   const [inputMode, setInputMode] = useState('keyboard'); // "keyboard" or "speech".
   const [sendBoxValue, setSendBoxValue] = useState('');
   const [visibleActivities] = useActivities('visible');
   const forceRender = useForceRender();
   const lastVisibleActivityRef = useRef();
-  const suggestedActionsRef = useRef([]);
+  const suggestedActionsRef = useRef(EMPTY_ARRAY);
   const trackEvent = useTrackEvent();
 
   const patchedSendFiles = useMemo(
@@ -131,15 +133,15 @@ const InputComposer = ({ children, resend, sendEvent, sendFiles, sendMessage, se
         nextLastVisibleActivity.suggestedActions.actions &&
         getMetadata(nextLastVisibleActivity).who !== 'self'
       ) {
-        suggestedActionsRef.current = nextLastVisibleActivity.suggestedActions.actions || [];
+        suggestedActionsRef.current = nextLastVisibleActivity.suggestedActions.actions || EMPTY_ARRAY;
       } else {
-        suggestedActionsRef.current = [];
+        suggestedActionsRef.current = EMPTY_ARRAY;
       }
     }
   }, [nextLastVisibleActivity]);
 
   const clearSuggestedActions = useCallback(() => {
-    suggestedActionsRef.current = undefined;
+    suggestedActionsRef.current = EMPTY_ARRAY;
 
     forceRender();
   }, [forceRender, suggestedActionsRef]);
