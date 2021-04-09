@@ -9,11 +9,22 @@ import Who from './Who';
 type Expando<T> = Omit<any, keyof T> & T;
 
 type BaseActivity = {
+  attachments?: {
+    content?: string;
+    contentType: string;
+    contentUrl?: string;
+    name?: string;
+    thumbnailUrl?: string;
+  }[];
+
   // TODO: Clean up the channel data, so only small and important information stay here.
   //       Today, "acs:chat-message" is used for returning RR (getting the "chatMessage.id" out).
   //       IMO, since we are not returning RR for a specific message (a.k.a. we don't care what the message that RR is referring to, we just care about time)
   //       We may not need this one. Every time a RR is sent, just grab the last others' message ID and send it out.
   channelData: Expando<{
+    /** Size (in bytes) of every attachment. */
+    'webchat:attachment:sizes'?: number[];
+
     /** Permanent ID. This ID must always present and may never change during the lifetime of the activity. */
     'webchat:key': string;
 
@@ -163,7 +174,17 @@ export default Activity;
 // TODO: Implement PropTypes.
 
 const EventActivityFromOthers = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:key': PropTypes.string.isRequired,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
@@ -184,7 +205,17 @@ const EventActivityFromOthers = PropTypes.shape({
 });
 
 const EventActivityFromSelf = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:read-by': ReadByPropTypes,
@@ -208,7 +239,17 @@ const EventActivityFromSelf = PropTypes.shape({
 });
 
 const EventActivityFromService = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:key': PropTypes.string.isRequired,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
@@ -229,7 +270,17 @@ const EventActivityFromService = PropTypes.shape({
 });
 
 const IMBackActivityFromSelf = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:message:subtype': PropTypes.oneOf(['imBack']).isRequired,
@@ -254,7 +305,17 @@ const IMBackActivityFromSelf = PropTypes.shape({
 });
 
 const MessageActivityFromOthers = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:key': PropTypes.string.isRequired,
     'webchat:sender:image': PropTypes.string,
     'webchat:sender:initials': PropTypes.string,
@@ -275,7 +336,17 @@ const MessageActivityFromOthers = PropTypes.shape({
 });
 
 const MessageActivityFromSelf = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:read-by': ReadByPropTypes,
@@ -299,7 +370,17 @@ const MessageActivityFromSelf = PropTypes.shape({
 });
 
 const MessageBackActivityFromSelf = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:message-back:display-text': PropTypes.string,
@@ -326,7 +407,17 @@ const MessageBackActivityFromSelf = PropTypes.shape({
 });
 
 const PostBackAsJSONActivityFromSelf = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:message:subtype': PropTypes.oneOf(['postBack']).isRequired,
@@ -351,7 +442,17 @@ const PostBackAsJSONActivityFromSelf = PropTypes.shape({
 });
 
 const PostBackAsTextActivityFromSelf = PropTypes.shape({
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      content: PropTypes.string,
+      contentType: PropTypes.string.isRequired,
+      contentUrl: PropTypes.string,
+      name: PropTypes.string,
+      thumbnailUrl: PropTypes.string
+    })
+  ),
   channelData: PropTypes.shape({
+    'webchat:attachment:sizes': PropTypes.arrayOf(PropTypes.number),
     'webchat:delivery-status': DeliveryStatusPropTypes,
     'webchat:key': PropTypes.string.isRequired,
     'webchat:message:subtype': PropTypes.oneOf(['postBack']).isRequired,

@@ -1,3 +1,4 @@
+import { getMetadata } from 'botframework-webchat-core';
 import { useCallback } from 'react';
 
 import { warn } from '../utils/warn';
@@ -35,10 +36,12 @@ export default function usePostActivity() {
         return warn('This chat adapter does not support sending "postBack" activity.');
       } else if (activity.attachments) {
         if (sendFiles) {
+          const { attachmentSizes = [] } = getMetadata(activity);
+
           return sendFiles(
             activity.attachments.map(({ contentUrl, name, thumbnailUrl }, index) => ({
               name,
-              size: (channelData.attachmentSizes || [])[index],
+              size: attachmentSizes[index],
               thumbnail: thumbnailUrl,
               url: contentUrl
             }))

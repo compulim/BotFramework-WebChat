@@ -1,12 +1,13 @@
+import { getMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 import FileContent from './FileContent';
 
-const FileAttachment = ({
-  activity: { attachments = [], channelData: { attachmentSizes = [] } = {} } = {},
-  attachment
-}) => {
+const FileAttachment = ({ activity, attachment }) => {
+  const { attachments = [] } = activity || {};
+  const { attachmentSizes = [] } = getMetadata(activity);
+
   const attachmentIndex = attachments.indexOf(attachment);
   const size = attachmentSizes[attachmentIndex];
 
@@ -15,10 +16,7 @@ const FileAttachment = ({
 
 FileAttachment.propTypes = {
   activity: PropTypes.shape({
-    attachment: PropTypes.array,
-    channelData: PropTypes.shape({
-      attachmentSizes: PropTypes.arrayOf(PropTypes.number)
-    })
+    attachment: PropTypes.array
   }).isRequired,
   attachment: PropTypes.shape({
     contentUrl: PropTypes.string,

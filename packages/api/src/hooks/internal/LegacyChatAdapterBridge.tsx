@@ -251,7 +251,7 @@ const PostActivity: FC<{
   }: {
     resend: (trackingNumber: string) => string;
     sendEvent: (name: string, value: any) => string;
-    sendFiles: (files: any[]) => string; // TODO: Change the type to Blob | File
+    sendFiles: (files: any[]) => string; // TODO: We should change it to ArrayBuffer with types.
     sendMessage: (text: string) => string;
     sendMessageBack: (value: any, text: string, displayText: string) => string;
     sendPostBack: (value: any) => string;
@@ -267,9 +267,6 @@ const PostActivity: FC<{
       // Use the sendTimeout
       // const { sendTimeout } = styleOptions;
 
-      // TODO: Convert to async function
-      //       POST_ACTIVITY_REJECTED = reject
-      //       POST_ACTIVITY_FULFILLED = resolve
       // TODO: We should be diligent on what channelData to send, should we strip out "webchat:*"?
 
       // eslint-disable-next-line no-magic-numbers
@@ -311,19 +308,22 @@ const PostActivity: FC<{
   const sendFiles = useCallback(
     files => {
       if (files && files.length) {
-        return postActivity({
-          attachments: [].map.call(files, ({ name, thumbnail, url }) => ({
-            contentType: mime.getType(name) || 'application/octet-stream',
-            contentUrl: url,
-            name,
-            thumbnailUrl: thumbnail
-          })),
-          channelData: {
-            // TODO: Rename to "webchat:attachment-sizes"
-            attachmentSizes: [].map.call(files, ({ size }) => size)
-          },
-          type: 'message'
-        });
+        return postActivity(
+          updateMetadata(
+            {
+              attachments: [].map.call(files, ({ name, thumbnail, url }) => ({
+                contentType: mime.getType(name) || 'application/octet-stream',
+                contentUrl: url,
+                name,
+                thumbnailUrl: thumbnail
+              })),
+              type: 'message'
+            },
+            {
+              attachmentSizes: [].map.call(files, ({ size }) => size)
+            }
+          )
+        );
       }
     },
     [postActivity]

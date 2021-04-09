@@ -1,11 +1,16 @@
 /* eslint complexity: ["error", 30] */
 
+import { warn } from '../utils/warn';
 import Activity from '../types/Activity';
 import ActivityMetadata from '../types/ActivityMetadata';
 import updateIn from 'simple-update-in';
 
-export default function updateMetadata<T extends Activity>(activity: T, partialMetadata: Partial<ActivityMetadata>): T {
+export default function updateMetadata<T extends Partial<Activity>>(
+  activity: T,
+  partialMetadata: Partial<ActivityMetadata>
+): T {
   const {
+    attachmentSizes,
     avatarImage,
     avatarInitials,
     deliveryStatus,
@@ -17,6 +22,24 @@ export default function updateMetadata<T extends Activity>(activity: T, partialM
     trackingNumber,
     who
   } = partialMetadata;
+
+  if (typeof attachmentSizes !== 'undefined') {
+    if (
+      Array.isArray(attachmentSizes) &&
+      attachmentSizes.every(size => typeof size === 'number' && size >= 0) &&
+      attachmentSizes.length === activity.attachments.length
+    ) {
+      activity = updateIn(
+        activity,
+        ['channelData', 'webchat:attachment:sizes'],
+        attachmentSizes ? () => attachmentSizes : undefined
+      );
+    } else {
+      warn(
+        '🔥🔥🔥 "attachmentSizes" must be an array with non-negative numbers and with length matching the number of attachments in the activity.'
+      );
+    }
+  }
 
   if (typeof avatarImage !== 'undefined') {
     activity = updateIn(activity, ['channelData', 'webchat:sender:image'], avatarImage ? () => avatarImage : undefined);

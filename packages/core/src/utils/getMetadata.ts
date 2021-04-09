@@ -21,6 +21,7 @@ export default function getMetadata(activity: Activity, skipWarning?: boolean): 
       'webchat:tracking-number': trackingNumber
     } = {}
   } = activity;
+  let { channelData: { 'webchat:attachment:sizes': attachmentSizes } = {} } = activity;
 
   if (!skipWarning) {
     if (!activity.channelData) {
@@ -32,7 +33,21 @@ export default function getMetadata(activity: Activity, skipWarning?: boolean): 
     }
   }
 
+  if (
+    attachmentSizes &&
+    (!Array.isArray(attachmentSizes) ||
+      !attachmentSizes.every(size => typeof size === 'number') ||
+      attachmentSizes.length !== activity.attachments.length)
+  ) {
+    attachmentSizes = undefined;
+
+    warn(
+      '🔥🔥🔥 "attachmentSizes" is invalid. It is not an array with non-negative numbers or it does not have length matching the number of attachments in the activity.'
+    );
+  }
+
   return {
+    attachmentSizes,
     avatarImage: imageFromActivity,
     avatarInitials: initialsFromActivity,
     deliveryStatus,

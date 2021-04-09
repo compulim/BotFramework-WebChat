@@ -5,6 +5,7 @@ import ReadBy, { ReadByPropTypes } from './ReadBy';
 import Who, { WhoPropTypes } from './Who';
 
 type ActivityMetadata = {
+  attachmentSizes?: number[];
   avatarImage?: string;
   avatarInitials?: string;
   deliveryStatus?: DeliveryStatus;
@@ -20,6 +21,7 @@ type ActivityMetadata = {
 export default ActivityMetadata;
 
 export const ActivityMetadataPropTypes = PropTypes.shape({
+  attachmentSizes: PropTypes.arrayOf(PropTypes.number),
   avatarImage: PropTypes.string,
   avatarInitials: PropTypes.string,
   deliveryStatus: DeliveryStatusPropTypes,
