@@ -47,7 +47,7 @@ type ChatAdapter = {
    * @return {string} Tracking number of the message. Can be used to resend files.
    */
   sendFiles?: (
-    // TODO: We should update this signature to use ArrayBuffer instead.
+    // TODO: We should update this signature to use ArrayBuffer in additional to URL.
     files: {
       /** Name of the file. */
       name?: string;

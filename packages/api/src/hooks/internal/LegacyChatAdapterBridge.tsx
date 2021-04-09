@@ -254,9 +254,10 @@ const PostActivity: FC<{
     sendEvent: (name: string, value: any) => string;
     sendFiles: (
       files: {
-        buffer: ArrayBuffer;
-        contentType: string;
         name: string;
+        size?: number;
+        thumbnail?: string;
+        url: string;
       }[]
     ) => string;
     sendMessage: (text: string) => string;
