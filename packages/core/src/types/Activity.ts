@@ -107,7 +107,7 @@ export type IMBackActivity = {
 };
 
 export type MessageActivity = {
-  channelData: {
+  channelData?: {
     'webchat:message:subtype': undefined;
   };
   text?: string;
