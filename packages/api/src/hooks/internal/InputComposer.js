@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import createDebug from '../../utils/debug';
+import styleConsole from '../../utils/styleConsole';
 import useActivities from '../useActivities';
 import useForceRender from './useForceRender';
 import useTrackEvent from '../useTrackEvent';
@@ -28,15 +29,19 @@ const InputComposer = ({ children, resend, sendEvent, sendFiles, sendMessage, se
       sendFiles &&
       // TODO: We need channelData on all sendXxx functions.
       (files => {
-        files &&
-          files.length &&
-          trackEvent('sendFiles', {
-            numFiles: files.length,
-            // eslint-disable-next-line no-magic-numbers
-            sumSizeInKB: Math.round(files.reduce((total, { size }) => total + size, 0) / 1024)
-          });
+        if (!files || !files.length) {
+          throw new Error('Must pass an array of files to send.');
+        }
 
-        return sendFiles;
+        debug([`Sending %c${files.length}%c files`, ...styleConsole('green')], [{ files, sendFiles }]);
+
+        trackEvent('sendFiles', {
+          numFiles: files.length,
+          // eslint-disable-next-line no-magic-numbers
+          sumSizeInKB: Math.round(files.reduce((total, { size }) => total + size, 0) / 1024)
+        });
+
+        return sendFiles(files);
       }),
     [sendFiles, trackEvent]
   );

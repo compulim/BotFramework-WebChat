@@ -19,14 +19,17 @@ import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
 import { default as WebChatReduxContext, useDispatch, useSelector } from './WebChatReduxContext';
+import createDebug from '../../utils/debug';
 import diffMap from '../../utils/diffMap';
 import mime from '../../utils/mime-wrapper';
 import observableToPromise from '../utils/observableToPromise';
+import styleConsole from '../../utils/styleConsole';
 import useForceRender from './useForceRender';
 import useMemoAll from './useMemoAll';
 import usePrevious from './usePrevious';
 
 const EMIT_TYPING_INTERVAL = 3000;
+let debug;
 
 function useSelectMap<T, U, V>(
   array: T[],
@@ -315,30 +318,34 @@ const PostActivity: FC<{
 
   const sendFiles = useCallback(
     files => {
-      if (files && files.length) {
-        const filesWithBlobScheme = files.filter(({ url }) => /^blob:/iu.test(url));
-
-        if (filesWithBlobScheme.length !== files.length) {
-          warn('🔥🔥🔥 Only files with blob: scheme will be sent.', { files, filesWithBlobScheme });
-        }
-
-        return postActivity(
-          updateMetadata(
-            {
-              attachments: filesWithBlobScheme.map(({ name, thumbnail, url }) => ({
-                contentType: mime.getType(name) || 'application/octet-stream',
-                contentUrl: url,
-                name,
-                thumbnailUrl: thumbnail
-              })),
-              type: 'message'
-            },
-            {
-              attachmentSizes: filesWithBlobScheme.map(({ size }) => size)
-            }
-          )
-        );
+      if (!files || !files.length) {
+        return warn('🔥🔥🔥 Cannot send files without any files being sent.', { files });
       }
+
+      const filesWithBlobScheme = files.filter(({ url }) => /^blob:/iu.test(url));
+
+      if (filesWithBlobScheme.length !== files.length) {
+        warn('🔥🔥🔥 Only files with blob: scheme will be sent.', { files, filesWithBlobScheme });
+      }
+
+      debug(`Sending %c${files.length}%c files`, ...styleConsole('green'), { files });
+
+      return postActivity(
+        updateMetadata(
+          {
+            attachments: filesWithBlobScheme.map(({ name, thumbnail, url }) => ({
+              contentType: mime.getType(name) || 'application/octet-stream',
+              contentUrl: url,
+              name,
+              thumbnailUrl: thumbnail
+            })),
+            type: 'message'
+          },
+          {
+            attachmentSizes: filesWithBlobScheme.map(({ size }) => size)
+          }
+        )
+      );
     },
     [postActivity]
   );
@@ -528,6 +535,8 @@ const LegacyChatAdapterBridge: FC<{
   userId: string;
   username?: string;
 }> = ({ children, directLine, store, styleOptions, userId, username }) => {
+  debug || (debug = createDebug('<LegacyChatAdapterBridge>', { backgroundColor: 'yellow', color: 'black' }));
+
   const memoizedStore = useMemo(() => store || createStore(), [store]);
 
   return (
