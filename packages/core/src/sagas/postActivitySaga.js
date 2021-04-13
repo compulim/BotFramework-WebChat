@@ -1,4 +1,5 @@
 import { all, call, cancelled, put, race, select, take, takeEvery } from 'redux-saga/effects';
+import updateIn from 'simple-update-in';
 
 import { INCOMING_ACTIVITY } from '../actions/incomingActivity';
 import {
@@ -9,37 +10,48 @@ import {
 } from '../actions/postActivity';
 import clockSkewAdjustmentSelector from '../selectors/clockSkewAdjustment';
 import combineSelectors from '../selectors/combineSelectors';
-import deleteKey from '../utils/deleteKey';
 import getMetadata from '../utils/getMetadata';
 import languageSelector from '../selectors/language';
 import observeOnce from './effects/observeOnce';
+import sendTimeoutsSelector from '../selectors/sendTimeouts';
 import sleep from '../utils/sleep';
 import uniqueID from '../utils/uniqueID';
 import updateMetadata from '../utils/updateMetadata';
 import whileConnected from './effects/whileConnected';
 
-const SEND_TIMEOUT = 120000;
+const CHANNEL_DATA_LEGACY_CLIENT_TIMESTAMP = 'webchat:legacy:client-timestamp';
 
 function getTimestamp(clockSkewAdjustment = 0) {
   return new Date(Date.now() + clockSkewAdjustment).toISOString();
 }
 
 function* postActivity(directLine, userID, username, numActivitiesPosted, { meta: { method }, payload: activity }) {
-  const { clockSkewAdjustment, locale } = yield select(
-    combineSelectors({ clockSkewAdjustment: clockSkewAdjustmentSelector, locale: languageSelector })
+  const {
+    clockSkewAdjustment,
+    locale,
+    sendTimeouts: { sendTimeout, sendTimeoutForAttachments }
+  } = yield select(
+    combineSelectors({
+      clockSkewAdjustment: clockSkewAdjustmentSelector,
+      locale: languageSelector,
+      sendTimeouts: sendTimeoutsSelector
+    })
   );
   const { attachments } = activity;
   const trackingNumber = `t-${uniqueID()}`;
 
+  // This is unskewed local timestamp for estimating clock skew.
+  activity = updateIn(activity, ['channelData', CHANNEL_DATA_LEGACY_CLIENT_TIMESTAMP], () => getTimestamp());
+  activity = updateIn(activity, ['id']);
+
   activity = updateMetadata(activity, {
-    deliveryStatus: 'sending',
     key: trackingNumber,
     trackingNumber,
     who: 'self'
   });
 
   activity = {
-    ...deleteKey(activity, 'id'),
+    ...activity,
     attachments:
       attachments &&
       attachments.map(({ contentType, contentUrl, name, thumbnailUrl }) => ({
@@ -48,12 +60,6 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
         name,
         thumbnailUrl
       })),
-    channelData: {
-      ...deleteKey(activity.channelData, 'state'),
-      // This is unskewed local timestamp for estimating clock skew.
-      // TODO: Rename "clientTimestamp" to "webchat:client-timestamp".
-      clientTimestamp: getTimestamp()
-    },
     channelId: 'webchat',
     from: {
       id: userID,
@@ -93,8 +99,9 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
         const {
           payload: { activity }
         } = yield take(INCOMING_ACTIVITY);
+
         if (getMetadata(activity).trackingNumber === trackingNumber && activity.id) {
-          return updateMetadata(activity, { deliveryStatus: 'sent' });
+          return activity;
         }
       }
     });
@@ -112,7 +119,11 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
         // TODO: Should we remove most Web Chat-specific channelData except "webchat:tracking-number"?
         postActivity: observeOnce(directLine.postActivity(activity))
       }),
-      timeout: call(() => sleep(SEND_TIMEOUT).then(() => Promise.reject(new Error('timeout'))))
+      timeout: call(() =>
+        sleep(activity.attachments && activity.attachments.length ? sendTimeoutForAttachments : sendTimeout).then(() =>
+          Promise.reject(new Error('timeout'))
+        )
+      )
     });
 
     yield put({ type: POST_ACTIVITY_FULFILLED, meta, payload: { activity: echoBack } });

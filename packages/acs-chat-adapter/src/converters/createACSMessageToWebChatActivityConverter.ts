@@ -111,7 +111,7 @@ export default function createACSMessageToWebChatActivityConverter({
           ...activityContent
         },
         {
-          deliveryStatus: createdOn ? 'sent' : 'sending' // If it contains "createdOn", it's sent.
+          deliveryStatus: createdOn ? undefined : 'sending' // If it contains "createdOn", it's sent.
         }
       );
     }

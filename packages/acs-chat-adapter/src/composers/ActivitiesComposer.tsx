@@ -242,12 +242,8 @@ const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({
       let activity = convert(chatMessage);
 
       activity = updateMetadata(activity, {
-        // If "deliveryStatus" is set to "undefined", "updateMetadata" will not touch/falsify this field.
         deliveryStatus: deliveryStatus || undefined,
-
         readBy,
-
-        // If "trackingNumber" is set to "undefined", "updateMetadata" will not touch/falsify this field.
         trackingNumber: trackingNumber || undefined
       });
 

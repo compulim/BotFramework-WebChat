@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 
-type DeliveryStatus = 'error' | 'sending' | 'sent';
+type DeliveryStatus = 'error' | 'sending';
 
 export default DeliveryStatus;
 
-export const DeliveryStatusPropTypes = PropTypes.oneOf(['error', 'sending', 'sent']) as PropTypes.Validator<
-  DeliveryStatus
->;
+export const DeliveryStatusPropTypes = PropTypes.oneOf(['error', 'sending']) as PropTypes.Validator<DeliveryStatus>;

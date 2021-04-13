@@ -17,6 +17,7 @@ import postActivity from './actions/postActivity';
 import setNotification from './actions/setNotification';
 // import setSendBox from './actions/setSendBox';
 // import setSendTimeout from './actions/setSendTimeout';
+import setSendTimeouts from './actions/setSendTimeouts';
 // import setSendTypingIndicator from './actions/setSendTypingIndicator';
 // import startDictate from './actions/startDictate';
 // import startSpeakingActivity from './actions/startSpeakingActivity';
@@ -99,6 +100,7 @@ export {
   setNotification,
   // setSendBox,
   // setSendTimeout,
+  setSendTimeouts,
   // setSendTypingIndicator,
   // startDictate,
   // startSpeakingActivity,

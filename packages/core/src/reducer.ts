@@ -12,6 +12,7 @@ import notifications from './reducers/notifications';
 import referenceGrammarID from './reducers/referenceGrammarID';
 // import sendBoxValue from './reducers/sendBoxValue';
 // import sendTimeout from './reducers/sendTimeout';
+import sendTimeouts from './reducers/sendTimeouts';
 // import sendTypingIndicator from './reducers/sendTypingIndicator';
 // import shouldSpeakIncomingActivity from './reducers/shouldSpeakIncomingActivity';
 // import suggestedActions from './reducers/suggestedActions';
@@ -31,6 +32,7 @@ export default combineReducers({
   referenceGrammarID,
   // sendBoxValue,
   // sendTimeout,
+  sendTimeouts,
   // sendTypingIndicator,
   // shouldSpeakIncomingActivity,
   // suggestedActions,

@@ -5,7 +5,6 @@ import updateIn from 'simple-update-in';
 import { DELETE_ACTIVITY } from '../actions/deleteActivity';
 import { INCOMING_ACTIVITY } from '../actions/incomingActivity';
 import { MARK_ACTIVITY } from '../actions/markActivity';
-
 import { POST_ACTIVITY_FULFILLED, POST_ACTIVITY_PENDING, POST_ACTIVITY_REJECTED } from '../actions/postActivity';
 
 import getMetadata from '../utils/getMetadata';
@@ -19,7 +18,12 @@ function findByTrackingNumber(trackingNumber) {
   return activity => getMetadata(activity).trackingNumber === trackingNumber;
 }
 
-function patchActivity(activity) {
+// Activity is from server and may requires normalization.
+function normalizeActivityFromServer(activity) {
+  // Make sure every activity has "attachments" and "channelData".
+  activity = updateIn(activity, ['attachments'], attachments => (Array.isArray(attachments) ? attachments : []));
+  activity = updateIn(activity, ['channelData'], channelData => channelData || {});
+
   // Direct Line channel will return a placeholder image for the user-uploaded image.
   // As observed, the URL for the placeholder image is https://docs.botframework.com/static/devportal/client/images/bot-framework-default-placeholder.png.
   // To make our code simpler, we are removing the value if "contentUrl" is pointing to a placeholder image.
@@ -39,8 +43,6 @@ function patchActivity(activity) {
 }
 
 function upsertActivityWithSort(activities, nextActivity) {
-  nextActivity = patchActivity(nextActivity);
-
   const { trackingNumber: nextTrackingNumber } = getMetadata(nextActivity);
 
   const nextTimestamp = Date.parse(nextActivity.timestamp);
@@ -84,26 +86,40 @@ export default function activities(state = DEFAULT_STATE, { meta, payload, type 
       break;
 
     case POST_ACTIVITY_PENDING:
-      state = upsertActivityWithSort(state, updateMetadata(payload.activity, { deliveryStatus: 'sending' }));
+      {
+        let activity = normalizeActivityFromServer(payload.activity);
+
+        activity = updateMetadata(activity, { deliveryStatus: 'sending' });
+
+        state = upsertActivityWithSort(state, activity);
+      }
+
       break;
 
     case POST_ACTIVITY_REJECTED:
-      state = updateIn(state, [findByTrackingNumber(meta.trackingNumber)], activity =>
-        updateMetadata(activity, { deliveryStatus: 'error' })
-      );
+      state = updateIn(state, [findByTrackingNumber(meta.trackingNumber)], activity => {
+        activity = updateMetadata(activity, { deliveryStatus: 'error' });
+
+        return activity;
+      });
+
       break;
 
     case POST_ACTIVITY_FULFILLED:
-      state = updateIn(state, [findByTrackingNumber(meta.trackingNumber)], () =>
+      {
+        let activity = normalizeActivityFromServer(payload.activity);
+
+        activity = updateMetadata(activity, { deliveryStatus: undefined });
+
         // We will replace the activity with the version from the server
-        updateMetadata(patchActivity(payload.activity), { deliveryStatus: 'sent' })
-      );
+        state = updateIn(state, [findByTrackingNumber(meta.trackingNumber)], () => activity);
+      }
 
       break;
 
     case INCOMING_ACTIVITY:
-      // TODO: [P4] #2100 Move "typing" into Constants.ActivityType
-      state = upsertActivityWithSort(state, payload.activity);
+      state = upsertActivityWithSort(state, normalizeActivityFromServer(payload.activity));
+
       break;
 
     default:

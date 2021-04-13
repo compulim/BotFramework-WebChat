@@ -9,6 +9,7 @@ import {
   getMetadata,
   Notifications,
   postActivity as createPostActivityAction,
+  setSendTimeouts,
   updateMetadata,
   warn
 } from 'botframework-webchat-core';
@@ -61,7 +62,9 @@ function usePatchActivities(
 
   const selector = useCallback(
     (activity: Activity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
-      const self = activity.from.role === 'user';
+      const { who } = getMetadata(activity);
+
+      const self = who === 'self';
 
       selectCountRef.current++;
 
@@ -70,10 +73,10 @@ function usePatchActivities(
     []
   );
 
-  const mapper = useCallback(([directLineActivity, avatarImage, avatarInitials]: [Activity, string, string]) => {
+  const mapper = useCallback(([activity, avatarImage, avatarInitials]: [Activity, string, string]) => {
     mapCountRef.current++;
 
-    return updateMetadata(directLineActivity, {
+    return updateMetadata(activity, {
       avatarImage,
       avatarInitials
     });
@@ -273,13 +276,9 @@ const PostActivity: FC<{
 
   activitiesForCallbacksRef.current = activities;
 
+  // TODO: How do we support channelData?
   const postActivity = useCallback(
     (activity: any): string => {
-      // Use the sendTimeout
-      // const { sendTimeout } = styleOptions;
-
-      // TODO: We should be diligent on what channelData to send, should we strip out "webchat:*"?
-
       // eslint-disable-next-line no-magic-numbers
       const trackingNumber = `t-${random().toString(36).substr(2, 10)}`;
 
@@ -287,7 +286,6 @@ const PostActivity: FC<{
 
       return trackingNumber;
     },
-    // [dispatch, styleOptions.sendTimeout]
     [dispatch]
   );
 
@@ -423,6 +421,8 @@ const ConnectedLegacyChatAdapterBridge: FC<{
   styleOptions: {
     botAvatarImage?: string;
     botAvatarInitials?: string;
+    sendTimeout?: number;
+    sendTimeoutForAttachments?: number;
     typingAnimationDuration?: number;
     userAvatarImage?: string;
     userAvatarInitials?: string;
@@ -439,6 +439,11 @@ const ConnectedLegacyChatAdapterBridge: FC<{
     () => directLine && directLine.getSessionId && (() => observableToPromise(directLine.getSessionId())),
     [directLine]
   );
+
+  useMemo(() => dispatch(setSendTimeouts(styleOptions.sendTimeout, styleOptions.sendTimeoutForAttachments)), [
+    styleOptions.sendTimeout,
+    styleOptions.sendTimeoutForAttachments
+  ]);
 
   useEffect(() => {
     dispatch(
@@ -513,6 +518,8 @@ ConnectedLegacyChatAdapterBridge.propTypes = {
   styleOptions: PropTypes.shape({
     botAvatarImage: PropTypes.string,
     botAvatarInitials: PropTypes.string,
+    sendTimeout: PropTypes.number,
+    sendTimeoutForAttachments: PropTypes.number,
     typingAnimationDuration: PropTypes.number,
     userAvatarImage: PropTypes.string,
     userAvatarInitials: PropTypes.string
@@ -528,6 +535,8 @@ const LegacyChatAdapterBridge: FC<{
   styleOptions: {
     botAvatarImage?: string;
     botAvatarInitials?: string;
+    sendTimeout?: number;
+    sendTimeoutForAttachments?: number;
     typingAnimationDuration?: number;
     userAvatarImage?: string;
     userAvatarInitials?: string;
@@ -568,6 +577,8 @@ LegacyChatAdapterBridge.propTypes = {
   styleOptions: PropTypes.shape({
     botAvatarImage: PropTypes.string,
     botAvatarInitials: PropTypes.string,
+    sendTimeout: PropTypes.number,
+    sendTimeoutForAttachments: PropTypes.number,
     typingAnimationDuration: PropTypes.number,
     userAvatarImage: PropTypes.string,
     userAvatarInitials: PropTypes.string

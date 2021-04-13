@@ -23,7 +23,7 @@ export default function updateMetadata<T extends Partial<Activity>>(
     who
   } = partialMetadata;
 
-  if (typeof attachmentSizes !== 'undefined') {
+  if ('attachmentSizes' in partialMetadata) {
     if (
       Array.isArray(attachmentSizes) &&
       attachmentSizes.every(size => {
@@ -45,11 +45,11 @@ export default function updateMetadata<T extends Partial<Activity>>(
     }
   }
 
-  if (typeof avatarImage !== 'undefined') {
+  if ('avatarImage' in partialMetadata) {
     activity = updateIn(activity, ['channelData', 'webchat:sender:image'], avatarImage ? () => avatarImage : undefined);
   }
 
-  if (typeof avatarInitials !== 'undefined') {
+  if ('avatarInitials' in partialMetadata) {
     activity = updateIn(
       activity,
       ['channelData', 'webchat:sender:initials'],
@@ -57,14 +57,7 @@ export default function updateMetadata<T extends Partial<Activity>>(
     );
   }
 
-  if (typeof deliveryStatus !== 'undefined') {
-    activity = updateIn(
-      activity,
-      ['channelData', 'webchat:delivery-status'],
-      deliveryStatus ? () => deliveryStatus : undefined
-    );
-
-    // TODO: Deprecate "channelData.state" field once we completely moved to "delivery-status".
+  if ('deliveryStatus' in partialMetadata) {
     activity = updateIn(
       activity,
       ['channelData', 'webchat:delivery-status'],
@@ -72,11 +65,11 @@ export default function updateMetadata<T extends Partial<Activity>>(
     );
   }
 
-  if (typeof key !== 'undefined') {
+  if ('key' in partialMetadata) {
     activity = updateIn(activity, ['channelData', 'webchat:key'], key ? () => key : undefined);
   }
 
-  if (typeof messageBackDisplayText !== 'undefined') {
+  if ('messageBackDisplayText' in partialMetadata) {
     activity = updateIn(
       activity,
       ['channelData', 'webchat:message-back:display-text'],
@@ -84,7 +77,7 @@ export default function updateMetadata<T extends Partial<Activity>>(
     );
   }
 
-  if (typeof messageSubType !== 'undefined') {
+  if ('messageSubType' in partialMetadata) {
     activity = updateIn(
       activity,
       ['channelData', 'webchat:message:sub-type'],
@@ -92,19 +85,19 @@ export default function updateMetadata<T extends Partial<Activity>>(
     );
   }
 
-  if (typeof readBy !== 'undefined') {
+  if ('readBy' in partialMetadata) {
     activity = updateIn(activity, ['channelData', 'webchat:read-by'], readBy ? () => readBy : undefined);
   }
 
-  if (typeof senderName !== 'undefined') {
+  if ('senderName' in partialMetadata) {
     activity = updateIn(activity, ['channelData', 'webchat:sender:name'], senderName ? () => senderName : undefined);
   }
 
-  if (typeof senderName !== 'undefined') {
+  if ('senderName' in partialMetadata) {
     activity = updateIn(activity, ['channelData', 'webchat:sender:name'], senderName ? () => senderName : undefined);
   }
 
-  if (typeof trackingNumber !== 'undefined') {
+  if ('trackingNumber' in partialMetadata) {
     activity = updateIn(
       activity,
       ['channelData', 'webchat:tracking-number'],
@@ -112,7 +105,7 @@ export default function updateMetadata<T extends Partial<Activity>>(
     );
   }
 
-  if (typeof who !== 'undefined') {
+  if ('who' in partialMetadata) {
     activity = updateIn(activity, ['channelData', 'webchat:sender:who'], who ? () => who : undefined);
 
     // TODO: Deprecate setting "from.role" field when we no longer use the "from.role" field.

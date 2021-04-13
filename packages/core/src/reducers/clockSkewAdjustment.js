@@ -3,9 +3,8 @@ import { SET_CLOCK_SKEW_ADJUSTMENT } from '../actions/setClockSkewAdjustment';
 
 export default function clockSkewAdjustment(state = 0, { payload, type }) {
   if (type === INCOMING_ACTIVITY) {
-    // TODO: Rename "clientTimestamp" to "webchat:client-timestamp".
     const {
-      activity: { channelData: { clientTimestamp } = {}, timestamp }
+      activity: { channelData: { 'webchat:legacy:client-timestamp': clientTimestamp } = {}, timestamp }
     } = payload;
 
     const clientSendTime = Date.parse(clientTimestamp);

@@ -18,7 +18,6 @@ const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity 
   // SEND_FAILED from the activity is ignored, and is instead based on styleOptions.sendTimeout.
   // Note that the derived state is time-sensitive. The useTimePassed() hook is used to make sure it changes over time.
 
-  // TODO: Rename "clientTimestamp" to "webchat:client-timestamp"
   const { deliveryStatus, who } = getMetadata(activity);
 
   // const activitySent = typeof deliveryStatus === 'string' ? deliveryStatus === 'sent' : state !== SENDING && state !== SEND_FAILED;
@@ -36,11 +35,11 @@ const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity 
 
   const sendState = !fromUser
     ? SENT
-    : deliveryStatus === 'sent'
-    ? SENT
+    : deliveryStatus === 'sending'
+    ? SENDING
     : deliveryStatus === 'error'
     ? SEND_FAILED
-    : SENDING;
+    : SENT;
 
   return useMemo(
     () =>

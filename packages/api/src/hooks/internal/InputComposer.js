@@ -30,7 +30,7 @@ const InputComposer = ({ children, resend, sendEvent, sendFiles, sendMessage, se
       // TODO: We need channelData on all sendXxx functions.
       (files => {
         if (!files || !files.length) {
-          throw new Error('Must pass an array of files to send.');
+          throw new Error('Must pass an array of files to sendFiles().');
         }
 
         debug([`Sending %c${files.length}%c files`, ...styleConsole('green')], [{ files, sendFiles }]);

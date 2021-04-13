@@ -69,6 +69,7 @@ export default function patchStyleOptions(
     patchedOptions.groupTimestamp = groupTimestampFromProps;
   }
 
+  // TODO: "sendTimeout" is being used in LegacyChatAdapterBridge, we should move this patch code sooner.
   if (typeof sendTimeoutFromProps !== 'undefined' && typeof options.sendTimeout === 'undefined') {
     console.warn(
       'Web Chat: "sendTimeout" has been moved to "styleOptions". This deprecation migration will be removed on or after January 1 2022.'
