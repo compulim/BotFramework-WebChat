@@ -34,29 +34,30 @@ const ActivitiesComposer = ({ activities, children, honorReadReceipts, setHonorR
 
     activitiesWithoutKey.length && warn('🔥🔥🔥 All activities must have a key.', { activitiesWithoutKey });
 
-    const activitiesWithTrackingNumberWithoutDeliveryStatus = activities.filter(activity => {
+    const activitiesWithoutTrackingNumberWithDeliveryStatus = activities.filter(activity => {
       const { deliveryStatus, trackingNumber } = getMetadata(activity);
 
       return deliveryStatus && !trackingNumber;
     });
 
-    activitiesWithTrackingNumberWithoutDeliveryStatus.length &&
-      warn(
-        `🔥🔥🔥 Activities which has "channelData['webchat:delivery-status']" must also set "channelData['webchat:tracking-number']".`,
-        { activitiesWithTrackingNumberWithoutDeliveryStatus }
-      );
-
-    const activitiesWithoutTrackingNumberWithDeliveryStatus = activities.filter(activity => {
-      const { deliveryStatus, trackingNumber } = getMetadata(activity);
-
-      return trackingNumber && !deliveryStatus;
-    });
-
     activitiesWithoutTrackingNumberWithDeliveryStatus.length &&
       warn(
-        `🔥🔥🔥 Activities which has "channelData['webchat:tracking-number']" must also set "channelData['webchat:delivery-status']".`,
+        `🔥🔥🔥 Activities which has "channelData['webchat:delivery-status']" must also set "channelData['webchat:tracking-number']".`,
         { activitiesWithoutTrackingNumberWithDeliveryStatus }
       );
+
+    // Delivery status = undefined = 'sent'
+    // const activitiesWithTrackingNumberWithoutDeliveryStatus = activities.filter(activity => {
+    //   const { deliveryStatus, trackingNumber } = getMetadata(activity);
+
+    //   return trackingNumber && !deliveryStatus;
+    // });
+
+    // activitiesWithTrackingNumberWithoutDeliveryStatus.length &&
+    //   warn(
+    //     `🔥🔥🔥 Activities which has "channelData['webchat:tracking-number']" must also set "channelData['webchat:delivery-status']".`,
+    //     { activitiesWithTrackingNumberWithoutDeliveryStatus }
+    //   );
 
     // TODO: For accessibility, no activities can be inserted at start or in the midway
 
