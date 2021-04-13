@@ -34,14 +34,15 @@ const DEFAULT_OPTIONS = {
   showAvatarForOthers: false,
   showAvatarForSelf: false,
 
-  // TODO: Deprecate the following style options
+  // TODO: Add notes that these style options only works for legacy chat adapter.
+  //       For consistencies across chat adapters and flexibility, we recommend sending avatar image/initials via "channelData".
   botAvatarImage: undefined, // Or a string of URL. Can be a data URI or blob.
   botAvatarInitials: undefined, // Or a string. Empty strings means it has avatar but not initials inside.
   userAvatarImage: undefined, // Or a string of URL. Can be a data URI or blob.
   userAvatarInitials: undefined, // Or a string. Empty strings means it has avatar but not initials inside.
 
   // Bubble
-  // TODO: Should we make a bubbleFromBot*
+  // TODO: Should we rename it to bubbleOthersBackground/bubbleSelfBackground?
   bubbleBackground: 'White',
   bubbleBorderColor: '#E6E6E6',
   bubbleBorderRadius: 2,
@@ -163,7 +164,8 @@ const DEFAULT_OPTIONS = {
   slowConnectionAfter: 15000,
 
   typingAnimationBackgroundImage: null,
-  typingAnimationDuration: 5000, // TODO: Deprecate this because it is only required in Direct Line protocol.
+  // TODO: Add notes that this value is only for legacy chat adapters and the value is solely depends on how often the bot will emit typing indicator proactively.
+  typingAnimationDuration: 5000,
   typingAnimationHeight: 20,
   typingAnimationWidth: 64,
   typingIndicatorStyle: 'text', // 'dot'

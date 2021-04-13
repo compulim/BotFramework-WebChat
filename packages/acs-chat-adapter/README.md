@@ -15,6 +15,8 @@ ReactDOM.render(
 -  `styleOptions.sendTimeout` and `styleOptions.sendTimeoutForAttachments`
    -  Does not applies to ACS chat adapter
    -  Breaking: now it only applies to next `postActivity`, previously allowed to set on-the-fly
+-  Resolved #2869
+   -  `// TODO: [P2] #2869 This "contentURL" removal code should be moved to DirectLineJS adapter.`
 
 # To-do
 

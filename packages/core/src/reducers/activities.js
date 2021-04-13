@@ -19,7 +19,7 @@ function findByTrackingNumber(trackingNumber) {
 }
 
 // Activity is from server and may requires normalization.
-function normalizeActivityFromServer(activity) {
+function normalizeActivity(activity) {
   // Make sure every activity has "attachments" and "channelData".
   activity = updateIn(activity, ['attachments'], attachments => (Array.isArray(attachments) ? attachments : []));
   activity = updateIn(activity, ['channelData'], channelData => channelData || {});
@@ -27,8 +27,6 @@ function normalizeActivityFromServer(activity) {
   // Direct Line channel will return a placeholder image for the user-uploaded image.
   // As observed, the URL for the placeholder image is https://docs.botframework.com/static/devportal/client/images/bot-framework-default-placeholder.png.
   // To make our code simpler, we are removing the value if "contentUrl" is pointing to a placeholder image.
-
-  // TODO: [P2] #2869 This "contentURL" removal code should be moved to DirectLineJS adapter.
 
   // Also, if the "contentURL" starts with "blob:", this means the user is uploading a file (the URL is constructed by URL.createObjectURL)
   // Although the copy/reference of the file is temporary in-memory, to make the UX consistent across page refresh, we do not allow the user to re-download the file either.
@@ -87,7 +85,7 @@ export default function activities(state = DEFAULT_STATE, { meta, payload, type 
 
     case POST_ACTIVITY_PENDING:
       {
-        let activity = normalizeActivityFromServer(payload.activity);
+        let activity = normalizeActivity(payload.activity);
 
         activity = updateMetadata(activity, { deliveryStatus: 'sending' });
 
@@ -107,7 +105,7 @@ export default function activities(state = DEFAULT_STATE, { meta, payload, type 
 
     case POST_ACTIVITY_FULFILLED:
       {
-        let activity = normalizeActivityFromServer(payload.activity);
+        let activity = normalizeActivity(payload.activity);
 
         activity = updateMetadata(activity, { deliveryStatus: undefined });
 
@@ -118,7 +116,7 @@ export default function activities(state = DEFAULT_STATE, { meta, payload, type 
       break;
 
     case INCOMING_ACTIVITY:
-      state = upsertActivityWithSort(state, normalizeActivityFromServer(payload.activity));
+      state = upsertActivityWithSort(state, normalizeActivity(payload.activity));
 
       break;
 
