@@ -25,6 +25,7 @@ import diffMap from '../../utils/diffMap';
 import mime from '../../utils/mime-wrapper';
 import observableToPromise from '../utils/observableToPromise';
 import styleConsole from '../../utils/styleConsole';
+// import useDebounced from './useDebounced';
 import useForceRender from './useForceRender';
 import useMemoAll from './useMemoAll';
 import usePrevious from './usePrevious';
@@ -90,7 +91,8 @@ function usePatchActivities(
   const result = useSelectMap(activities, options, selector, mapper);
 
   debug([
-    `Patching activities with %c${selectCountRef.current}%c selection and %c${mapCountRef.current}%c mappings.`,
+    `Patching activities with %c${selectCountRef.current}%c selection and %c${mapCountRef.current}%c mappings, total %c${activities.length}%c activities.`,
+    ...styleConsole('green'),
     ...styleConsole('green'),
     ...styleConsole('green')
   ]);
@@ -120,6 +122,7 @@ const Activities: FC<{
   const patchedActivities = usePatchActivities(activities, options);
 
   return children({ activities: patchedActivities });
+  // return children({ activities: useDebounced(patchedActivities, 1000) });
 };
 
 Activities.defaultProps = {
@@ -175,7 +178,12 @@ const TypingUsers: FC<{
   const forceRender = useForceRender();
 
   useEffect(() => {
-    const timeout = setTimeout(forceRender, nextRefreshAt);
+    debug('%c<TypingUsers>%c is resetting timeout.', ...styleConsole('yellow', 'black'));
+
+    const timeout = setTimeout(() => {
+      forceRender();
+      debug('%c<TypingUsers>%c is forcing a render.', ...styleConsole('yellow', 'black'));
+    }, nextRefreshAt);
 
     return () => clearTimeout(timeout);
   }, [forceRender, nextRefreshAt]);
@@ -260,7 +268,7 @@ ChatAdapterNotifications.propTypes = {
 };
 
 const PostActivity: FC<{
-  activities: any[];
+  activities: Activity[];
   children: ({
     resend,
     sendEvent,
@@ -284,7 +292,7 @@ const PostActivity: FC<{
     sendPostBack: (value: string) => string;
   }) => any;
 }> = ({ activities, children }) => {
-  const activitiesForCallbacksRef = useRef<any[]>();
+  const activitiesForCallbacksRef = useRef<Activity[]>();
   const dispatch = useDispatch();
 
   activitiesForCallbacksRef.current = activities;
@@ -474,6 +482,8 @@ const ConnectedLegacyChatAdapterBridge: FC<{
     };
   }, [dispatch, directLine, userIdFromProps, usernameFromProps]);
 
+  // TODO: Test if perf will improve if we shorten the children() as multiple useContext instead.
+  //       As tested, the perf is faster than R13 by about 40%.
   return (
     <Activities
       botAvatarImage={styleOptions.botAvatarImage}
