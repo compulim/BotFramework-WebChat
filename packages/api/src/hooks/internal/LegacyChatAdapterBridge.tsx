@@ -62,13 +62,18 @@ function usePatchActivities(
 
   const selector = useCallback(
     (activity: Activity, { botAvatarImage, botAvatarInitials, userAvatarImage, userAvatarInitials }) => {
-      const { who } = getMetadata(activity);
+      const { avatarImage, avatarInitials, who } = getMetadata(activity);
 
       const self = who === 'self';
 
       selectCountRef.current++;
 
-      return [activity, self ? userAvatarImage : botAvatarImage, self ? userAvatarInitials : botAvatarInitials];
+      return [
+        activity,
+        // Keep the avatar image/initials if it was set by the bot.
+        avatarImage || (self ? userAvatarImage : botAvatarImage),
+        avatarInitials || (self ? userAvatarInitials : botAvatarInitials)
+      ];
     },
     []
   );
@@ -82,7 +87,15 @@ function usePatchActivities(
     });
   }, []);
 
-  return useSelectMap(activities, options, selector, mapper);
+  const result = useSelectMap(activities, options, selector, mapper);
+
+  debug([
+    `Patching activities with %c${selectCountRef.current}%c selection and %c${mapCountRef.current}%c mappings.`,
+    ...styleConsole('green'),
+    ...styleConsole('green')
+  ]);
+
+  return result;
 }
 
 const Activities: FC<{
@@ -279,8 +292,9 @@ const PostActivity: FC<{
   // TODO: How do we support channelData?
   const postActivity = useCallback(
     (activity: any): string => {
+      // If the activity already have a tracking number (e.g. during resend), we will keep the tracking number.
       // eslint-disable-next-line no-magic-numbers
-      const trackingNumber = `t-${random().toString(36).substr(2, 10)}`;
+      const { trackingNumber = `t-${random().toString(36).substr(2, 10)}` } = getMetadata(activity);
 
       dispatch(createPostActivityAction(updateMetadata(activity, { trackingNumber })));
 

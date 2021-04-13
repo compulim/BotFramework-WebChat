@@ -37,8 +37,13 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
       sendTimeouts: sendTimeoutsSelector
     })
   );
+
   const { attachments } = activity;
-  const trackingNumber = `t-${uniqueID()}`;
+
+  // Backcompat: This is for dispatching "DIRECT_LINE/POST_ACTIVITY" action without tracking number.
+  // Key is immutable over the lifetime of the activity, including when we resend.
+  // We should keep the tracking number, because we use it as the key.
+  const { trackingNumber = `t-${uniqueID()}` } = getMetadata(activity);
 
   // This is unskewed local timestamp for estimating clock skew.
   activity = updateIn(activity, ['channelData', CHANNEL_DATA_LEGACY_CLIENT_TIMESTAMP], () => getTimestamp());
@@ -116,7 +121,8 @@ function* postActivity(directLine, userID, username, numActivitiesPosted, { meta
     } = yield race({
       send: all({
         echoBack: echoBackCall,
-        // TODO: Should we remove most Web Chat-specific channelData except "webchat:tracking-number"?
+        // TODO: Should we remove most Web Chat-specific "channelData" except the followings?
+        //       "webchat:tracking-number", "webchat:message-back:display-text", "webchat:message:sub-type", "webchat:key"
         postActivity: observeOnce(directLine.postActivity(activity))
       }),
       timeout: call(() =>
