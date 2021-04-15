@@ -54,6 +54,11 @@ ReactDOM.render(
    -  End-dev using SDK is less likely to spend time on merging, and more likely to introduce perf impact
    -  Better for SDK to merge metadata and improve end-dev's life and reduce likelihood of UI perf impact
 
+New feedbacks:
+
+-  Recommend to use `EventTarget` instead of `onStateChange`/`offStateChange`
+-  `sequenceId` is a string, but the content is a number
+
 ## Regarding send message function signature
 
 -  Sending a message is a multi-stage process

@@ -60,7 +60,9 @@ const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({
     () =>
       Object.values(
         acsReadReceipts.reduce<{ [userId: string]: number }>((readReceipts, acsReadReceipt) => {
-          const memberUserId = acsReadReceipt.sender.communicationUserId;
+          // TODO: Fix the "any" type.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const memberUserId = (acsReadReceipt.sender as any).communicationUserId;
 
           // Do not count self for reader counter.
           if (memberUserId !== userId) {

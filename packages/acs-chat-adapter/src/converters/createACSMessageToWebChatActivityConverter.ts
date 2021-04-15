@@ -9,9 +9,9 @@ import UserProfiles from '../types/UserProfiles';
 let debug;
 
 // TODO: Verify this logic with ACS team to see if this is correct.
-function isOthersUserId(userId: string) {
-  return userId.startsWith('8:');
-}
+// function isOthersUserId(userId: string) {
+//   return userId.startsWith('8:');
+// }
 
 // "threadId" is undefined for messages from others, so we prefer to use the "threadId" from setup.
 export default function createACSMessageToWebChatActivityConverter({
@@ -36,14 +36,20 @@ export default function createACSMessageToWebChatActivityConverter({
       content,
       createdOn,
       id,
-      sender: { communicationUserId },
+      sender: { communicationUserId } = {},
       senderDisplayName,
+      status,
       type
     } = acsChatMessage;
 
     const userProfile = userProfiles[communicationUserId];
-    const who: 'others' | 'self' | 'service' =
-      userId === communicationUserId ? 'self' : isOthersUserId(userId) ? 'others' : 'service';
+
+    // TODO: Checks with ACS team to see if this is a good strategy to find out "user.kind".
+    const who: 'others' | 'self' | 'service' = !communicationUserId
+      ? 'service'
+      : userId === communicationUserId
+      ? 'self'
+      : 'others';
 
     // TODO: Assert data if it met our expectation.
     if (who === 'self') {
@@ -85,12 +91,16 @@ export default function createACSMessageToWebChatActivityConverter({
       }
     );
 
+    // TODO: Should we convert ACS message type "participantAdded" to DL "conversationUpdate/membersAdded"?
+    // TODO: What is ACS message type "topicUpdated"?
+
     const activityContent: EventActivity | MessageActivity =
       // For an outgoing message which is pending send, it does not have "type" field set.
       // Right now, we are assuming the outgoing message is a text message.
-      type === 'Text' || (!type && who === 'self')
+      // TODO: Checks if we can remove (!type && who === 'self')
+      type === 'text' || (!type && who === 'self')
         ? {
-            text: content,
+            text: content.message,
             textFormat: 'plain',
             type: 'message'
           }
@@ -111,7 +121,10 @@ export default function createACSMessageToWebChatActivityConverter({
           ...activityContent
         },
         {
-          deliveryStatus: createdOn ? undefined : 'sending' // If it contains "createdOn", it's sent.
+          // deliveryStatus: createdOn ? undefined : 'sending' // If it contains "createdOn", it's sent.
+
+          // 'delivered' | 'sending' | 'seen' | 'failed'
+          deliveryStatus: status === 'failed' ? 'error' : status === 'sending' ? status : undefined
         }
       );
     }

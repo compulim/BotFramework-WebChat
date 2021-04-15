@@ -1,5 +1,5 @@
-import { ReadReceipt } from '@azure/communication-chat';
+import { ChatMessageReadReceipt } from '@azure/communication-chat';
 
-type ACSReadReceipt = ReadReceipt;
+type ACSReadReceipt = ChatMessageReadReceipt;
 
 export default ACSReadReceipt;

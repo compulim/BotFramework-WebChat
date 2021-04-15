@@ -4,7 +4,8 @@ import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
+import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer2';
+import ACSDeclarativesComposer from './composers/ACSDeclarativesComposer';
 import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
@@ -126,30 +127,32 @@ const ACSChatAdapter: FC<{
   const credentialsProvided = !!(endpointURL && initialToken && threadId);
 
   return credentialsProvided ? (
-    <ChatProvider
-      displayName=""
-      endpointUrl={endpointURL}
-      refreshTokenCallback={refreshTokenCallback}
-      threadId={threadId}
-      token={initialToken}
-    >
-      {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
-      {/* <ChatThreadProvider> */}
-      <ACSChatMessagesComposer>
-        <ACSThreadMembersComposer>
-          <ActivitiesComposer userProfiles={patchedUserProfiles}>
-            <HonorReadReceiptsComposer>
-              <TypingUsersComposer userProfiles={patchedUserProfiles}>
-                <EmitTypingComposer>
-                  <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
-                </EmitTypingComposer>
-              </TypingUsersComposer>
-            </HonorReadReceiptsComposer>
-          </ActivitiesComposer>
-        </ACSThreadMembersComposer>
-      </ACSChatMessagesComposer>
-      {/* </ChatThreadProvider> */}
-    </ChatProvider>
+    <ACSDeclarativesComposer endpointURL={endpointURL} threadId={threadId} token={initialToken}>
+      <ChatProvider
+        displayName=""
+        endpointUrl={endpointURL}
+        refreshTokenCallback={refreshTokenCallback}
+        threadId={threadId}
+        token={initialToken}
+      >
+        {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
+        {/* <ChatThreadProvider> */}
+        <ACSChatMessagesComposer>
+          <ACSThreadMembersComposer>
+            <ActivitiesComposer userProfiles={patchedUserProfiles}>
+              <HonorReadReceiptsComposer>
+                <TypingUsersComposer userProfiles={patchedUserProfiles}>
+                  <EmitTypingComposer>
+                    <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
+                  </EmitTypingComposer>
+                </TypingUsersComposer>
+              </HonorReadReceiptsComposer>
+            </ActivitiesComposer>
+          </ACSThreadMembersComposer>
+        </ACSChatMessagesComposer>
+        {/* </ChatThreadProvider> */}
+      </ChatProvider>
+    </ACSDeclarativesComposer>
   ) : (
     children()
   );

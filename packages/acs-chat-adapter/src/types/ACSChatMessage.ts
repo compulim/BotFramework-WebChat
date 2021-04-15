@@ -1,5 +1,5 @@
-import { ChatMessage } from '@azure/communication-chat';
+import { ChatMessageWithStatus } from '@azure/acs-chat-declarative';
 
-type ACSChatMessage = ChatMessage & { clientMessageId: string };
+type ACSChatMessage = ChatMessageWithStatus;
 
 export default ACSChatMessage;
