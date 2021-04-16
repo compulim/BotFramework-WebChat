@@ -7,14 +7,14 @@ import ACSReadReceiptsContext from '../contexts/ACSReadReceiptsContext';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
-import useACSDeclaratives from '../hooks/useACSDeclaratives';
+import useACSClients from '../hooks/useACSClients';
 
 let debug;
 
 const ACSReadReceiptsComposer: FC = ({ children }) => {
   debug || (debug = createDebug('<ACSReadReceiptsComposer>', { backgroundColor: 'orange', color: 'black' }));
 
-  const { declarativeChatThreadClient } = useACSDeclaratives();
+  const { declarativeChatThreadClient } = useACSClients();
 
   // Required.
   useEffect(() => {

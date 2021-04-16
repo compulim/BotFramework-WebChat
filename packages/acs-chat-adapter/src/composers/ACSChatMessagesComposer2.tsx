@@ -6,7 +6,7 @@ import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import ACSChatMessagesContext from '../contexts/ACSChatMessagesContext';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
-import useACSDeclaratives from '../hooks/useACSDeclaratives';
+import useACSClients from '../hooks/useACSClients';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 
 let debug;
@@ -20,7 +20,7 @@ function getSequenceId(message: ChatMessageWithStatus) {
 const ACSChatMessageComposer: FC = ({ children }) => {
   debug || (debug = createDebug('<ACSChatMessagesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const { declarativeChatThreadClient } = useACSDeclaratives();
+  const { declarativeChatThreadClient } = useACSClients();
 
   // Required for conversation history.
   useEffect(() => {

@@ -6,7 +6,7 @@ import useForceRender from './useForceRender';
 import useLazyRef from './useLazyRef';
 import usePrevious from './usePrevious';
 import warn from '../utils/warn';
-import useACSDeclaratives from './useACSDeclaratives';
+import useACSClients from './useACSClients';
 import styleConsole from '../utils/styleConsole';
 
 let debug;
@@ -14,7 +14,7 @@ let debug;
 export default function useACSChatThreadSelector<T>(selector: (state: ChatThreadClientState) => T): T {
   debug || (debug = createDebug('useACSChatThreadSelector', { backgroundColor: 'cyan', color: 'black' }));
 
-  const { declarativeChatClient, threadId } = useACSDeclaratives();
+  const { declarativeChatClient, threadId } = useACSClients();
   const forceRender = useForceRender();
 
   const getValue = useCallback<() => T>(() => {

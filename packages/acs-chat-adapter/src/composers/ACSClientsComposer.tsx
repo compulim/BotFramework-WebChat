@@ -4,7 +4,7 @@ import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 
-import { default as ACSDeclarativesContext } from '../contexts/ACSDeclarativesContext';
+import { default as ACSDeclarativesContext } from '../contexts/ACSClientsContext';
 import createDebug from '../utils/debug';
 
 let debug;

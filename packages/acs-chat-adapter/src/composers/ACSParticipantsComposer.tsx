@@ -5,14 +5,14 @@ import { default as ACSParticipantsContext } from '../contexts/ACSParticipantsCo
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
-import useACSDeclaratives from '../hooks/useACSDeclaratives';
+import useACSClients from '../hooks/useACSClients';
 
 let debug;
 
 const ACSParticipantsComposer: FC = ({ children }) => {
   debug || (debug = createDebug('<ACSParticipantsComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-  const { declarativeChatThreadClient } = useACSDeclaratives();
+  const { declarativeChatThreadClient } = useACSClients();
 
   useEffect(() => {
     if (!declarativeChatThreadClient) {
