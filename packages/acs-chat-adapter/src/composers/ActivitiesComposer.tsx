@@ -45,16 +45,16 @@ const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({
 
   const [acsReadReceipts] = useACSReadReceipts();
   const [chatMessages] = useACSChatMessages();
-  const [chatParticipants] = useACSParticipants();
+  const [participants] = useACSParticipants();
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
 
   const { [userId]: { name: username } = { name: undefined } } = userProfiles;
 
-  const numOtherUsers = useMemo(
-    () => chatParticipants.filter(chatParticipant => chatParticipant.user?.communicationUserId !== userId).length,
-    [chatParticipants, userId]
-  );
+  const numOtherUsers = useMemo(() => Array.from(participants.keys()).filter(element => element !== userId).length, [
+    participants,
+    userId
+  ]);
 
   const readOnEntries = useMemo<number[]>(
     () =>
