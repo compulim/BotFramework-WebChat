@@ -47,32 +47,20 @@ const ACSChatMessageComposer: FC = ({ children }) => {
       }
 
       debug(
-        [
-          `Initial fetch done, took %c${Date.now() - now} ms%c for %c${numMessages}%c messages.`,
-          ...styleConsole('green'),
-          ...styleConsole('purple')
-        ],
-        [numMessages]
+        `Initial fetch done, took %c${Date.now() - now} ms%c for %c${numMessages}%c messages.`,
+        ...styleConsole('green'),
+        ...styleConsole('purple')
       );
     })();
 
     return () => abortController.abort();
   }, [declarativeChatThreadClient]);
 
-  // // TODO: Hack for subscribing messages. Currently the message coming in through real time notification is bugged and does not contains the message.
-  // //       This code should not be needed if the message from real time notification is going through correctly.
-  // useEffect(() => {
-  //   const handler = () => declarativeChatThreadClient.listMessages().next();
-
-  //   declarativeChatClient.on('chatMessageReceived', handler);
-
-  //   return () => declarativeChatClient.off('chatMessageReceived', handler);
-  // }, [declarativeChatClient, declarativeChatThreadClient]);
-
   const chatMessagesMap: Map<string, ChatMessageWithStatus> = useACSChatThreadSelector(
     useCallback(state => state?.chatMessages, [])
   );
 
+  // TODO: We should move this "map to array" logic inside the <ActivitiesComposer>.
   const chatMessages = useMemo(
     () =>
       chatMessagesMap

@@ -15,6 +15,9 @@ const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
   const lastReadActivityKeyRef = useRef<string>();
   const returnReadReceipt = useReturnReadReceipt();
 
+  // TODO: Revisit the logic.
+  //       I believe it should be, while the flag is true, when the last activity changed, return read receipt for it.
+
   const activitiesForCallbacksRef = useRef<Activity[]>();
 
   activitiesForCallbacksRef.current = activities;

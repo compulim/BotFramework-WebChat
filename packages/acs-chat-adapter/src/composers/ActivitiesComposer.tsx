@@ -14,7 +14,7 @@ import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSChatParticipants from '../hooks/useACSChatParticipants';
-import useACSReadReceiptsWithFetchAndSubscribe from '../hooks/useACSReadReceiptsWithFetchAndSubscribe';
+import useACSReadReceipts from '../hooks/useACSReadReceipts';
 import useACSSendMessageWithStatus from '../hooks/useACSSendMessageWithStatus';
 import useACSThreadId from '../hooks/useACSThreadId';
 import useACSUserId from '../hooks/useACSUserId';
@@ -43,7 +43,7 @@ function generateTrackingNumber(): string {
 const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'orange' }));
 
-  const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
+  const [acsReadReceipts] = useACSReadReceipts();
   const [chatMessages] = useACSChatMessages();
   const [chatParticipants] = useACSChatParticipants();
   const [threadId] = useACSThreadId();

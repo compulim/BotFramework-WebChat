@@ -35,6 +35,7 @@ const ACSChatParticipantsComposer: FC = ({ children }) => {
 
   const participantsMap = useACSChatThreadSelector(useCallback(state => state?.participants, []));
 
+  // TODO: We should move this "map to array" logic inside other composer.
   const participants = useMemo(
     () =>
       participantsMap

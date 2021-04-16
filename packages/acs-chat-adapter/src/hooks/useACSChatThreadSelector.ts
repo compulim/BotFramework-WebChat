@@ -20,12 +20,12 @@ export default function useACSChatThreadSelector<T>(selector: (state: ChatThread
   const getValue = useCallback<() => T>(() => {
     const result = selector(declarativeChatClient.state.threads.get(threadId));
 
-    debug('getValue', {
-      client: declarativeChatClient,
-      state: declarativeChatClient.state,
-      threadState: declarativeChatClient.state.threads.get(threadId),
-      result
-    });
+    // debug('getValue', {
+    //   client: declarativeChatClient,
+    //   state: declarativeChatClient.state,
+    //   threadState: declarativeChatClient.state.threads.get(threadId),
+    //   result
+    // });
 
     return result;
   }, [declarativeChatClient, selector, threadId]);

@@ -7,6 +7,7 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 're
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer2';
 import ACSChatParticipantsComposer from './composers/ACSChatParticipantsComposer';
 import ACSDeclarativesComposer from './composers/ACSDeclarativesComposer';
+import ACSReadReceiptsComposer from './composers/ACSReadReceiptsComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
 import EmitTypingComposer from './composers/EmitTypingComposer';
@@ -130,26 +131,28 @@ const ACSChatAdapter: FC<{
     <ACSDeclarativesComposer endpointURL={endpointURL} threadId={threadId} token={initialToken}>
       <ACSChatMessagesComposer>
         <ACSChatParticipantsComposer>
-          <ChatProvider
-            displayName=""
-            endpointUrl={endpointURL}
-            refreshTokenCallback={refreshTokenCallback}
-            threadId={threadId}
-            token={initialToken}
-          >
-            {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
-            {/* <ChatThreadProvider> */}
-            <ActivitiesComposer userProfiles={patchedUserProfiles}>
-              <HonorReadReceiptsComposer>
-                <TypingUsersComposer userProfiles={patchedUserProfiles}>
-                  <EmitTypingComposer>
-                    <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
-                  </EmitTypingComposer>
-                </TypingUsersComposer>
-              </HonorReadReceiptsComposer>
-            </ActivitiesComposer>
-            {/* </ChatThreadProvider> */}
-          </ChatProvider>
+          <ACSReadReceiptsComposer>
+            <ChatProvider
+              displayName=""
+              endpointUrl={endpointURL}
+              refreshTokenCallback={refreshTokenCallback}
+              threadId={threadId}
+              token={initialToken}
+            >
+              {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
+              {/* <ChatThreadProvider> */}
+              <ActivitiesComposer userProfiles={patchedUserProfiles}>
+                <HonorReadReceiptsComposer>
+                  <TypingUsersComposer userProfiles={patchedUserProfiles}>
+                    <EmitTypingComposer>
+                      <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
+                    </EmitTypingComposer>
+                  </TypingUsersComposer>
+                </HonorReadReceiptsComposer>
+              </ActivitiesComposer>
+              {/* </ChatThreadProvider> */}
+            </ChatProvider>
+          </ACSReadReceiptsComposer>
         </ACSChatParticipantsComposer>
       </ACSChatMessagesComposer>
     </ACSDeclarativesComposer>
