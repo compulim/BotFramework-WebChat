@@ -43,18 +43,9 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
     [chatClient]
   );
 
-  useEffect(() => {
-    const started = declarativeChatClient.startRealtimeNotifications();
-
-    return () => {
-      // ESLint conflicts with Prettier.
-      // eslint-disable-next-line wrap-iife
-      (async function () {
-        await started;
-        await declarativeChatClient.stopRealtimeNotifications();
-      })();
-    };
-  }, [declarativeChatClient]);
+  const [clientWithRealtimeNotifications, setClientWithRealtimeNotifications] = useState<DeclarativeChatClient>(
+    undefined
+  );
 
   // TODO: Verify if this is DeclarativeChatThreadClient or ChatThreadClient.
   const [declarativeChatThreadClient, setDeclarativeChatThreadClient] = useState<ChatThreadClient>(undefined);
@@ -74,6 +65,44 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
 
     return () => abortController.abort();
   }, [declarativeChatClient, threadId]);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    const started = declarativeChatClient.startRealtimeNotifications();
+
+    // ESLint conflicts with Prettier.
+    // eslint-disable-next-line wrap-iife
+    (async function () {
+      await started;
+
+      abortController.aborted || setClientWithRealtimeNotifications(declarativeChatClient);
+    })();
+
+    return () => {
+      abortController.abort();
+
+      // ESLint conflicts with Prettier.
+      // eslint-disable-next-line wrap-iife
+      (async function () {
+        await started;
+        await declarativeChatClient.stopRealtimeNotifications();
+      })();
+    };
+  }, [declarativeChatClient]);
+
+  // TODO: Hack for subscribing messages. Currently the message coming in through real time notification is bugged and does not contains the message.
+  //       This code should not be needed if the message from real time notification is going through correctly.
+  useEffect(() => {
+    if (!declarativeChatThreadClient || clientWithRealtimeNotifications !== declarativeChatClient) {
+      return;
+    }
+
+    const chatMessageReceivedHandler = () => declarativeChatThreadClient.listMessages().next();
+
+    declarativeChatClient.on('chatMessageReceived', chatMessageReceivedHandler);
+
+    return () => declarativeChatClient.off('chatMessageReceived', chatMessageReceivedHandler);
+  }, [declarativeChatClient, declarativeChatThreadClient, clientWithRealtimeNotifications]);
 
   const context = useMemo<{
     declarativeChatClient: DeclarativeChatClient;

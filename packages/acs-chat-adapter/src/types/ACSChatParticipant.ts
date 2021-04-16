@@ -1,5 +1,5 @@
 // TODO: Use the type from @azure/communication-chat.
-type ACSChatThreadMember = {
+type ACSChatParticipant = {
   displayName?: string;
   shareHistoryTime?: Date;
   user: {
@@ -7,4 +7,4 @@ type ACSChatThreadMember = {
   };
 };
 
-export default ACSChatThreadMember;
+export default ACSChatParticipant;

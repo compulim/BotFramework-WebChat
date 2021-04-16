@@ -13,10 +13,10 @@ import createDebug from '../utils/debug';
 import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
+import useACSChatParticipants from '../hooks/useACSChatParticipants';
 import useACSReadReceiptsWithFetchAndSubscribe from '../hooks/useACSReadReceiptsWithFetchAndSubscribe';
 import useACSSendMessageWithStatus from '../hooks/useACSSendMessageWithStatus';
 import useACSThreadId from '../hooks/useACSThreadId';
-import useACSThreadMembers from '../hooks/useACSThreadMembers';
 import useACSUserId from '../hooks/useACSUserId';
 import useMapper from '../hooks/useMapper';
 import useMemoAll from '../hooks/useMemoAll';
@@ -45,15 +45,15 @@ const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({
 
   const [acsReadReceipts] = useACSReadReceiptsWithFetchAndSubscribe();
   const [chatMessages] = useACSChatMessages();
-  const [memberUserIds] = useACSThreadMembers();
+  const [chatParticipants] = useACSChatParticipants();
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
 
   const { [userId]: { name: username } = { name: undefined } } = userProfiles;
 
   const numOtherUsers = useMemo(
-    () => memberUserIds.filter(threadMember => threadMember.user.communicationUserId !== userId).length,
-    [memberUserIds, userId]
+    () => chatParticipants.filter(chatParticipant => chatParticipant.user?.communicationUserId !== userId).length,
+    [chatParticipants, userId]
   );
 
   const readOnEntries = useMemo<number[]>(

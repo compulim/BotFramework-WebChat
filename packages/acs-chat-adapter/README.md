@@ -58,6 +58,8 @@ New feedbacks:
 
 -  Recommend to use `EventTarget` instead of `onStateChange`/`offStateChange`
 -  `sequenceId` is a string, but the content is a number
+-  Event listener code will be much simpler if it allow us to "add event listener" before async completion of "startRealtimeNotifications"
+   -  What's more, it is weird to throw exception on attaching event listeners
 
 ## Regarding send message function signature
 

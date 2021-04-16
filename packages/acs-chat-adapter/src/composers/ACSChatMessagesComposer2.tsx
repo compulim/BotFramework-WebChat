@@ -10,8 +10,6 @@ import useACSDeclaratives from '../hooks/useACSDeclaratives';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 
 let debug;
-let EMPTY_MAP;
-let PASSTHRU_FN;
 
 function getSequenceId(message: ChatMessageWithStatus) {
   // TODO: Ask ACS to change "sequenceId" from "string" to "number".
@@ -21,12 +19,15 @@ function getSequenceId(message: ChatMessageWithStatus) {
 
 const ACSChatMessageComposer: FC = ({ children }) => {
   debug || (debug = createDebug('<ACSChatMessagesComposer>', { backgroundColor: 'yellow', color: 'black' }));
-  PASSTHRU_FN || (PASSTHRU_FN = value => value);
 
-  const { declarativeChatClient, declarativeChatThreadClient } = useACSDeclaratives();
+  const { declarativeChatThreadClient } = useACSDeclaratives();
 
   // Required for conversation history.
   useEffect(() => {
+    if (!declarativeChatThreadClient) {
+      return;
+    }
+
     const abortController = new AbortController();
 
     // eslint-disable-next-line wrap-iife
@@ -35,7 +36,7 @@ const ACSChatMessageComposer: FC = ({ children }) => {
 
       debug('Initial fetch started');
 
-      let numMessages;
+      let numMessages = 0;
 
       for await (const _ of declarativeChatThreadClient.listMessages()) {
         if (abortController.signal.aborted) {
@@ -58,29 +59,31 @@ const ACSChatMessageComposer: FC = ({ children }) => {
     return () => abortController.abort();
   }, [declarativeChatThreadClient]);
 
-  // TODO: Hack for subscribing messages. Currently the message coming in through real time notification is bugged and does not contains the message.
-  //       This code should not be needed if the message from real time notification is going through correctly.
-  useEffect(() => {
-    const handler = () => declarativeChatThreadClient.listMessages().next();
+  // // TODO: Hack for subscribing messages. Currently the message coming in through real time notification is bugged and does not contains the message.
+  // //       This code should not be needed if the message from real time notification is going through correctly.
+  // useEffect(() => {
+  //   const handler = () => declarativeChatThreadClient.listMessages().next();
 
-    declarativeChatClient.on('chatMessageReceived', handler);
+  //   declarativeChatClient.on('chatMessageReceived', handler);
 
-    return () => declarativeChatClient.off('chatMessageReceived', handler);
-  }, [declarativeChatClient, declarativeChatThreadClient]);
+  //   return () => declarativeChatClient.off('chatMessageReceived', handler);
+  // }, [declarativeChatClient, declarativeChatThreadClient]);
 
   const chatMessagesMap: Map<string, ChatMessageWithStatus> = useACSChatThreadSelector(
-    useCallback(state => state?.chatMessages || EMPTY_MAP, [])
+    useCallback(state => state?.chatMessages, [])
   );
 
   const chatMessages = useMemo(
     () =>
-      Array.from(chatMessagesMap.values()).sort((x, y) => {
-        const sequenceIdX = getSequenceId(x);
-        const sequenceIdY = getSequenceId(y);
+      chatMessagesMap
+        ? Array.from(chatMessagesMap.values()).sort((x, y) => {
+            const sequenceIdX = getSequenceId(x);
+            const sequenceIdY = getSequenceId(y);
 
-        // eslint-disable-next-line no-magic-numbers
-        return sequenceIdX > sequenceIdY ? 1 : sequenceIdX < sequenceIdY ? -1 : 0;
-      }),
+            // eslint-disable-next-line no-magic-numbers
+            return sequenceIdX > sequenceIdY ? 1 : sequenceIdX < sequenceIdY ? -1 : 0;
+          })
+        : [],
     [chatMessagesMap]
   );
 

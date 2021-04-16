@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer2';
+import ACSChatParticipantsComposer from './composers/ACSChatParticipantsComposer';
 import ACSDeclarativesComposer from './composers/ACSDeclarativesComposer';
-import ACSThreadMembersComposer from './composers/ACSThreadMembersComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
 import EmitTypingComposer from './composers/EmitTypingComposer';
@@ -128,17 +128,17 @@ const ACSChatAdapter: FC<{
 
   return credentialsProvided ? (
     <ACSDeclarativesComposer endpointURL={endpointURL} threadId={threadId} token={initialToken}>
-      <ChatProvider
-        displayName=""
-        endpointUrl={endpointURL}
-        refreshTokenCallback={refreshTokenCallback}
-        threadId={threadId}
-        token={initialToken}
-      >
-        {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
-        {/* <ChatThreadProvider> */}
-        <ACSChatMessagesComposer>
-          <ACSThreadMembersComposer>
+      <ACSChatMessagesComposer>
+        <ACSChatParticipantsComposer>
+          <ChatProvider
+            displayName=""
+            endpointUrl={endpointURL}
+            refreshTokenCallback={refreshTokenCallback}
+            threadId={threadId}
+            token={initialToken}
+          >
+            {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
+            {/* <ChatThreadProvider> */}
             <ActivitiesComposer userProfiles={patchedUserProfiles}>
               <HonorReadReceiptsComposer>
                 <TypingUsersComposer userProfiles={patchedUserProfiles}>
@@ -148,10 +148,10 @@ const ACSChatAdapter: FC<{
                 </TypingUsersComposer>
               </HonorReadReceiptsComposer>
             </ActivitiesComposer>
-          </ACSThreadMembersComposer>
-        </ACSChatMessagesComposer>
-        {/* </ChatThreadProvider> */}
-      </ChatProvider>
+            {/* </ChatThreadProvider> */}
+          </ChatProvider>
+        </ACSChatParticipantsComposer>
+      </ACSChatMessagesComposer>
     </ACSDeclarativesComposer>
   ) : (
     children()

@@ -1,47 +1,49 @@
-import { useFetchThreadMembers } from '@azure/acs-ui-sdk';
-import { useThreadMembers } from '@azure/acs-ui-sdk/dist/providers/ChatThreadProvider';
-import PropTypes from 'prop-types';
-import React, { FC, useEffect } from 'react';
+// import { useFetchThreadMembers } from '@azure/acs-ui-sdk';
+// import { useThreadMembers } from '@azure/acs-ui-sdk/dist/providers/ChatThreadProvider';
+// import PropTypes from 'prop-types';
+// import React, { FC, useEffect } from 'react';
 
-import ACSChatThreadMember from '../types/ACSChatThreadMember';
-import ACSThreadMembersContext from '../contexts/ACSThreadMembersContext';
-import useMapper from '../hooks/useMapper';
+// import ACSChatThreadMember from '../types/ACSChatThreadMember';
+// import ACSThreadMembersContext from '../contexts/ACSThreadMembersContext';
+// import useMapper from '../hooks/useMapper';
 
-let EMPTY_ARRAY;
-let PASSTHRU_FN;
+// let EMPTY_ARRAY;
+// let PASSTHRU_FN;
 
-const ACSThreadMembersComposer: FC = ({ children }) => {
-  EMPTY_ARRAY || (EMPTY_ARRAY = []);
-  PASSTHRU_FN || (PASSTHRU_FN = value => value);
+// const ACSThreadMembersComposer: FC = ({ children }) => {
+//   EMPTY_ARRAY || (EMPTY_ARRAY = []);
+//   PASSTHRU_FN || (PASSTHRU_FN = value => value);
 
-  // This helper is needed because:
-  // - If fetchThreadMembers() is not called at least once, useThreadMembers() will always return empty array.
+//   // This helper is needed because:
+//   // - If fetchThreadMembers() is not called at least once, useThreadMembers() will always return empty array.
 
-  // Even fetchThreadMembers() is called, useThreadMembers() will not continue to update.
+//   // Even fetchThreadMembers() is called, useThreadMembers() will not continue to update.
 
-  // TODO: On ACS SDK, there are no useSubscribeThreadMembers() hooks.
-  const fetchThreadMembers = useFetchThreadMembers();
+//   // TODO: On ACS SDK, there are no useSubscribeThreadMembers() hooks.
+//   const fetchThreadMembers = useFetchThreadMembers();
 
-  useEffect(() => {
-    fetchThreadMembers();
-  }, [fetchThreadMembers]);
+//   // listParticipants
 
-  const result = useThreadMembers();
+//   useEffect(() => {
+//     fetchThreadMembers();
+//   }, [fetchThreadMembers]);
 
-  const threadMembers = useMapper<ACSChatThreadMember, ACSChatThreadMember>(
-    result && result.length ? result : EMPTY_ARRAY,
-    PASSTHRU_FN
-  );
+//   const result = useThreadMembers();
 
-  return <ACSThreadMembersContext.Provider value={threadMembers}>{children}</ACSThreadMembersContext.Provider>;
-};
+//   const threadMembers = useMapper<ACSChatThreadMember, ACSChatThreadMember>(
+//     result && result.length ? result : EMPTY_ARRAY,
+//     PASSTHRU_FN
+//   );
 
-ACSThreadMembersComposer.defaultProps = {
-  children: undefined
-};
+//   return <ACSThreadMembersContext.Provider value={threadMembers}>{children}</ACSThreadMembersContext.Provider>;
+// };
 
-ACSThreadMembersComposer.propTypes = {
-  children: PropTypes.any
-};
+// ACSThreadMembersComposer.defaultProps = {
+//   children: undefined
+// };
 
-export default ACSThreadMembersComposer;
+// ACSThreadMembersComposer.propTypes = {
+//   children: PropTypes.any
+// };
+
+// export default ACSThreadMembersComposer;
