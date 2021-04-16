@@ -1,8 +1,7 @@
 import { getMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
-import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 
-import Activity from '../types/Activity';
 import HonorReadReceiptsContext from '../contexts/HonorReadReceiptsContext';
 import useActivities from '../hooks/useActivities';
 import useReturnReadReceipt from '../hooks/useReturnReadReceipt';
@@ -11,49 +10,26 @@ import useReturnReadReceipt from '../hooks/useReturnReadReceipt';
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
   const [activities] = useActivities();
-  const [honorReadReceipts, setRawHonorReadReceipts] = useState(true);
-  const lastReadActivityKeyRef = useRef<string>();
+  const [honorReadReceipts, setHonorReadReceipts] = useState(true);
   const returnReadReceipt = useReturnReadReceipt();
 
-  // TODO: Revisit the logic.
-  //       I believe it should be, while the flag is true, when the last activity changed, return read receipt for it.
-
-  const activitiesForCallbacksRef = useRef<Activity[]>();
-
-  activitiesForCallbacksRef.current = activities;
-
-  const returnReadReceiptForLastActivity = useCallback(() => {
-    const { current: activities } = activitiesForCallbacksRef;
-
+  const lastActivityKeyFromOthersKey = useMemo(() => {
     for (let index = activities.length - 1; index >= 0; index--) {
       const activity = activities[index];
 
       const { key, who } = getMetadata(activity);
 
       if (who === 'others') {
-        if (lastReadActivityKeyRef.current !== key) {
-          returnReadReceipt(key);
-          lastReadActivityKeyRef.current = key;
-        }
-
-        break;
+        return key;
       }
     }
-  }, [activitiesForCallbacksRef, lastReadActivityKeyRef, returnReadReceipt]);
+  }, [activities]);
 
-  useMemo(() => honorReadReceipts && returnReadReceiptForLastActivity(), [
+  useMemo(() => honorReadReceipts && lastActivityKeyFromOthersKey && returnReadReceipt(lastActivityKeyFromOthersKey), [
     honorReadReceipts,
-    returnReadReceiptForLastActivity
+    lastActivityKeyFromOthersKey,
+    returnReadReceipt
   ]);
-
-  const setHonorReadReceipts = useCallback(
-    (nextHonorReadReceipts: boolean) => {
-      setRawHonorReadReceipts(nextHonorReadReceipts);
-
-      nextHonorReadReceipts && returnReadReceiptForLastActivity();
-    },
-    [returnReadReceiptForLastActivity, setRawHonorReadReceipts]
-  );
 
   const honorReadReceiptsContext = useMemo<[boolean, (honorReadReceipts: boolean) => void]>(
     () => [honorReadReceipts, setHonorReadReceipts],
