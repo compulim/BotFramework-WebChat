@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer2';
-import ACSChatParticipantsComposer from './composers/ACSChatParticipantsComposer';
 import ACSDeclarativesComposer from './composers/ACSDeclarativesComposer';
+import ACSParticipantsComposer from './composers/ACSParticipantsComposer';
 import ACSReadReceiptsComposer from './composers/ACSReadReceiptsComposer';
 import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
@@ -130,7 +130,7 @@ const ACSChatAdapter: FC<{
   return credentialsProvided ? (
     <ACSDeclarativesComposer endpointURL={endpointURL} threadId={threadId} token={initialToken}>
       <ACSChatMessagesComposer>
-        <ACSChatParticipantsComposer>
+        <ACSParticipantsComposer>
           <ACSReadReceiptsComposer>
             <ChatProvider
               displayName=""
@@ -153,7 +153,7 @@ const ACSChatAdapter: FC<{
               {/* </ChatThreadProvider> */}
             </ChatProvider>
           </ACSReadReceiptsComposer>
-        </ACSChatParticipantsComposer>
+        </ACSParticipantsComposer>
       </ACSChatMessagesComposer>
     </ACSDeclarativesComposer>
   ) : (

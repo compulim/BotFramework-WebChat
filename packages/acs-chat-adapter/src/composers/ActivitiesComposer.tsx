@@ -13,7 +13,7 @@ import createDebug from '../utils/debug';
 import SendMessageContext from '../contexts/SendMessageContext';
 import styleConsole from '../utils/styleConsole';
 import useACSChatMessages from '../hooks/useACSChatMessages';
-import useACSChatParticipants from '../hooks/useACSChatParticipants';
+import useACSParticipants from '../hooks/useACSParticipants';
 import useACSReadReceipts from '../hooks/useACSReadReceipts';
 import useACSSendMessageWithStatus from '../hooks/useACSSendMessageWithStatus';
 import useACSThreadId from '../hooks/useACSThreadId';
@@ -45,7 +45,7 @@ const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({
 
   const [acsReadReceipts] = useACSReadReceipts();
   const [chatMessages] = useACSChatMessages();
-  const [chatParticipants] = useACSChatParticipants();
+  const [chatParticipants] = useACSParticipants();
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
 

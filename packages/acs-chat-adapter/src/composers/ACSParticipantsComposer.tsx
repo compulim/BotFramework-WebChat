@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { FC, useCallback, useEffect, useMemo } from 'react';
 
-import { default as ACSChatParticipantsContext } from '../contexts/ACSChatParticipantsContext';
+import { default as ACSParticipantsContext } from '../contexts/ACSParticipantsContext';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
@@ -9,8 +9,8 @@ import useACSDeclaratives from '../hooks/useACSDeclaratives';
 
 let debug;
 
-const ACSChatParticipantsComposer: FC = ({ children }) => {
-  debug || (debug = createDebug('<ACSChatParticipantsComposer>', { backgroundColor: 'yellow', color: 'black' }));
+const ACSParticipantsComposer: FC = ({ children }) => {
+  debug || (debug = createDebug('<ACSParticipantsComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const { declarativeChatThreadClient } = useACSDeclaratives();
 
@@ -47,15 +47,15 @@ const ACSChatParticipantsComposer: FC = ({ children }) => {
     [participantsMap]
   );
 
-  return <ACSChatParticipantsContext.Provider value={participants}>{children}</ACSChatParticipantsContext.Provider>;
+  return <ACSParticipantsContext.Provider value={participants}>{children}</ACSParticipantsContext.Provider>;
 };
 
-ACSChatParticipantsComposer.defaultProps = {
+ACSParticipantsComposer.defaultProps = {
   children: undefined
 };
 
-ACSChatParticipantsComposer.propTypes = {
+ACSParticipantsComposer.propTypes = {
   children: PropTypes.any
 };
 
-export default ACSChatParticipantsComposer;
+export default ACSParticipantsComposer;
