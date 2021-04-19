@@ -1,12 +1,13 @@
 /* eslint no-console: "off" */
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import createDebug from '../utils/debug';
 import diffArray from '../utils/diffArray';
 import diffMap from '../utils/diffMap';
 import diffObject from '../utils/diffObject';
 import styleConsole from '../utils/styleConsole';
+import usePrevious from './usePrevious';
 
 function repeat(array, count) {
   const result = [];
@@ -20,9 +21,8 @@ function repeat(array, count) {
 
 export default function useDebugDeps<T>(depsMap: T, name: string): void {
   const debug = useMemo(() => createDebug(`useDebugDeps:${name}`, { backgroundColor: 'black' }), [name]);
-  const lastDepsMapRef = useRef<Partial<T>>({});
+  const lastDepsMap = usePrevious(depsMap) || {};
 
-  const { current: lastDepsMap } = lastDepsMapRef;
   const keys = new Set([...Object.keys(depsMap), ...Object.keys(lastDepsMap)]);
   const keysChanged = Array.from(keys).filter(key => !Object.is(depsMap[key], lastDepsMap[key]));
   const { length: numKeysChanged } = keysChanged;
@@ -62,6 +62,4 @@ export default function useDebugDeps<T>(depsMap: T, name: string): void {
           .reduce((result, key) => ({ ...result, [key]: depsMap[key] }), {})
       ]
     );
-
-  lastDepsMapRef.current = depsMap;
 }

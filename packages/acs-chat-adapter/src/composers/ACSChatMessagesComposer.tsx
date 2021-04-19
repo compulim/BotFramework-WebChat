@@ -7,9 +7,11 @@ import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import ACSChatMessagesContext from '../contexts/ACSChatMessagesContext';
 import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
-import useACSClients from '../hooks/useACSClients';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
+import useACSClients from '../hooks/useACSClients';
 import useDebounced from '../hooks/useDebounced';
+import usePrevious from '../hooks/usePrevious';
+import warn from '../utils/warn';
 
 let debug;
 
@@ -61,6 +63,17 @@ const ACSChatMessageComposer: FC = ({ children }) => {
   const chatMessages: Map<string, ChatMessageWithStatus> = useACSChatThreadSelector(
     useCallback(state => state?.chatMessages, [])
   );
+
+  const prevChatMessages = usePrevious(chatMessages);
+
+  if (chatMessages !== prevChatMessages) {
+    if (
+      JSON.stringify(Object.fromEntries((chatMessages || new Map()).entries())) ===
+      JSON.stringify(Object.fromEntries((prevChatMessages || new Map()).entries()))
+    ) {
+      warn('🔥🔥🔥 PERFORMANCE chatMessages has changed, but its content was not.', { chatMessages, prevChatMessages });
+    }
+  }
 
   // const context = useMemo(
   //   () => ({

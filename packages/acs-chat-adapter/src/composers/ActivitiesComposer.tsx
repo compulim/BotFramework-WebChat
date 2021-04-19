@@ -130,22 +130,6 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
     nextEntries = updateIn(nextEntries, [key, 'trackingNumber'], trackingNumber && (() => trackingNumber));
   }
 
-  // if (prevChatMessages !== chatMessages) {
-  //   console.log(
-  //     '!!!!!!!!!!!!!!!! chatMessages JSON changed',
-  //     JSON.stringify(Object.fromEntries((prevChatMessages || new Map()).entries())) !==
-  //       JSON.stringify(Object.fromEntries(chatMessages.entries()))
-  //   );
-  // }
-
-  // console.log('CHANGES', {
-  //   chatMessages: prevChatMessages !== chatMessages,
-  //   keyToTrackingNumber: prevKeyToTrackingNumber !== keyToTrackingNumber,
-  //   nextEntries,
-  //   numParticipant: prevNumParticipant !== numParticipant,
-  //   readOns: prevReadOns !== readOns
-  // });
-
   const activities = useMemo(
     () =>
       Object.entries(nextEntries)
@@ -189,6 +173,7 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
   // TODO: Remove this.
   useDebugDeps(
     {
+      activities,
       chatMessages,
       convert,
       keyToTrackingNumber,
