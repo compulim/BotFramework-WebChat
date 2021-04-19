@@ -56,10 +56,12 @@ ReactDOM.render(
 
 New feedbacks:
 
--  Recommend to use `EventTarget` instead of `onStateChange`/`offStateChange`
--  `sequenceId` is a string, but the content is a number
+-  ~Recommend to use `EventTarget` instead of `onStateChange`/`offStateChange`~
+-  ~`sequenceId` is a string, but the content is a number~
 -  Event listener code will be much simpler if it allow us to "add event listener" before async completion of "startRealtimeNotifications"
    -  What's more, it is weird to throw exception on attaching event listeners
+-  After calling `listMessages`, it is adding message to the `state` one-by-one, which should be batched to improve UI perf
+-  Need `userId`, currently, copied some code from UI SDK
 
 ## Regarding send message function signature
 

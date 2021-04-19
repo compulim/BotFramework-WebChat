@@ -75,11 +75,11 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
 
         return otherReadOns;
       }, {}),
-    [readReceipts]
+    [readReceipts, userId]
   );
 
-  const prevOtherReadOns = usePrevious(otherReadOns);
   const prevNumParticipant = usePrevious(numParticipant);
+  const prevOtherReadOns = usePrevious(otherReadOns);
 
   if (prevOtherReadOns !== otherReadOns || prevNumParticipant !== numParticipant) {
     for (const [
@@ -89,7 +89,9 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
       }
     ] of Object.entries(nextEntries)) {
       const numOtherReader = Object.values(otherReadOns).filter(readOn => readOn >= +createdOn).length;
-      const readBy = !numOtherReader ? undefined : numOtherReader === numParticipant ? 'all' : 'some';
+
+      // numParticipant includes self, so we need to add 1 to "other readers".
+      const readBy = !numOtherReader ? undefined : numOtherReader + 1 === numParticipant ? 'all' : 'some';
 
       nextEntries = updateIn(nextEntries, [key, 'readBy'], readBy && (() => readBy));
     }
@@ -152,6 +154,7 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
       keyToTrackingNumber,
       nextEntries,
       numParticipant,
+      otherReadOns,
       prevChatMessages,
       readReceipts
     },

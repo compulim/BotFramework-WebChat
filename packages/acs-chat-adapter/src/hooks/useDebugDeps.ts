@@ -39,7 +39,8 @@ export default function useDebugDeps<T>(depsMap: T, name: string): void {
         'Unchanged',
         Array.from(keys)
           .filter(key => !keysChanged.includes(key))
-          .reduce((result, key) => ({ ...result, [key]: { from: lastDepsMap[key], to: depsMap[key] } }), {})
+          // .reduce((result, key) => ({ ...result, [key]: { from: lastDepsMap[key], to: depsMap[key] } }), {})
+          .reduce((result, key) => ({ ...result, [key]: depsMap[key] }), {})
       ]
     );
 
