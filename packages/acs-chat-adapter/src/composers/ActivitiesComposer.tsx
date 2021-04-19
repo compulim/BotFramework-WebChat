@@ -18,6 +18,7 @@ import useDebugDeps from '../hooks/useDebugDeps';
 import useKeyToTrackingNumber from '../hooks/useKeyToTrackingNumber';
 import usePrevious from '../hooks/usePrevious';
 import UserProfiles from '../types/UserProfiles';
+import diffObject from '../utils/diffObject';
 
 let EMPTY_MAP;
 
@@ -91,8 +92,12 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
   }
 
   if (prevKeyToTrackingNumber !== keyToTrackingNumber) {
-    for (const key of Object.keys(keyToTrackingNumber)) {
+    for (const [key, [, to]] of Object.entries(diffObject(prevKeyToTrackingNumber || {}, keyToTrackingNumber))) {
       nextEntries = updateIn(nextEntries, [key, 'dirty'], () => true);
+
+      if (!to) {
+        nextEntries = updateIn(nextEntries, [key, 'trackingNumber']);
+      }
     }
   }
 
