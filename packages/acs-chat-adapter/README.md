@@ -62,6 +62,7 @@ New feedbacks:
    -  What's more, it is weird to throw exception on attaching event listeners
 -  After calling `listMessages`, it is adding message to the `state` one-by-one, which should be batched to improve UI perf
 -  Need `userId`, currently, copied some code from UI SDK
+-  Need to differentiate if the message is from conversation history or not (for accessibility)
 
 ## Regarding send message function signature
 
