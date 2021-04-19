@@ -3,8 +3,8 @@ import React, { FC, useMemo, useRef } from 'react';
 
 import createDebug from '../utils/debug';
 import EmitTypingContext from '../contexts/EmitTypingContext';
-import useACSSendTypingNotification from '../hooks/useACSSendTypingNotification';
 import styleConsole from '../utils/styleConsole';
+import useACSSendTypingNotification from '../hooks/useACSSendTypingNotification';
 
 const ACS_EMIT_TYPING_INTERVAL = 5000;
 

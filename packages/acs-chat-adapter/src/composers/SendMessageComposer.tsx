@@ -5,13 +5,14 @@ import random from 'math-random';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import ACSChatMessage from '../types/ACSChatMessage';
+import createCriticalSection from '../utils/createCriticalSection';
 import diffMap from '../utils/diffMap';
 import SendMessageContext from '../contexts/SendMessageContext2';
+import updateIn from 'simple-update-in';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSClients from '../hooks/useACSClients';
 import useACSUserId from '../hooks/useACSUserId';
 import usePrevious from '../hooks/usePrevious';
-import updateIn from 'simple-update-in';
 
 type Deferred<T> = {
   promise: Promise<T>;
@@ -57,13 +58,13 @@ const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
     }
   }
 
-  const sendMessage = useCallback(
-    (content: string) => {
+  const sendMessage = useMemo(() => {
+    const enterCriticalSection = createCriticalSection<void>();
+
+    return (content: string) => {
       const trackingNumber = generateTrackingNumber();
 
-      // ESLint conflict with Prettier
-      // eslint-disable-next-line wrap-iife
-      (async function () {
+      enterCriticalSection(async () => {
         // TODO: We should set up a critical section on this async function.
         const { promise, reject, resolve }: Deferred<string> = createDeferred();
 
@@ -73,17 +74,18 @@ const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
 
         const key = await promise;
 
-        setKeyToTrackingNumber(keyToTrackingNumber => updateIn(keyToTrackingNumber, [key], () => trackingNumber));
+        abortController.signal.aborted ||
+          setKeyToTrackingNumber(keyToTrackingNumber => updateIn(keyToTrackingNumber, [key], () => trackingNumber));
 
         await sent;
 
-        setKeyToTrackingNumber(keyToTrackingNumber => updateIn(keyToTrackingNumber, [key]));
-      })();
+        abortController.signal.aborted ||
+          setKeyToTrackingNumber(keyToTrackingNumber => updateIn(keyToTrackingNumber, [key]));
+      });
 
       return trackingNumber;
-    },
-    [declarativeChatThreadClient, setKeyToTrackingNumber]
-  );
+    };
+  }, [declarativeChatThreadClient, setKeyToTrackingNumber]);
 
   const resend = useCallback(
     (trackingNumber: string) => {
