@@ -1,4 +1,5 @@
 /* eslint no-magic-numbers: ["error", { "ignore": [-1, 0, 1] }] */
+/* eslint complexity: "off" */
 
 import { ReadBy, updateMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
@@ -93,7 +94,9 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
 
   if (prevKeyToTrackingNumber !== keyToTrackingNumber) {
     for (const [key, [, to]] of Object.entries(diffObject(prevKeyToTrackingNumber || {}, keyToTrackingNumber))) {
-      nextEntries = updateIn(nextEntries, [key, 'dirty'], () => true);
+      if (nextEntries[key]) {
+        nextEntries = updateIn(nextEntries, [key, 'dirty'], () => true);
+      }
 
       if (!to) {
         nextEntries = updateIn(nextEntries, [key, 'trackingNumber']);
@@ -107,18 +110,41 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
 
   for (const [key] of Object.entries(nextEntries).filter(([, { dirty }]) => dirty)) {
     const chatMessage = chatMessages.get(key);
+
+    if (!chatMessage) {
+      nextEntries = updateIn(nextEntries, [key]);
+
+      continue;
+    }
+
     const { createdOn, sequenceId } = chatMessage;
     const { [key]: trackingNumber } = keyToTrackingNumber;
 
     const numReader = Object.values(readOns).filter(readOn => readOn >= +createdOn).length;
     const readBy = !numReader ? undefined : numReader === numParticipant ? 'all' : 'some';
 
-    nextEntries = updateIn(nextEntries, [key, 'dirty']);
     nextEntries = updateIn(nextEntries, [key, 'chatMessage'], () => chatMessage);
+    nextEntries = updateIn(nextEntries, [key, 'dirty']);
     nextEntries = updateIn(nextEntries, [key, 'readBy'], readBy && (() => readBy));
     nextEntries = updateIn(nextEntries, [key, 'sequenceNumber'], () => sequenceIdToSequenceNumber(sequenceId));
     nextEntries = updateIn(nextEntries, [key, 'trackingNumber'], trackingNumber && (() => trackingNumber));
   }
+
+  // if (prevChatMessages !== chatMessages) {
+  //   console.log(
+  //     '!!!!!!!!!!!!!!!! chatMessages JSON changed',
+  //     JSON.stringify(Object.fromEntries((prevChatMessages || new Map()).entries())) !==
+  //       JSON.stringify(Object.fromEntries(chatMessages.entries()))
+  //   );
+  // }
+
+  // console.log('CHANGES', {
+  //   chatMessages: prevChatMessages !== chatMessages,
+  //   keyToTrackingNumber: prevKeyToTrackingNumber !== keyToTrackingNumber,
+  //   nextEntries,
+  //   numParticipant: prevNumParticipant !== numParticipant,
+  //   readOns: prevReadOns !== readOns
+  // });
 
   const activities = useMemo(
     () =>

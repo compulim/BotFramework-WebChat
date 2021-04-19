@@ -65,13 +65,16 @@ const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
       const trackingNumber = generateTrackingNumber();
 
       enterCriticalSection(async () => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
         // TODO: We should set up a critical section on this async function.
         const { promise, reject, resolve }: Deferred<string> = createDeferred();
 
         deliveryReportsRef.current.push({ content, promise, reject, resolve, trackingNumber });
 
         const sent = declarativeChatThreadClient.sendMessage({ content });
-
         const key = await promise;
 
         abortController.signal.aborted ||
@@ -85,7 +88,7 @@ const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
 
       return trackingNumber;
     };
-  }, [declarativeChatThreadClient, setKeyToTrackingNumber]);
+  }, [abortController, declarativeChatThreadClient, setKeyToTrackingNumber]);
 
   const resend = useCallback(
     (trackingNumber: string) => {

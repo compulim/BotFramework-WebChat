@@ -2,12 +2,12 @@ import { ChatThreadClientState } from '@azure/acs-chat-declarative';
 import { useCallback, useEffect } from 'react';
 
 import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
+import useACSClients from './useACSClients';
 import useForceRender from './useForceRender';
 import useLazyRef from './useLazyRef';
 import usePrevious from './usePrevious';
 import warn from '../utils/warn';
-import useACSClients from './useACSClients';
-import styleConsole from '../utils/styleConsole';
 
 let debug;
 

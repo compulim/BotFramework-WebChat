@@ -64,6 +64,8 @@ New feedbacks:
 -  Need `userId`, currently, copied some code from UI SDK
 -  Need to differentiate if the message is from conversation history or not (for accessibility)
 -  When sending a message, the temporary message will be updated, but the key will also changed, caused a deletion + addition, instead of a single modification
+-  In some cases, e.g. initial fetch, it seems the `state.listMessages` has changed, but when JSON serializing them and check for difference, nothing was changed
+   -  This is the code used for serializing: `JSON.stringify(Object.fromEntries(chatMessages.entries()))`
 
 ## Regarding send message function signature
 
