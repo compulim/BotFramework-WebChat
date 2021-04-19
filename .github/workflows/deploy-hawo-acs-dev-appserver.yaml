@@ -30,6 +30,7 @@ jobs:
           npm run build
         env:
           NODE_ENV: production
+          NODE_OPTIONS: --optimize-for-size
 
       - run: mkdir -p artifacts
 
