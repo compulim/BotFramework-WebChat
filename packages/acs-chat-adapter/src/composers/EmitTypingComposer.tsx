@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { FC, useMemo, useRef } from 'react';
+import React, { FC, useCallback, useMemo, useRef } from 'react';
 
 import createDebug from '../utils/debug';
 import EmitTypingContext from '../contexts/EmitTypingContext';
@@ -15,20 +15,27 @@ let debug;
 const EmitTypingComposer: FC<{ children: any }> = ({ children }) => {
   debug || (debug = createDebug('<EmitTypingComposer>', { backgroundColor: 'orange' }));
 
+  const debugNumTypingSentRef = useRef<number>();
+  const debugTypingStartRef = useRef<number>();
   const sendTypingIntervalRef = useRef<NodeJS.Timeout>();
 
   // TODO: ACS should support stop typing.
-  const sendTypingNotification = useACSSendTypingNotification();
+  const acsSendTypingNotification = useACSSendTypingNotification();
+
+  const sendTypingNotification = useCallback(() => {
+    debugNumTypingSentRef.current++;
+
+    return acsSendTypingNotification();
+  }, [acsSendTypingNotification]);
 
   const emitTyping = useMemo(
     () => (typing: boolean) => {
-      debug(
-        [`emitTyping(%c${typing}%c)`, ...styleConsole('green')],
-        [{ sendTypingInterval: sendTypingIntervalRef.current, typing }]
-      );
-
       if (typing) {
         if (!sendTypingIntervalRef.current) {
+          debug('Start sending typing.');
+
+          debugNumTypingSentRef.current = 0;
+          debugTypingStartRef.current = Date.now();
           sendTypingIntervalRef.current = setInterval(sendTypingNotification, ACS_EMIT_TYPING_INTERVAL);
 
           sendTypingNotification();
@@ -37,6 +44,14 @@ const EmitTypingComposer: FC<{ children: any }> = ({ children }) => {
         if (sendTypingIntervalRef.current) {
           clearInterval(sendTypingIntervalRef.current);
           sendTypingIntervalRef.current = undefined;
+
+          debug(
+            `Stopping sending typing after %c${debugNumTypingSentRef.current} signals%c and %c${
+              Date.now() - debugTypingStartRef.current
+            } ms%c.`,
+            ...styleConsole('purple'),
+            ...styleConsole('green')
+          );
         }
       }
     },
