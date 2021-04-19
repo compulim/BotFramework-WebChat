@@ -27,10 +27,9 @@ jobs:
 
       - run: |
           cd packages/acs-app
-          npm run build
+          node --optimize-for-size node_modules/.bin/react-scripts build
         env:
           NODE_ENV: production
-          NODE_OPTIONS: --optimize-for-size
 
       - run: mkdir -p artifacts
 
