@@ -10,9 +10,11 @@ import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 import useACSClients from '../hooks/useACSClients';
 
 let debug;
+let EMPTY_ARRAY;
 
 const ACSReadReceiptsComposer: FC = ({ children }) => {
   debug || (debug = createDebug('<ACSReadReceiptsComposer>', { backgroundColor: 'orange', color: 'black' }));
+  EMPTY_ARRAY || (EMPTY_ARRAY = []);
 
   const { declarativeChatThreadClient } = useACSClients();
 
@@ -50,7 +52,9 @@ const ACSReadReceiptsComposer: FC = ({ children }) => {
     return () => abortController.abort();
   }, [declarativeChatThreadClient]);
 
-  const readReceipts: ACSReadReceipt[] = useACSChatThreadSelector(useCallback(state => state?.readReceipts, []));
+  const readReceipts: ACSReadReceipt[] = useACSChatThreadSelector(
+    useCallback(state => state?.readReceipts || EMPTY_ARRAY, [])
+  );
 
   debug([`Got %c${readReceipts?.length || 0} read receipts%c.`, ...styleConsole('purple')], [{ readReceipts }]);
 

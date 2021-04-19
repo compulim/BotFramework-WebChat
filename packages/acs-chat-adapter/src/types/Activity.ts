@@ -3,7 +3,6 @@ import { ChatMessage } from '@azure/communication-chat';
 
 type ACSChannelData = {
   'acs:chat-message-id': string;
-
   'acs:debug:chat-message': ChatMessage;
 
   /** Client message ID of an outgoing activity. This ID is local and may not be delivered to the chat provider. */

@@ -75,9 +75,9 @@ const SendStatus = ({ activity }) => {
 SendStatus.propTypes = {
   activity: PropTypes.shape({
     channelData: PropTypes.shape({
-      'webchat:delivery-status': PropTypes.string.isRequired,
-      'webchat:legacy:client-timestamp': PropTypes.string.isRequired,
-      'webchat:tracking-number': PropTypes.string.isRequired
+      'webchat:delivery-status': PropTypes.string.isRequired
+      // 'webchat:legacy:client-timestamp': PropTypes.string.isRequired,
+      // 'webchat:tracking-number': PropTypes.string.isRequired
     }).isRequired
   }).isRequired
 };

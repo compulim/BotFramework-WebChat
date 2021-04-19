@@ -2,34 +2,48 @@ import { getMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React, { FC, useMemo, useState } from 'react';
 
+import createDebug from '../utils/debug';
 import HonorReadReceiptsContext from '../contexts/HonorReadReceiptsContext';
+import styleConsole from '../utils/styleConsole';
+import useACSSendReadReceipt from '../hooks/useACSSendReadReceipt';
 import useActivities from '../hooks/useActivities';
-import useReturnReadReceipt from '../hooks/useReturnReadReceipt';
+
+let debug;
 
 // TODO: We should type "children" prop.
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
+  debug || (debug = createDebug('HonorReadReceiptsComposer', { backgroundColor: 'yellow', color: 'black' }));
+
   const [activities] = useActivities();
   const [honorReadReceipts, setHonorReadReceipts] = useState(true);
-  const returnReadReceipt = useReturnReadReceipt();
+  const acsSendReadReceipt = useACSSendReadReceipt();
 
-  const lastActivityKeyFromOthersKey = useMemo(() => {
+  const lastChatMessageIdFromOthers = useMemo(() => {
     for (let index = activities.length - 1; index >= 0; index--) {
       const activity = activities[index];
 
-      const { key, who } = getMetadata(activity);
+      const { who } = getMetadata(activity);
 
       if (who === 'others') {
-        return key;
+        return activity.channelData['acs:chat-message-id'];
       }
     }
   }, [activities]);
 
-  useMemo(() => honorReadReceipts && lastActivityKeyFromOthersKey && returnReadReceipt(lastActivityKeyFromOthersKey), [
-    honorReadReceipts,
-    lastActivityKeyFromOthersKey,
-    returnReadReceipt
-  ]);
+  useMemo(async () => {
+    if (honorReadReceipts && lastChatMessageIdFromOthers) {
+      const now = Date.now();
+
+      await acsSendReadReceipt(lastChatMessageIdFromOthers);
+
+      debug(
+        `Read receipt returned for message %c${lastChatMessageIdFromOthers}%c, took %c${Date.now() - now} ms%c.`,
+        ...styleConsole('purple'),
+        ...styleConsole('green')
+      );
+    }
+  }, [honorReadReceipts, lastChatMessageIdFromOthers, acsSendReadReceipt]);
 
   const honorReadReceiptsContext = useMemo<[boolean, (honorReadReceipts: boolean) => void]>(
     () => [honorReadReceipts, setHonorReadReceipts],

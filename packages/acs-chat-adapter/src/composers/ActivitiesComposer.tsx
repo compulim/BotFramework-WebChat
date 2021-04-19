@@ -1,297 +1,184 @@
-import { DeliveryStatus, ReadBy, updateMetadata } from 'botframework-webchat-core';
-import AbortController from 'abort-controller-es5';
+/* eslint no-magic-numbers: ["error", { "ignore": [-1, 0, 1] }] */
+
+import { ReadBy, updateMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
-import random from 'math-random';
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
 import ACSChatMessage from '../types/ACSChatMessage';
 import ActivitiesContext from '../contexts/ActivitiesContext';
-import Activity from '../types/Activity';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
-import createDebug from '../utils/debug';
-import SendMessageContext from '../contexts/SendMessageContext';
-import styleConsole from '../utils/styleConsole';
+import diffMap from '../utils/diffMap';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSParticipants from '../hooks/useACSParticipants';
 import useACSReadReceipts from '../hooks/useACSReadReceipts';
-import useACSSendMessageWithStatus from '../hooks/useACSSendMessageWithStatus';
 import useACSThreadId from '../hooks/useACSThreadId';
 import useACSUserId from '../hooks/useACSUserId';
-import useMapper from '../hooks/useMapper';
-import useMemoAll from '../hooks/useMemoAll';
+import useDebugDeps from '../hooks/useDebugDeps';
+import useKeyToTrackingNumber from '../hooks/useKeyToTrackingNumber';
+import usePrevious from '../hooks/usePrevious';
 import UserProfiles from '../types/UserProfiles';
 
-let debug;
+let EMPTY_MAP;
 
-type DeliveryReports = {
-  [trackingNumber: string]: {
-    clientMessageId: string;
-    deliveryStatus: DeliveryStatus;
-    message: string;
-    resent?: true;
-  };
-};
-
-function generateTrackingNumber(): string {
-  // eslint-disable-next-line no-magic-numbers
-  return `t-${random().toString(36).substr(2, 10)}`;
-}
-
-// TODO: We should type "children" prop.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
-  debug || (debug = createDebug('<ActivitiesComposer>', { backgroundColor: 'orange' }));
+const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
+  EMPTY_MAP || (EMPTY_MAP = new Map());
 
-  const [acsReadReceipts] = useACSReadReceipts();
   const [chatMessages] = useACSChatMessages();
+  const [keyToTrackingNumber] = useKeyToTrackingNumber();
   const [participants] = useACSParticipants();
+  const [readReceipts] = useACSReadReceipts();
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
+  const entriesRef = useRef<{
+    [id: string]: { chatMessage: ACSChatMessage; readBy: ReadBy; sequenceNumber: number; trackingNumber: string };
+  }>({});
 
-  const { [userId]: { name: username } = { name: undefined } } = userProfiles;
-
-  const numOtherUsers = useMemo(() => Array.from(participants.keys()).filter(element => element !== userId).length, [
-    participants,
-    userId
+  const convert = useMemo(() => createACSMessageToWebChatActivityConverter({ threadId, userId, userProfiles }), [
+    threadId,
+    userId,
+    userProfiles
   ]);
+  const numParticipant = useMemo(() => participants?.size || 0, [participants]);
+  const prevChatMessages = usePrevious(chatMessages);
+  let { current: nextEntries } = entriesRef;
 
-  const readOnEntries = useMemo<number[]>(
-    () =>
-      Object.values(
-        acsReadReceipts.reduce<{ [userId: string]: number }>((readReceipts, acsReadReceipt) => {
-          // TODO: Fix the "any" type.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const memberUserId = (acsReadReceipt.sender as any).communicationUserId;
+  if (prevChatMessages !== chatMessages) {
+    for (const [key, [, to]] of diffMap<string, ACSChatMessage>(
+      prevChatMessages || EMPTY_MAP,
+      chatMessages || EMPTY_MAP
+    ).entries()) {
+      if (!to) {
+        nextEntries = updateIn(nextEntries, [key]);
+      } else {
+        const { sequenceId } = to;
 
-          // Do not count self for reader counter.
-          if (memberUserId !== userId) {
-            readReceipts[memberUserId] = Math.max(readReceipts[memberUserId] || 0, +acsReadReceipt.readOn);
-          }
-
-          return readReceipts;
-        }, {})
-      ),
-    [acsReadReceipts, userId]
-  );
-
-  const abortController = useMemo(() => new AbortController(), []);
-  const acsSendMessageWithDelivery = useACSSendMessageWithStatus(username);
-
-  useEffect(() => () => abortController.abort(), [abortController]);
-
-  const [deliveryReports, setDeliveryReports] = useState<DeliveryReports>({});
-
-  const sendMessageWithTrackingNumber = useCallback(
-    (message: string) => {
-      const trackingNumber = generateTrackingNumber();
-
-      setDeliveryReports(deliveryReports => updateIn(deliveryReports, [trackingNumber, 'message'], () => message));
-
-      // TODO: Prettier is conflicting with ESLint on "wrap-iife" rule.
-      // eslint-disable-next-line wrap-iife
-      (async function () {
-        let clientMessageId: string;
-
-        try {
-          clientMessageId = await acsSendMessageWithDelivery(message, clientMessageIdAtQueueTime => {
-            if (abortController.signal.aborted) {
-              return;
-            }
-
-            if (clientMessageId) {
-              return debug(
-                [
-                  `🔥🔥🔥 %cASSERTION%c acsSendMessageWithDelivery() MUST NOT resolve before calling progressCallback()`,
-                  ...styleConsole('red')
-                ],
-                [{ clientMessageIdAtDelivery: clientMessageId, clientMessageIdAtQueueTime, trackingNumber }]
-              );
-            }
-
-            clientMessageId = clientMessageIdAtQueueTime;
-
-            setDeliveryReports(deliveryReports => {
-              deliveryReports = updateIn(deliveryReports, [trackingNumber, 'clientMessageId'], () => clientMessageId);
-
-              return updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'sending');
-            });
-          });
-        } catch (error) {
-          if (abortController.signal.aborted) {
-            return;
-          }
-
-          debug(['%cFailed to send message%c', ...styleConsole('red')], [{ error, message }]);
-
-          setDeliveryReports(deliveryReports => {
-            if (clientMessageId) {
-              deliveryReports = updateIn(deliveryReports, [trackingNumber, 'clientMessageId'], () => clientMessageId);
-            }
-
-            return updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'error');
-          });
-
-          return;
-        }
-
-        if (abortController.signal.aborted) {
-          return;
-        }
-
-        setDeliveryReports(
-          deliveryReports => updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'sent')
-          // TODO: When testing retry, use the line below to inject error artificially.
-          // updateIn(deliveryReports, [trackingNumber, 'deliveryStatus'], () => 'error')
+        nextEntries = updateIn(nextEntries, [key, 'chatMessage'], () => to);
+        nextEntries = updateIn(nextEntries, [key, 'sequenceNumber'], () =>
+          typeof sequenceId === 'number'
+            ? sequenceId
+            : typeof sequenceId === 'string' && sequenceId
+            ? +sequenceId
+            : Infinity
         );
-      })();
-
-      return trackingNumber;
-    },
-    [abortController, acsSendMessageWithDelivery, setDeliveryReports]
-  );
-
-  // Perf: decouple for callbacks
-  const deliveryReportsForCallbacksRef = useRef<DeliveryReports>();
-
-  deliveryReportsForCallbacksRef.current = deliveryReports;
-
-  const resend = useCallback(
-    (trackingNumber: string) => {
-      const deliveryReport = deliveryReportsForCallbacksRef.current[trackingNumber];
-
-      if (!deliveryReport) {
-        throw new Error(`Failed to resend, cannot find delivery with tracking number "${trackingNumber}".`);
       }
+    }
+  }
 
-      // TODO: ACS should have a way to do resend. The resend should overwrite/remove the message that failed to send, while keeping the same "clientMessageId".
-      setDeliveryReports(deliveryReports => updateIn(deliveryReports, [trackingNumber, 'resent'], () => true));
-
-      return sendMessageWithTrackingNumber(deliveryReport.message);
-    },
-    [deliveryReportsForCallbacksRef, sendMessageWithTrackingNumber, setDeliveryReports]
-  );
-
-  const makeTuple = useCallback(
-    (
-      chatMessage: ACSChatMessage,
-      readBy: ReadBy,
-      deliveryStatus: DeliveryStatus,
-      trackingNumber?: string
-    ): [ACSChatMessage, ReadBy, DeliveryStatus, string] => [chatMessage, readBy, deliveryStatus, trackingNumber],
-    []
-  );
-
-  const buildEntries = useCallback(
-    tuple =>
-      chatMessages.reduce((entries, chatMessage) => {
-        const { clientMessageId, createdOn } = chatMessage;
-        const numReaders = readOnEntries.reduce((count, readOn) => (readOn >= +createdOn ? count + 1 : count), 0);
-        const readBy: ReadBy = !numReaders ? undefined : numOtherUsers === numReaders ? 'all' : 'some';
-
-        // On ACS, if the message contains "clientMessageId", it is a message sent from the current session.
-        // A message could have sender same as current user, but the message could be from another session (e.g. page navigation).
-
-        let deliveryStatus;
-        let resent;
-        let trackingNumber;
-
-        if (clientMessageId) {
-          [trackingNumber, { deliveryStatus, resent } = { deliveryStatus: undefined, resent: undefined }] =
-            Object.entries(deliveryReports).find(
-              ([_, deliveryReport]) => deliveryReport.clientMessageId === clientMessageId
-            ) || [];
+  const otherReadOns = useMemo(
+    () =>
+      readReceipts.reduce<{ [userId: string]: number }>((otherReadOns, { readOn, sender }) => {
+        if (sender?.communicationUserId && sender?.communicationUserId !== userId) {
+          otherReadOns[sender.communicationUserId] = Math.max(otherReadOns[sender.communicationUserId] || 0, +readOn);
         }
 
-        // TODO: ACS should do resend internally so it don't create a new message on resend.
-        //       Since ACS didn't implement it yet, internally, we will hide the one that is marked as resent.
-        //       Since we hid the failed message, the resend message is a new one and will be appended to the transcript and may reorder it wrongly.
-        resent || entries.push(tuple(chatMessage, readBy, deliveryStatus, trackingNumber));
-
-        return entries;
-      }, []),
-    [chatMessages, deliveryReports, numOtherUsers, readOnEntries]
+        return otherReadOns;
+      }, {}),
+    [readReceipts]
   );
 
-  // The "entries" array will be regenerated on every render loop.
-  // The array will be used to construct the final Activity[] with all channel data attached.
-  const entries = useMemoAll<
-    [ACSChatMessage, ReadBy, DeliveryStatus, string],
-    [ACSChatMessage, ReadBy, DeliveryStatus, string][]
-  >(makeTuple, buildEntries);
+  const prevOtherReadOns = usePrevious(otherReadOns);
+  const prevNumParticipant = usePrevious(numParticipant);
 
-  const debugConversionsRef = useRef<
+  if (prevOtherReadOns !== otherReadOns || prevNumParticipant !== numParticipant) {
+    for (const [
+      key,
+      {
+        chatMessage: { createdOn }
+      }
+    ] of Object.entries(nextEntries)) {
+      const numOtherReader = Object.values(otherReadOns).filter(readOn => readOn >= +createdOn).length;
+      const readBy = !numOtherReader ? undefined : numOtherReader === numParticipant ? 'all' : 'some';
+
+      nextEntries = updateIn(nextEntries, [key, 'readBy'], readBy && (() => readBy));
+    }
+  }
+
+  const prevKeyToTrackingNumber = usePrevious(keyToTrackingNumber);
+
+  if (prevKeyToTrackingNumber !== keyToTrackingNumber) {
+    for (const key of Object.keys(nextEntries)) {
+      const trackingNumber = keyToTrackingNumber[key];
+
+      nextEntries = updateIn(nextEntries, [key, 'trackingNumber'], trackingNumber && (() => trackingNumber));
+    }
+  }
+
+  const activities = useMemo(
+    () =>
+      Object.entries(nextEntries)
+        .sort(
+          (
+            [
+              ,
+              {
+                chatMessage: { createdOn: createdOnX },
+                sequenceNumber: sequenceNumberX
+              }
+            ],
+            [
+              ,
+              {
+                chatMessage: { createdOn: createdOnY },
+                sequenceNumber: sequenceNumberY
+              }
+            ]
+          ) =>
+            sequenceNumberX > sequenceNumberY
+              ? 1
+              : sequenceNumberX < sequenceNumberY
+              ? -1
+              : createdOnX > createdOnY
+              ? 1
+              : createdOnX < createdOnY
+              ? -1
+              : 0
+        )
+        .map(([key, { chatMessage, readBy, trackingNumber }]) =>
+          updateMetadata(convert(chatMessage), {
+            key,
+            readBy,
+            trackingNumber
+          })
+        ),
+    [convert, nextEntries]
+  );
+
+  // TODO: Remove this.
+  useDebugDeps(
     {
-      activity: Activity;
-      chatMessage: ACSChatMessage;
-      deliveryStatus?: DeliveryStatus;
-      readBy?: ReadBy;
-      trackingNumber?: string;
-    }[]
-  >();
-
-  debugConversionsRef.current = [];
-
-  const convertToActivities = useMemo(() => {
-    const convert = createACSMessageToWebChatActivityConverter({ threadId, userId, userProfiles });
-
-    return ([chatMessage, readBy, deliveryStatus, trackingNumber]: [
-      ACSChatMessage,
-      ReadBy,
-      DeliveryStatus,
-      string
-    ]) => {
-      let activity = convert(chatMessage);
-
-      activity = updateMetadata(activity, {
-        deliveryStatus: deliveryStatus || undefined,
-        readBy,
-        trackingNumber: trackingNumber || undefined
-      });
-
-      debugConversionsRef.current.push({ activity, chatMessage, readBy, deliveryStatus, trackingNumber });
-
-      return activity;
-    };
-  }, [threadId, userId, userProfiles]);
-
-  const activities = useMapper<[ACSChatMessage, ReadBy, DeliveryStatus, string], Activity>(
-    entries,
-    convertToActivities
+      chatMessages,
+      keyToTrackingNumber,
+      nextEntries,
+      numParticipant,
+      prevChatMessages,
+      readReceipts
+    },
+    'ActivitiesComposer'
   );
 
-  debugConversionsRef.current.length &&
-    debug(
-      [`%c${debugConversionsRef.current.length} conversions%c done.`, ...styleConsole('purple')],
-      [{ conversions: debugConversionsRef.current }]
-    );
+  if (nextEntries !== entriesRef.current) {
+    entriesRef.current = nextEntries;
+  }
 
-  const sendMessageContext = useMemo(
-    () => ({
-      resend,
-      sendMessage: sendMessageWithTrackingNumber
-    }),
-    [resend, sendMessageWithTrackingNumber]
-  );
-
-  return (
-    <ActivitiesContext.Provider value={activities}>
-      <SendMessageContext.Provider value={sendMessageContext}>{children}</SendMessageContext.Provider>
-    </ActivitiesContext.Provider>
-  );
+  return <ActivitiesContext.Provider value={activities}>{children}</ActivitiesContext.Provider>;
 };
 
-ActivitiesComposer.defaultProps = {};
+ActivitiesComposer2.defaultProps = {
+  children: undefined,
+  userProfiles: undefined
+};
 
-ActivitiesComposer.propTypes = {
-  children: PropTypes.any.isRequired,
+ActivitiesComposer2.propTypes = {
+  children: PropTypes.any,
   userProfiles: PropTypes.objectOf(
     PropTypes.shape({
       image: PropTypes.string,
       initials: PropTypes.string,
       name: PropTypes.string
     })
-  ).isRequired
+  )
 };
 
-export default ActivitiesComposer;
+export default ActivitiesComposer2;

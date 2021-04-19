@@ -1,3 +1,5 @@
+/* eslint complexity: ["error", 30] */
+
 import { EventActivity, MessageActivity, updateMetadata } from 'botframework-webchat-core';
 
 import ACSChatMessage from '../types/ACSChatMessage';
@@ -31,25 +33,18 @@ export default function createACSMessageToWebChatActivityConverter({
 
   return acsChatMessage => {
     const now = new Date();
-    const {
-      clientMessageId,
-      content,
-      createdOn,
-      id,
-      sender: { communicationUserId } = {},
-      senderDisplayName,
-      status,
-      type
-    } = acsChatMessage;
-
-    const userProfile = userProfiles[communicationUserId];
+    const { clientMessageId, content, createdOn, id, sender, senderDisplayName, status, type } = acsChatMessage;
 
     // TODO: Checks with ACS team to see if this is a good strategy to find out "user.kind".
-    const who: 'others' | 'self' | 'service' = !communicationUserId
-      ? 'service'
-      : userId === communicationUserId
-      ? 'self'
-      : 'others';
+    const who: 'others' | 'self' | 'service' = sender
+      ? sender.communicationUserId && sender.communicationUserId !== userId
+        ? 'others'
+        : 'self'
+      : 'service';
+
+    const communicationUserId = who === 'self' ? userId : who === 'service' ? undefined : sender.communicationUserId;
+
+    const userProfile = who === 'others' || who === 'self' ? userProfiles[communicationUserId || userId] : undefined;
 
     // TODO: Assert data if it met our expectation.
     if (who === 'self') {
@@ -74,10 +69,13 @@ export default function createACSMessageToWebChatActivityConverter({
           'acs:debug:converted-at': now.toISOString()
         },
         conversationId: threadId,
-        from: {
-          id: communicationUserId,
-          name: senderName
-        },
+        from:
+          who === 'service'
+            ? undefined
+            : {
+                id: communicationUserId,
+                name: senderName
+              },
         id: clientMessageId || id,
         timestamp: (createdOn ? (typeof createdOn === 'string' ? new Date(createdOn) : createdOn) : now).toISOString()
         // We are constructing activity, after calling updateMetadata(), we should have a full activity that conforms to Activity type.
@@ -95,10 +93,8 @@ export default function createACSMessageToWebChatActivityConverter({
     // TODO: What is ACS message type "topicUpdated"?
 
     const activityContent: EventActivity | MessageActivity =
-      // For an outgoing message which is pending send, it does not have "type" field set.
-      // Right now, we are assuming the outgoing message is a text message.
-      // TODO: Checks if we can remove (!type && who === 'self')
-      type === 'text' || (!type && who === 'self')
+      // TODO: Remove either 'text' or 'Text'.
+      type === 'text' || type === 'Text'
         ? {
             text: content.message,
             textFormat: 'plain',

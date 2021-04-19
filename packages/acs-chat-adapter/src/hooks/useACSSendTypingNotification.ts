@@ -1,18 +1,18 @@
 import { useCallback } from 'react';
-import { useSendTypingNotification as useACSSendTypingNotification } from '@azure/acs-ui-sdk';
 
 import createDebug from '../utils/debug';
+import useACSClients from './useACSClients';
 
 let debug;
 
-export default function useEmitTyping(): () => void {
+export default function useEmitTyping(): () => Promise<void> {
   debug || (debug = createDebug('useACSSendTypingNotification', { backgroundColor: 'yellow', color: 'black' }));
 
-  const sendTypingNotification = useACSSendTypingNotification();
+  const { declarativeChatThreadClient } = useACSClients();
 
-  return useCallback(() => {
+  return useCallback(async () => {
     debug('Calling ACS sendTypingNotification');
 
-    sendTypingNotification();
-  }, [sendTypingNotification]);
+    await (declarativeChatThreadClient && declarativeChatThreadClient.sendTypingNotification());
+  }, [declarativeChatThreadClient]);
 }

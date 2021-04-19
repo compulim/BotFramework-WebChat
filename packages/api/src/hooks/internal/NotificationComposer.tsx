@@ -4,8 +4,7 @@ import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
 import createDebug from '../../utils/debug';
-import diffMap from '../../utils/diffMap';
-import styleConsole from '../../utils/styleConsole';
+import diffObject from '../../utils/diffObject';
 import useForceRender from './useForceRender';
 import usePrevious from './usePrevious';
 import WebChatNotificationContext from './WebChatNotificationContext';
@@ -32,7 +31,7 @@ const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; childr
 
   let { current: nextOurChatAdapterNotifications } = ourChatAdapterNotificationsRef;
 
-  Object.entries(diffMap(prevChatAdapterNotifications, chatAdapterNotifications)).forEach(([id, [, to]]) => {
+  Object.entries(diffObject(prevChatAdapterNotifications, chatAdapterNotifications)).forEach(([id, [, to]]) => {
     if (to) {
       nextOurChatAdapterNotifications = updateIn(nextOurChatAdapterNotifications, [id], () =>
         // Make sure the "id" field in the notification is set and is same as the key.
@@ -101,10 +100,10 @@ const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; childr
     ourChatAdapterNotifications
   ]);
 
-  debug(
-    [`Render with %c${Object.keys(notifications).length} notifications%c`, ...styleConsole('purple')],
-    [{ chatAdapterNotifications, localNotifications, notifications, ourChatAdapterNotificationsRef }]
-  );
+  // debug(
+  //   [`Render with %c${Object.keys(notifications).length} notifications%c`, ...styleConsole('purple')],
+  //   [{ chatAdapterNotifications, localNotifications, notifications, ourChatAdapterNotificationsRef }]
+  // );
 
   const context = useMemo(
     () => ({

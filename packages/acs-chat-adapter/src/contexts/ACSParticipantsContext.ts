@@ -4,6 +4,6 @@ import ACSParticipant from '../types/ACSParticipant';
 
 const context = createContext<Map<string, ACSParticipant>>(undefined);
 
-context.displayName = 'ACSChatAdapter.Participants';
+context.displayName = 'ACSChatAdapter.ParticipantsContext';
 
 export default context;

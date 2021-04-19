@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "downlevelIteration": true,
     "esModuleInterop": true,
     "jsx": "react",
-    "lib": ["es2019", "esnext"],
+    "lib": ["DOM", "es2019", "esnext"],
     "noEmit": true,
     "preserveWatchOutput": true,
     "skipLibCheck": true

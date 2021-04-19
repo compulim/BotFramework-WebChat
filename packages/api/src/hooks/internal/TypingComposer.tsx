@@ -4,7 +4,7 @@ import updateIn from 'simple-update-in';
 
 import InternalTypingUsers from '../../types/internal/TypingUsers';
 
-import diffMap from '../../utils/diffMap';
+import diffObject from '../../utils/diffObject';
 import InternalTypingContext from '../../contexts/internal/TypingContext';
 import usePrevious from './usePrevious';
 
@@ -39,7 +39,7 @@ const TypingComposer = ({
 
   let { current: nextTypingUsersMap } = typingUsersMapRef;
 
-  Object.entries(diffMap(prevTypingUsers, typingUsers)).forEach(([userId, [from, to]]) => {
+  Object.entries(diffObject(prevTypingUsers, typingUsers)).forEach(([userId, [from, to]]) => {
     if (to) {
       nextTypingUsersMap = updateIn(nextTypingUsersMap, [userId, 'name'], () => to.name);
 

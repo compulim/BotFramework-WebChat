@@ -7,6 +7,22 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 import { default as ACSDeclarativesContext } from '../contexts/ACSClientsContext';
 import createDebug from '../utils/debug';
 
+// TODO: This is from acs-ui-sdk, we need it.
+const getIdFromToken = jwtToken => {
+  const claimName = 'skypeid';
+  const jwtTokenParts = jwtToken.split('.');
+  // eslint-disable-next-line no-magic-numbers
+  if (jwtTokenParts.length !== 3) {
+    throw new Error('invalid jwt token');
+  }
+  const base64DecodedClaims = atob(jwtTokenParts[1]);
+  const base64DecodedClaimsAsJson = JSON.parse(base64DecodedClaims);
+  if (Object.prototype.hasOwnProperty.call(base64DecodedClaimsAsJson, claimName)) {
+    return `8:${base64DecodedClaimsAsJson[claimName]}`;
+  }
+  throw new Error('invalid access token');
+};
+
 let debug;
 
 // TODO: Type "children".
@@ -43,10 +59,6 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
     [chatClient]
   );
 
-  const [clientWithRealtimeNotifications, setClientWithRealtimeNotifications] = useState<DeclarativeChatClient>(
-    undefined
-  );
-
   // TODO: Verify if this is DeclarativeChatThreadClient or ChatThreadClient.
   const [declarativeChatThreadClient, setDeclarativeChatThreadClient] = useState<ChatThreadClient>(undefined);
 
@@ -70,14 +82,6 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
     const abortController = new AbortController();
     const started = declarativeChatClient.startRealtimeNotifications();
 
-    // ESLint conflicts with Prettier.
-    // eslint-disable-next-line wrap-iife
-    (async function () {
-      await started;
-
-      abortController.aborted || setClientWithRealtimeNotifications(declarativeChatClient);
-    })();
-
     return () => {
       abortController.abort();
 
@@ -90,33 +94,23 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
     };
   }, [declarativeChatClient]);
 
-  // TODO: Hack for subscribing messages. Currently the message coming in through real time notification is bugged and does not contains the message.
-  //       This code should not be needed if the message from real time notification is going through correctly.
-  useEffect(() => {
-    if (!declarativeChatThreadClient || clientWithRealtimeNotifications !== declarativeChatClient) {
-      return;
-    }
-
-    const chatMessageReceivedHandler = () => declarativeChatThreadClient.listMessages().next();
-
-    declarativeChatClient.on('chatMessageReceived', chatMessageReceivedHandler);
-
-    return () => declarativeChatClient.off('chatMessageReceived', chatMessageReceivedHandler);
-  }, [declarativeChatClient, declarativeChatThreadClient, clientWithRealtimeNotifications]);
+  const userId = useMemo(() => getIdFromToken(token), [token]);
 
   const context = useMemo<{
     declarativeChatClient: DeclarativeChatClient;
     declarativeChatThreadClient: ChatThreadClient;
     threadId: string;
+    userId: string;
   }>(() => {
-    debug('Creating context', { declarativeChatClient, declarativeChatThreadClient, threadId });
+    debug('Creating context', { declarativeChatClient, declarativeChatThreadClient, threadId, userId });
 
     return {
       declarativeChatClient,
       declarativeChatThreadClient,
-      threadId
+      threadId,
+      userId
     };
-  }, [declarativeChatClient, declarativeChatThreadClient, threadId]);
+  }, [declarativeChatClient, declarativeChatThreadClient, threadId, userId]);
 
   return <ACSDeclarativesContext.Provider value={context}>{children}</ACSDeclarativesContext.Provider>;
 };

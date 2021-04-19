@@ -8,8 +8,9 @@ export default function useACSClients(): {
   declarativeChatClient: DeclarativeChatClient;
   declarativeChatThreadClient: ChatThreadClient;
   threadId: string;
+  userId: string;
 } {
-  const { declarativeChatClient, declarativeChatThreadClient, threadId } = useContext(ACSClientsContext);
+  const { declarativeChatClient, declarativeChatThreadClient, threadId, userId } = useContext(ACSClientsContext);
 
-  return { declarativeChatClient, declarativeChatThreadClient, threadId };
+  return { declarativeChatClient, declarativeChatThreadClient, threadId, userId };
 }

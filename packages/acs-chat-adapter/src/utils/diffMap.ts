@@ -1,16 +1,12 @@
 // TODO: Write tests
 
-export default function diffMap<T>(
-  from: { [key: string]: T },
-  to: { [key: string]: T }
-): {
-  [key: string]: [T, T];
-} {
+export default function diffMap<K, V>(from: Map<K, V>, to: Map<K, V>): Map<K, [V, V]> {
   return Array.from(
-    new Set<string>([...Object.keys(from), ...Object.keys(to)])
+    new Set<K>([...Array.from(from.keys()), ...Array.from(to.keys())])
   ).reduce((result, key) => {
-    result[key] = [from[key], to[key]];
+    const fromValue = from.get(key);
+    const toValue = to.get(key);
 
-    return result;
-  }, {});
+    return Object.is(fromValue, toValue) ? result : result.set(key, [fromValue, toValue]);
+  }, new Map<K, [V, V]>());
 }

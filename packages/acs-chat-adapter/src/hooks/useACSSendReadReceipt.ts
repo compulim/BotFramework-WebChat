@@ -1,8 +1,13 @@
 import { useCallback } from 'react';
-import { useSendReadReceipt } from '@azure/acs-ui-sdk';
+import useACSClients from './useACSClients';
 
-export default function useACSSendReadReceipt(): (chatMessageId: string) => Promise<void> {
-  const acsSendReadReceipt = useSendReadReceipt();
+export default function useACSSendReadReceipt(): (chatMessageId: string) => void {
+  const { declarativeChatThreadClient } = useACSClients();
 
-  return useCallback((chatMessageId: string) => acsSendReadReceipt(chatMessageId), [acsSendReadReceipt]);
+  return useCallback(
+    async (chatMessageId: string) => {
+      await (declarativeChatThreadClient && declarativeChatThreadClient.sendReadReceipt({ chatMessageId }));
+    },
+    [declarativeChatThreadClient]
+  );
 }

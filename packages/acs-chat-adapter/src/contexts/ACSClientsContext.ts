@@ -6,6 +6,7 @@ const context = createContext<{
   declarativeChatClient: DeclarativeChatClient;
   declarativeChatThreadClient: ChatThreadClient;
   threadId: string;
+  userId: string;
 }>(undefined);
 
 context.displayName = 'ACSChatAdapter.DeclarativesContext';

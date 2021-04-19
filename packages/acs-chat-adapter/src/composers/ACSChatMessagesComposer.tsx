@@ -1,82 +1,83 @@
-// import { useChatMessages } from '@azure/acs-ui-sdk/dist/providers/ChatThreadProvider';
-// import { useFetchMessages, useSubscribeMessage } from '@azure/acs-ui-sdk';
-// import AbortController from 'abort-controller-es5';
-// import PropTypes from 'prop-types';
-// import React, { FC, useEffect } from 'react';
+import { ChatMessageWithStatus } from '@azure/acs-chat-declarative';
+import { ConnectivityStatus } from 'botframework-webchat-core';
+import AbortController from 'abort-controller-es5';
+import PropTypes from 'prop-types';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 
-// import ACSChatMessage from '../types/ACSChatMessage';
-// import ACSChatMessagesContext from '../contexts/ACSChatMessagesContext';
-// import createDebug from '../utils/debug';
-// import styleConsole from '../utils/styleConsole';
-// import useMapper from '../hooks/useMapper';
+import ACSChatMessagesContext from '../contexts/ACSChatMessagesContext';
+import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
+import useACSClients from '../hooks/useACSClients';
+import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 
-// // This helper is needed because:
-// // - useChatMessages() won't return conversation history, but only new outgoing messages during this session
-// // - But if we call fetchMessages() once, it will return conversation history
-// // - But if we call useSubscribeMessage() on every render, it will return new incoming messages
+let debug;
 
-// // I think the API design need some tweaks.
+const ACSChatMessageComposer: FC = ({ children }) => {
+  debug || (debug = createDebug('<ACSChatMessagesComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
-// let debug;
-// let EMPTY_ARRAY;
-// let PASSTHRU_FN;
+  const { declarativeChatThreadClient } = useACSClients();
+  const [connectivityStatus, setConnectivityStatus] = useState<ConnectivityStatus>('connecting');
 
-// const ChatMessagesComposer: FC = ({ children }) => {
-//   debug || (debug = createDebug('<ACSChatMessagesComposer>', { backgroundColor: 'yellow', color: 'black' }));
-//   EMPTY_ARRAY || (EMPTY_ARRAY = []);
-//   PASSTHRU_FN || (PASSTHRU_FN = value => value);
+  // Required for conversation history.
+  useEffect(() => {
+    if (!declarativeChatThreadClient) {
+      return;
+    }
 
-//   const fetchMessages = useFetchMessages();
+    const abortController = new AbortController();
 
-//   // Required for conversation history.
-//   useEffect(() => {
-//     const abortController = new AbortController();
+    // eslint-disable-next-line wrap-iife
+    (async function () {
+      const now = Date.now();
 
-//     // eslint-disable-next-line wrap-iife
-//     (async function () {
-//       const now = Date.now();
+      debug('Initial fetch started');
 
-//       debug('Initial fetch started');
+      let numMessages = 0;
 
-//       const messages = await fetchMessages();
+      try {
+        for await (const _ of declarativeChatThreadClient.listMessages()) {
+          if (abortController.signal.aborted) {
+            break;
+          }
 
-//       if (abortController.signal.aborted) {
-//         return;
-//       }
+          // Set connectivity status to "connected" on the very first message received.
+          numMessages++ || setConnectivityStatus('connected');
+        }
+      } catch (err) {
+        abortController.signal.aborted || setConnectivityStatus('fatal');
+      }
 
-//       debug(
-//         [
-//           `Initial fetch done, took %c${Date.now() - now} ms%c for %c${messages.length}%c messages.`,
-//           ...styleConsole('green'),
-//           ...styleConsole('purple')
-//         ],
-//         [messages]
-//       );
-//     })();
+      debug(
+        `Initial fetch done, took %c${Date.now() - now} ms%c for %c${numMessages}%c messages.`,
+        ...styleConsole('green'),
+        ...styleConsole('purple')
+      );
+    })();
 
-//     return () => abortController.abort();
-//   }, [fetchMessages]);
+    return () => abortController.abort();
+  }, [declarativeChatThreadClient]);
 
-//   // Required for new incoming messages.
-//   useSubscribeMessage();
+  const chatMessages: Map<string, ChatMessageWithStatus> = useACSChatThreadSelector(
+    useCallback(state => state?.chatMessages, [])
+  );
 
-//   const result: ACSChatMessage[] = useChatMessages() as ACSChatMessage[];
+  const context = useMemo(
+    () => ({
+      chatMessages,
+      connectivityStatus
+    }),
+    [chatMessages, connectivityStatus]
+  );
 
-//   // TODO: useChatMessages() did not cache the array correctly.
-//   const chatMessages = useMapper<ACSChatMessage, ACSChatMessage>(
-//     result && result.length ? result : EMPTY_ARRAY,
-//     PASSTHRU_FN
-//   );
+  return <ACSChatMessagesContext.Provider value={context}>{children}</ACSChatMessagesContext.Provider>;
+};
 
-//   return <ACSChatMessagesContext.Provider value={chatMessages}>{children}</ACSChatMessagesContext.Provider>;
-// };
+ACSChatMessageComposer.defaultProps = {
+  children: undefined
+};
 
-// ChatMessagesComposer.defaultProps = {
-//   children: undefined
-// };
+ACSChatMessageComposer.propTypes = {
+  children: PropTypes.any
+};
 
-// ChatMessagesComposer.propTypes = {
-//   children: PropTypes.any
-// };
-
-// export default ChatMessagesComposer;
+export default ACSChatMessageComposer;

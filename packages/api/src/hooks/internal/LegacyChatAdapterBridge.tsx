@@ -21,7 +21,7 @@ import updateIn from 'simple-update-in';
 
 import { default as WebChatReduxContext, useDispatch, useSelector } from './WebChatReduxContext';
 import createDebug from '../../utils/debug';
-import diffMap from '../../utils/diffMap';
+import diffObject from '../../utils/diffObject';
 import mime from '../../utils/mime-wrapper';
 import observableToPromise from '../utils/observableToPromise';
 import styleConsole from '../../utils/styleConsole';
@@ -160,7 +160,7 @@ const TypingUsers: FC<{
   const typingUsersRef = useRef({});
   let { current: nextTypingUsers } = typingUsersRef;
 
-  Object.entries(diffMap(prevTypingExcludingSelfAndNotExpired, typingExcludingSelfAndNotExpired)).forEach(
+  Object.entries(diffObject(prevTypingExcludingSelfAndNotExpired, typingExcludingSelfAndNotExpired)).forEach(
     ([userId, [, to]]) => {
       if (to) {
         // [NO-MULTIUSER]: All typing users are from others, and since we cannot distinguish whether it is "bot" or other users, we assume it is bot.
@@ -463,6 +463,7 @@ const ConnectedLegacyChatAdapterBridge: FC<{
   );
 
   useMemo(() => dispatch(setSendTimeouts(styleOptions.sendTimeout, styleOptions.sendTimeoutForAttachments)), [
+    dispatch,
     styleOptions.sendTimeout,
     styleOptions.sendTimeoutForAttachments
   ]);
