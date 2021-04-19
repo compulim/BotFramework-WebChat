@@ -3,6 +3,9 @@
 import { useMemo, useRef } from 'react';
 
 import createDebug from '../utils/debug';
+import diffArray from '../utils/diffArray';
+import diffMap from '../utils/diffMap';
+import diffObject from '../utils/diffObject';
 import styleConsole from '../utils/styleConsole';
 
 function repeat(array, count) {
@@ -33,7 +36,23 @@ export default function useDebugDeps<T>(depsMap: T, name: string): void {
       ],
       [
         'Changed',
-        keysChanged.reduce((result, key) => ({ ...result, [key]: { from: lastDepsMap[key], to: depsMap[key] } }), {})
+        keysChanged.reduce((result, key) => {
+          const from = lastDepsMap[key];
+          const to = depsMap[key];
+
+          return {
+            ...result,
+            [key]: {
+              from,
+              to,
+              diff: Array.isArray(to)
+                ? diffArray(from || [], to)
+                : to instanceof Map
+                ? diffMap(from || new Map(), to)
+                : diffObject(from || {}, to || {})
+            }
+          };
+        }, {})
       ],
       [
         'Unchanged',
