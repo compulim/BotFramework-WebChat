@@ -63,6 +63,7 @@ New feedbacks:
 -  After calling `listMessages`, it is adding message to the `state` one-by-one, which should be batched to improve UI perf
 -  Need `userId`, currently, copied some code from UI SDK
 -  Need to differentiate if the message is from conversation history or not (for accessibility)
+-  When sending a message, the temporary message will be updated, but the key will also changed, caused a deletion + addition, instead of a single modification
 
 ## Regarding send message function signature
 

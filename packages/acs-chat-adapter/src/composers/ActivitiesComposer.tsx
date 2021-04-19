@@ -21,6 +21,14 @@ import UserProfiles from '../types/UserProfiles';
 
 let EMPTY_MAP;
 
+function sequenceIdToSequenceNumber(sequenceId) {
+  return typeof sequenceId === 'number'
+    ? sequenceId
+    : typeof sequenceId === 'string' && sequenceId
+    ? +sequenceId
+    : Infinity;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   EMPTY_MAP || (EMPTY_MAP = new Map());
@@ -32,7 +40,13 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
   const [threadId] = useACSThreadId();
   const [userId] = useACSUserId();
   const entriesRef = useRef<{
-    [id: string]: { chatMessage: ACSChatMessage; readBy: ReadBy; sequenceNumber: number; trackingNumber: string };
+    [id: string]: {
+      chatMessage: ACSChatMessage;
+      dirty: boolean;
+      readBy: ReadBy;
+      sequenceNumber: number;
+      trackingNumber: string;
+    };
   }>({});
 
   const convert = useMemo(() => createACSMessageToWebChatActivityConverter({ threadId, userId, userProfiles }), [
@@ -41,7 +55,26 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
     userProfiles
   ]);
   const numParticipant = useMemo(() => participants?.size || 0, [participants]);
+  const readOns = useMemo(
+    () =>
+      readReceipts.reduce<{ [userId: string]: number }>(
+        (readOns, { readOn, sender }) => {
+          if (sender?.communicationUserId && sender?.communicationUserId !== userId) {
+            readOns[sender.communicationUserId] = Math.max(readOns[sender.communicationUserId] || 0, +readOn);
+          }
+
+          return readOns;
+        },
+        // We assume we always read all incoming messages.
+        { [userId]: Infinity }
+      ),
+    [readReceipts, userId]
+  );
+
   const prevChatMessages = usePrevious(chatMessages);
+  const prevKeyToTrackingNumber = usePrevious(keyToTrackingNumber);
+  const prevNumParticipant = usePrevious(numParticipant);
+  const prevReadOns = usePrevious(readOns);
   let { current: nextEntries } = entriesRef;
 
   if (prevChatMessages !== chatMessages) {
@@ -52,59 +85,34 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
       if (!to) {
         nextEntries = updateIn(nextEntries, [key]);
       } else {
-        const { sequenceId } = to;
-
-        nextEntries = updateIn(nextEntries, [key, 'chatMessage'], () => to);
-        nextEntries = updateIn(nextEntries, [key, 'sequenceNumber'], () =>
-          typeof sequenceId === 'number'
-            ? sequenceId
-            : typeof sequenceId === 'string' && sequenceId
-            ? +sequenceId
-            : Infinity
-        );
+        nextEntries = updateIn(nextEntries, [key, 'dirty'], () => true);
       }
     }
   }
-
-  const otherReadOns = useMemo(
-    () =>
-      readReceipts.reduce<{ [userId: string]: number }>((otherReadOns, { readOn, sender }) => {
-        if (sender?.communicationUserId && sender?.communicationUserId !== userId) {
-          otherReadOns[sender.communicationUserId] = Math.max(otherReadOns[sender.communicationUserId] || 0, +readOn);
-        }
-
-        return otherReadOns;
-      }, {}),
-    [readReceipts, userId]
-  );
-
-  const prevNumParticipant = usePrevious(numParticipant);
-  const prevOtherReadOns = usePrevious(otherReadOns);
-
-  if (prevOtherReadOns !== otherReadOns || prevNumParticipant !== numParticipant) {
-    for (const [
-      key,
-      {
-        chatMessage: { createdOn }
-      }
-    ] of Object.entries(nextEntries)) {
-      const numOtherReader = Object.values(otherReadOns).filter(readOn => readOn >= +createdOn).length;
-
-      // numParticipant includes self, so we need to add 1 to "other readers".
-      const readBy = !numOtherReader ? undefined : numOtherReader + 1 === numParticipant ? 'all' : 'some';
-
-      nextEntries = updateIn(nextEntries, [key, 'readBy'], readBy && (() => readBy));
-    }
-  }
-
-  const prevKeyToTrackingNumber = usePrevious(keyToTrackingNumber);
 
   if (prevKeyToTrackingNumber !== keyToTrackingNumber) {
-    for (const key of Object.keys(nextEntries)) {
-      const trackingNumber = keyToTrackingNumber[key];
-
-      nextEntries = updateIn(nextEntries, [key, 'trackingNumber'], trackingNumber && (() => trackingNumber));
+    for (const key of Object.keys(keyToTrackingNumber)) {
+      nextEntries = updateIn(nextEntries, [key, 'dirty'], () => true);
     }
+  }
+
+  if (prevReadOns !== readOns || prevNumParticipant !== numParticipant) {
+    nextEntries = updateIn(nextEntries, [() => true, 'dirty'], () => true);
+  }
+
+  for (const [key] of Object.entries(nextEntries).filter(([, { dirty }]) => dirty)) {
+    const chatMessage = chatMessages.get(key);
+    const { createdOn, sequenceId } = chatMessage;
+    const { [key]: trackingNumber } = keyToTrackingNumber;
+
+    const numReader = Object.values(readOns).filter(readOn => readOn >= +createdOn).length;
+    const readBy = !numReader ? undefined : numReader === numParticipant ? 'all' : 'some';
+
+    nextEntries = updateIn(nextEntries, [key, 'dirty']);
+    nextEntries = updateIn(nextEntries, [key, 'chatMessage'], () => chatMessage);
+    nextEntries = updateIn(nextEntries, [key, 'readBy'], readBy && (() => readBy));
+    nextEntries = updateIn(nextEntries, [key, 'sequenceNumber'], () => sequenceIdToSequenceNumber(sequenceId));
+    nextEntries = updateIn(nextEntries, [key, 'trackingNumber'], trackingNumber && (() => trackingNumber));
   }
 
   const activities = useMemo(
@@ -151,11 +159,11 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
   useDebugDeps(
     {
       chatMessages,
+      convert,
       keyToTrackingNumber,
       nextEntries,
       numParticipant,
-      otherReadOns,
-      prevChatMessages,
+      readOns,
       readReceipts
     },
     'ActivitiesComposer'
