@@ -7,6 +7,7 @@ import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 import useACSClients from '../hooks/useACSClients';
 
+const PAGE_SIZE = 100;
 let debug;
 
 const ACSParticipantsComposer: FC = ({ children }) => {
@@ -22,14 +23,19 @@ const ACSParticipantsComposer: FC = ({ children }) => {
     // ESLint conflicts with Prettier.
     // eslint-disable-next-line wrap-iife
     (async function () {
+      const now = Date.now();
       let numParticipants = 0;
 
       // This is required for fetching the initial list of participants.
-      for await (const _ of declarativeChatThreadClient.listParticipants()) {
+      for await (const _ of declarativeChatThreadClient.listParticipants().byPage({ maxPageSize: PAGE_SIZE })) {
         numParticipants++;
       }
 
-      debug(`Initial fetch done, got %c${numParticipants}%c participants.`, ...styleConsole('green'));
+      debug(
+        `Initial fetch done, got %c${numParticipants}%c participants, took %c${Date.now() - now} ms%c.`,
+        ...styleConsole('purple'),
+        ...styleConsole('green')
+      );
     })();
   }, [declarativeChatThreadClient]);
 

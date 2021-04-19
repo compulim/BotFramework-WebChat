@@ -13,7 +13,7 @@ let debug;
 // TODO: We should type "children" prop.
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
-  debug || (debug = createDebug('HonorReadReceiptsComposer', { backgroundColor: 'yellow', color: 'black' }));
+  debug || (debug = createDebug('<HonorReadReceiptsComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const [activities] = useActivities();
   const [honorReadReceipts, setRawHonorReadReceipts] = useState(true);
@@ -49,7 +49,7 @@ const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
     nextHonorReadReceipts => {
       setRawHonorReadReceipts(nextHonorReadReceipts);
 
-      debug(`Setting honor read receipts to %c${nextHonorReadReceipts}%c.`, ...styleConsole('green'));
+      debug(`Setting honor read receipts to %c${nextHonorReadReceipts}%c.`, ...styleConsole('purple'));
     },
     [setRawHonorReadReceipts]
   );

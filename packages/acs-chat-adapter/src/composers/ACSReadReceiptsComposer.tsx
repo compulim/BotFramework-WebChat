@@ -9,11 +9,12 @@ import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 import useACSClients from '../hooks/useACSClients';
 
+const PAGE_SIZE = 100;
 let debug;
 let EMPTY_ARRAY;
 
 const ACSReadReceiptsComposer: FC = ({ children }) => {
-  debug || (debug = createDebug('<ACSReadReceiptsComposer>', { backgroundColor: 'orange', color: 'black' }));
+  debug || (debug = createDebug('<ACSReadReceiptsComposer>', { backgroundColor: 'yellow', color: 'black' }));
   EMPTY_ARRAY || (EMPTY_ARRAY = []);
 
   const { declarativeChatThreadClient } = useACSClients();
@@ -29,12 +30,9 @@ const ACSReadReceiptsComposer: FC = ({ children }) => {
     // eslint-disable-next-line wrap-iife
     (async function () {
       const now = Date.now();
-
-      debug('Initial fetch started');
-
       let numReadReceipts = 0;
 
-      for await (const _ of declarativeChatThreadClient.listReadReceipts()) {
+      for await (const _ of declarativeChatThreadClient.listReadReceipts().byPage({ maxPageSize: PAGE_SIZE })) {
         if (abortController.signal.aborted) {
           break;
         }
@@ -43,9 +41,9 @@ const ACSReadReceiptsComposer: FC = ({ children }) => {
       }
 
       debug(
-        `Initial fetch done, took %c${Date.now() - now} ms%c for %c${numReadReceipts}%c read receipts.`,
-        ...styleConsole('green'),
-        ...styleConsole('purple')
+        `Initial fetch done, got %c${numReadReceipts}%c read receipts, took %c${Date.now() - now} ms%c.`,
+        ...styleConsole('purple'),
+        ...styleConsole('green')
       );
     })();
 

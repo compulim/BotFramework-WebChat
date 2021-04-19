@@ -13,10 +13,13 @@ import useDebounced from '../hooks/useDebounced';
 import usePrevious from '../hooks/usePrevious';
 import warn from '../utils/warn';
 
+const PAGE_SIZE = 100;
 let debug;
+let EMPTY_MAP;
 
 const ACSChatMessageComposer: FC = ({ children }) => {
   debug || (debug = createDebug('<ACSChatMessagesComposer>', { backgroundColor: 'yellow', color: 'black' }));
+  EMPTY_MAP || (EMPTY_MAP = new Map());
 
   const { declarativeChatThreadClient } = useACSClients();
   const [connectivityStatus, setConnectivityStatus] = useState<ConnectivityStatus>('connecting');
@@ -32,14 +35,11 @@ const ACSChatMessageComposer: FC = ({ children }) => {
     // eslint-disable-next-line wrap-iife
     (async function () {
       const now = Date.now();
-
-      debug('Initial fetch started');
-
       let numMessages = 0;
 
       try {
         // TODO: Is setting "maxPageSize" a good option to batch messages?
-        for await (const _ of declarativeChatThreadClient.listMessages({ maxPageSize: 100 })) {
+        for await (const _ of declarativeChatThreadClient.listMessages({ maxPageSize: PAGE_SIZE })) {
           if (abortController.signal.aborted) {
             break;
           }
@@ -52,9 +52,9 @@ const ACSChatMessageComposer: FC = ({ children }) => {
       }
 
       debug(
-        `Initial fetch done, took %c${Date.now() - now} ms%c for %c${numMessages}%c messages.`,
-        ...styleConsole('green'),
-        ...styleConsole('purple')
+        `Initial fetch done, got %c${numMessages}%c messages, took %c${Date.now() - now} ms%c.`,
+        ...styleConsole('purple'),
+        ...styleConsole('green')
       );
     })();
 
@@ -62,15 +62,15 @@ const ACSChatMessageComposer: FC = ({ children }) => {
   }, [declarativeChatThreadClient]);
 
   const chatMessages: Map<string, ChatMessageWithStatus> = useACSChatThreadSelector(
-    useCallback(state => state?.chatMessages, [])
+    useCallback(state => state?.chatMessages || EMPTY_MAP, [])
   );
 
-  const prevChatMessages = usePrevious(chatMessages);
+  const prevChatMessages = usePrevious(chatMessages) || EMPTY_MAP;
 
-  if (chatMessages !== prevChatMessages) {
+  if (chatMessages !== prevChatMessages && chatMessages.size && prevChatMessages.size) {
     if (
-      JSON.stringify(Object.fromEntries((chatMessages || new Map()).entries())) ===
-      JSON.stringify(Object.fromEntries((prevChatMessages || new Map()).entries()))
+      JSON.stringify(Object.fromEntries(chatMessages.entries())) ===
+      JSON.stringify(Object.fromEntries(prevChatMessages.entries()))
     ) {
       warn('🔥🔥🔥 PERFORMANCE chatMessages has changed, but its content was not.', { chatMessages, prevChatMessages });
     }

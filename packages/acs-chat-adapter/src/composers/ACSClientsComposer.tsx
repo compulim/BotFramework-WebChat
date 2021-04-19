@@ -6,6 +6,7 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 
 import { default as ACSDeclarativesContext } from '../contexts/ACSClientsContext';
 import createDebug from '../utils/debug';
+import styleConsole from '../utils/styleConsole';
 
 // TODO: This is from acs-ui-sdk, we need it.
 const getIdFromToken = jwtToken => {
@@ -33,7 +34,7 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
   threadId,
   token
 }) => {
-  debug || (debug = createDebug('ACSDeclarativesComposer', { backgroundColor: 'red', color: 'white' }));
+  debug || (debug = createDebug('<ACSClientsComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   // TODO: "CommunicationTokenCredential" is not exported from @azure/communication-chat.
   const credentials = useMemo<{ dispose(): void; getToken(): Promise<{ expiresOnTimestamp: number; token: string }> }>(
@@ -102,7 +103,14 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
     threadId: string;
     userId: string;
   }>(() => {
-    debug('Creating context', { declarativeChatClient, declarativeChatThreadClient, threadId, userId });
+    debug(
+      [
+        `Creating context for thread %c${threadId}%c and user %c${userId}%c`,
+        ...styleConsole('purple'),
+        ...styleConsole('purple')
+      ],
+      [{ declarativeChatClient, declarativeChatThreadClient, threadId, userId }]
+    );
 
     return {
       declarativeChatClient,
