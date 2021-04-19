@@ -51,7 +51,7 @@ export default function useACSChatThreadSelector<T>(selector: (state: ChatThread
 
       const value = getValue();
 
-      if (value !== valueRef.current) {
+      if (!Object.is(value, valueRef.current)) {
         valueRef.current = value;
         forceRender();
       }

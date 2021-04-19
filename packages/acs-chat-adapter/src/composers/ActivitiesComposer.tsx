@@ -3,23 +3,24 @@
 
 import { ReadBy, updateMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
-import React, { FC, useMemo, useRef } from 'react';
+import React, { FC, useCallback, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
 import ACSChatMessage from '../types/ACSChatMessage';
 import ActivitiesContext from '../contexts/ActivitiesContext';
+import Activity from '../types/Activity';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
 import diffMap from '../utils/diffMap';
+import diffObject from '../utils/diffObject';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSParticipants from '../hooks/useACSParticipants';
 import useACSReadReceipts from '../hooks/useACSReadReceipts';
 import useACSThreadId from '../hooks/useACSThreadId';
 import useACSUserId from '../hooks/useACSUserId';
-import useDebugDeps from '../hooks/useDebugDeps';
 import useKeyToTrackingNumber from '../hooks/useKeyToTrackingNumber';
 import usePrevious from '../hooks/usePrevious';
 import UserProfiles from '../types/UserProfiles';
-import diffObject from '../utils/diffObject';
+import useMemoAll from '../hooks/useMemoAll';
 
 let EMPTY_MAP;
 
@@ -130,8 +131,17 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
     nextEntries = updateIn(nextEntries, [key, 'trackingNumber'], trackingNumber && (() => trackingNumber));
   }
 
-  const activities = useMemo(
-    () =>
+  const activities = useMemoAll<Activity, Activity[]>(
+    useCallback(
+      (key, chatMessage, readBy, trackingNumber) =>
+        updateMetadata(convert(chatMessage), {
+          key,
+          readBy,
+          trackingNumber
+        }),
+      [convert]
+    ),
+    createActivity =>
       Object.entries(nextEntries)
         .sort(
           (
@@ -161,29 +171,24 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
               : 0
         )
         .map(([key, { chatMessage, readBy, trackingNumber }]) =>
-          updateMetadata(convert(chatMessage), {
-            key,
-            readBy,
-            trackingNumber
-          })
-        ),
-    [convert, nextEntries]
+          createActivity(key, chatMessage, readBy, trackingNumber)
+        )
   );
 
   // TODO: Remove this.
-  useDebugDeps(
-    {
-      activities,
-      chatMessages,
-      convert,
-      keyToTrackingNumber,
-      nextEntries,
-      numParticipant,
-      readOns,
-      readReceipts
-    },
-    'ActivitiesComposer'
-  );
+  // useDebugDeps(
+  //   {
+  //     activities,
+  //     chatMessages,
+  //     convert,
+  //     keyToTrackingNumber,
+  //     nextEntries,
+  //     numParticipant,
+  //     readOns,
+  //     readReceipts
+  //   },
+  //   'ActivitiesComposer'
+  // );
 
   if (nextEntries !== entriesRef.current) {
     entriesRef.current = nextEntries;

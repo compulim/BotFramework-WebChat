@@ -58,14 +58,13 @@ New feedbacks:
 
 -  ~Recommend to use `EventTarget` instead of `onStateChange`/`offStateChange`~
 -  ~`sequenceId` is a string, but the content is a number~
+-  ~Need `userId`, currently, copied some code from UI SDK~
 -  Event listener code will be much simpler if it allow us to "add event listener" before async completion of "startRealtimeNotifications"
    -  What's more, it is weird to throw exception on attaching event listeners
--  After calling `listMessages`, it is adding message to the `state` one-by-one, which should be batched to improve UI perf
--  Need `userId`, currently, copied some code from UI SDK
+-  After calling `listMessages`, it is adding message to the `state` one by one, which could be batched to improve UI perf
 -  Need to differentiate if the message is from conversation history or not (for accessibility)
 -  When sending a message, the temporary message will be updated, but the key will also changed, caused a deletion + addition, instead of a single modification
--  In some cases, e.g. initial fetch, it seems the `state.listMessages` has changed, but when JSON serializing them and check for difference, nothing was changed
-   -  This is the code used for serializing: `JSON.stringify(Object.fromEntries(chatMessages.entries()))`
+-  Read receipts seems have some dupes (same `sender`, different `readOn` and `chatMessageId`)
 
 ## Regarding send message function signature
 

@@ -1,6 +1,6 @@
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
-import React, { FC, useCallback, useEffect } from 'react';
+import React, { FC, useCallback, useEffect, useMemo } from 'react';
 
 import ACSReadReceipt from '../types/ACSReadReceipt';
 import ACSReadReceiptsContext from '../contexts/ACSReadReceiptsContext';
@@ -56,7 +56,9 @@ const ACSReadReceiptsComposer: FC = ({ children }) => {
     useCallback(state => state?.readReceipts || EMPTY_ARRAY, [])
   );
 
-  debug([`Got %c${readReceipts?.length || 0} read receipts%c.`, ...styleConsole('purple')], [{ readReceipts }]);
+  useMemo(() => {
+    debug([`Got %c${readReceipts?.length || 0} read receipts%c.`, ...styleConsole('purple')], [{ readReceipts }]);
+  }, [readReceipts]);
 
   return <ACSReadReceiptsContext.Provider value={readReceipts}>{children}</ACSReadReceiptsContext.Provider>;
 };

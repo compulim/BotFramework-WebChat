@@ -1,6 +1,6 @@
 import { getMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
-import React, { FC, useMemo, useState } from 'react';
+import React, { FC, useCallback, useMemo, useState } from 'react';
 
 import createDebug from '../utils/debug';
 import HonorReadReceiptsContext from '../contexts/HonorReadReceiptsContext';
@@ -16,7 +16,7 @@ const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
   debug || (debug = createDebug('HonorReadReceiptsComposer', { backgroundColor: 'yellow', color: 'black' }));
 
   const [activities] = useActivities();
-  const [honorReadReceipts, setHonorReadReceipts] = useState(true);
+  const [honorReadReceipts, setRawHonorReadReceipts] = useState(true);
   const acsSendReadReceipt = useACSSendReadReceipt();
 
   const lastChatMessageIdFromOthers = useMemo(() => {
@@ -43,7 +43,16 @@ const HonorReadReceiptsComposer: FC<{ children: any }> = ({ children }) => {
         ...styleConsole('green')
       );
     }
-  }, [honorReadReceipts, lastChatMessageIdFromOthers, acsSendReadReceipt]);
+  }, [acsSendReadReceipt, honorReadReceipts, lastChatMessageIdFromOthers]);
+
+  const setHonorReadReceipts = useCallback(
+    nextHonorReadReceipts => {
+      setRawHonorReadReceipts(nextHonorReadReceipts);
+
+      debug(`Setting honor read receipts to %c${nextHonorReadReceipts}%c.`, ...styleConsole('green'));
+    },
+    [setRawHonorReadReceipts]
+  );
 
   const honorReadReceiptsContext = useMemo<[boolean, (honorReadReceipts: boolean) => void]>(
     () => [honorReadReceipts, setHonorReadReceipts],

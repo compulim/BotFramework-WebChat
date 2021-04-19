@@ -6,6 +6,7 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 're
 
 import ACSChatMessage from '../types/ACSChatMessage';
 import createCriticalSection from '../utils/createCriticalSection';
+import createDebug from '../utils/debug';
 import diffMap from '../utils/diffMap';
 import SendMessageContext from '../contexts/SendMessageContext2';
 import updateIn from 'simple-update-in';
@@ -13,6 +14,7 @@ import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSClients from '../hooks/useACSClients';
 import useACSUserId from '../hooks/useACSUserId';
 import usePrevious from '../hooks/usePrevious';
+import styleConsole from '../utils/styleConsole';
 
 type Deferred<T> = {
   promise: Promise<T>;
@@ -25,8 +27,12 @@ function generateTrackingNumber() {
   return `t-${random().toString(36).substr(2)}`;
 }
 
+let debug;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
+  debug || (debug = createDebug('<SendMessageComposer>', { backgroundColor: 'yellow', color: 'black' }));
+
   const abortController = useMemo(() => new AbortController(), []);
 
   useEffect(() => () => abortController.abort(), [abortController]);
@@ -63,13 +69,14 @@ const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
 
     return (content: string) => {
       const trackingNumber = generateTrackingNumber();
+      const queueTime = Date.now();
 
       enterCriticalSection(async () => {
         if (abortController.signal.aborted) {
           return;
         }
 
-        // TODO: We should set up a critical section on this async function.
+        const sendTime = Date.now();
         const { promise, reject, resolve }: Deferred<string> = createDeferred();
 
         deliveryReportsRef.current.push({ content, promise, reject, resolve, trackingNumber });
@@ -84,6 +91,18 @@ const SendMessageComposer: FC<{ children: any }> = ({ children }) => {
 
         abortController.signal.aborted ||
           setKeyToTrackingNumber(keyToTrackingNumber => updateIn(keyToTrackingNumber, [key]));
+
+        debug(
+          [
+            `Message %c${content}%c has sent, took %c${sendTime - queueTime} ms%c to queue, and %c${
+              Date.now() - sendTime
+            } ms%c to send.`,
+            ...styleConsole('purple'),
+            ...styleConsole('green'),
+            ...styleConsole('green')
+          ],
+          { content, trackingNumber }
+        );
       });
 
       return trackingNumber;
