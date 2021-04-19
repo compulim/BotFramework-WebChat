@@ -38,7 +38,8 @@ const ACSChatMessageComposer: FC = ({ children }) => {
       let numMessages = 0;
 
       try {
-        for await (const _ of declarativeChatThreadClient.listMessages()) {
+        // TODO: Is setting "maxPageSize" a good option to batch messages?
+        for await (const _ of declarativeChatThreadClient.listMessages({ maxPageSize: 100 })) {
           if (abortController.signal.aborted) {
             break;
           }
