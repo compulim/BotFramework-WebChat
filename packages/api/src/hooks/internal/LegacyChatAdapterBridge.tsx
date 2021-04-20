@@ -19,7 +19,7 @@ import random from 'math-random';
 import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
-import { default as WebChatReduxContext, useDispatch, useSelector } from './WebChatReduxContext';
+import { default as LegacyReduxContext, useDispatch, useSelector } from '../../contexts/internal/LegacyReduxContext';
 import createDebug from '../../utils/debug';
 import diffObject from '../../utils/diffObject';
 import mime from '../../utils/mime-wrapper';
@@ -574,7 +574,7 @@ const LegacyChatAdapterBridge: FC<{
   const memoizedStore = useMemo(() => store || createStore(), [store]);
 
   return (
-    <Provider context={WebChatReduxContext} store={memoizedStore}>
+    <Provider context={LegacyReduxContext} store={memoizedStore}>
       <ConnectedLegacyChatAdapterBridge
         directLine={directLine}
         styleOptions={styleOptions}

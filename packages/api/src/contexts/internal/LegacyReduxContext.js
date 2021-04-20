@@ -6,7 +6,7 @@ const context = createContext();
 const useDispatch = createDispatchHook(context);
 const useSelector = createSelectorHook(context);
 
-context.displayName = 'WebChatReduxContext';
+context.displayName = 'WebChat.LegacyReduxContext';
 
 export default context;
 
