@@ -1,8 +1,9 @@
 import { ChatAdapter } from 'botframework-webchat-core';
-import { ChatProvider } from '@azure/acs-ui-sdk';
+// import { ChatProvider } from '@azure/acs-ui-sdk';
 import AbortController from 'abort-controller-es5';
 import PropTypes from 'prop-types';
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import ACSChatMessagesComposer from './composers/ACSChatMessagesComposer';
 import ACSClientsComposer from './composers/ACSClientsComposer';
@@ -15,8 +16,8 @@ import HonorReadReceiptsComposer from './composers/HonorReadReceiptsComposer';
 import ResolvableToken from './types/ResolvableToken';
 import resolveFunction from './utils/resolveFunction';
 import SendMessageComposer from './composers/SendMessageComposer';
-import styleConsole from './utils/styleConsole';
-import TypingUsersComposer from './composers/TypingUsersComposer';
+// import styleConsole from './utils/styleConsole';
+// import TypingUsersComposer from './composers/TypingUsersComposer';
 import useACSUserId from './hooks/useACSUserId';
 import useActivities from './hooks/useActivities';
 import useEmitTyping from './hooks/useEmitTyping';
@@ -25,7 +26,7 @@ import useNotifications from './hooks/useNotifications';
 import useResend from './hooks/useResend';
 import UserProfiles from './types/UserProfiles';
 import useSendMessageWithTrackingNumber from './hooks/useSendMessageWithTrackingNumber';
-import useTypingUsers from './hooks/useTypingUsers';
+// import useTypingUsers from './hooks/useTypingUsers';
 
 let debug;
 let internalDebug;
@@ -43,7 +44,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
   const [activities] = useActivities();
   const [honorReadReceipts, setHonorReadReceipts] = useHonorReadReceipts();
   const [notifications] = useNotifications();
-  const [typingUsers] = useTypingUsers();
+  // const [typingUsers] = useTypingUsers();
   const [userId] = useACSUserId();
   const emitTyping = useEmitTyping();
   const resend = useResend();
@@ -61,7 +62,7 @@ const InternalACSChatAdapter: FC<{ children: (ChatAdapter) => any; userProfiles:
     resend,
     sendMessage,
     setHonorReadReceipts,
-    typingUsers,
+    // typingUsers,
     userId,
     username
   });
@@ -102,15 +103,15 @@ const ACSChatAdapter: FC<{
 
   tokenForCallbacksRef.current = token;
 
-  const refreshTokenCallback = useCallback(async () => {
-    debug('%crefreshTokenCallback%c is being called', ...styleConsole('orange', 'white'));
+  // const refreshTokenCallback = useCallback(async () => {
+  //   debug('%crefreshTokenCallback%c is being called', ...styleConsole('orange', 'white'));
 
-    const nextToken = await resolveFunction(tokenForCallbacksRef.current);
+  //   const nextToken = await resolveFunction(tokenForCallbacksRef.current);
 
-    debug(['%crefreshTokenCallback%c finished', ...styleConsole('orange', 'white')], [{ token: nextToken }]);
+  //   debug(['%crefreshTokenCallback%c finished', ...styleConsole('orange', 'white')], [{ token: nextToken }]);
 
-    return nextToken;
-  }, [tokenForCallbacksRef]);
+  //   return nextToken;
+  // }, [tokenForCallbacksRef]);
 
   useEffect(() => {
     if (typeof token === 'function') {
@@ -138,20 +139,19 @@ const ACSChatAdapter: FC<{
               <ActivitiesComposer userProfiles={patchedUserProfiles}>
                 <HonorReadReceiptsComposer>
                   <EmitTypingComposer>
-                    <ChatProvider
+                    <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
+                    {/* TODO: Move TypingUsersComposer from ACS UI SDK to ACS Declarative SDK */}
+                    {/* <ChatProvider
                       displayName=""
                       endpointUrl={endpointURL}
                       refreshTokenCallback={refreshTokenCallback}
                       threadId={threadId}
                       token={initialToken}
                     >
-                      {/* DOC-PARITY: It seems <ChatThreadProvider> is not needed because <ChatProvider> will automatically create it */}
-                      {/* <ChatThreadProvider> */}
                       <TypingUsersComposer userProfiles={patchedUserProfiles}>
                         <InternalACSChatAdapter userProfiles={patchedUserProfiles}>{children}</InternalACSChatAdapter>
                       </TypingUsersComposer>
-                      {/* </ChatThreadProvider> */}
-                    </ChatProvider>
+                    </ChatProvider> */}
                   </EmitTypingComposer>
                 </HonorReadReceiptsComposer>
               </ActivitiesComposer>

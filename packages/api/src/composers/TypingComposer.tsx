@@ -19,6 +19,8 @@ type ChatAdapterTypingUsers = {
   };
 };
 
+const EMPTY_MAP = {};
+
 const TypingComposer = ({
   children,
   emitTyping: emitTypingFromProps,
@@ -34,12 +36,12 @@ const TypingComposer = ({
 
   const now = Date.now();
 
-  const prevTypingUsers = usePrevious(typingUsers) || {};
+  const prevTypingUsers = usePrevious(typingUsers) || EMPTY_MAP;
   const typingUsersMapRef = useRef<InternalTypingUsers>({});
 
   let { current: nextTypingUsersMap } = typingUsersMapRef;
 
-  Object.entries(diffObject(prevTypingUsers, typingUsers)).forEach(([userId, [from, to]]) => {
+  Object.entries(diffObject(prevTypingUsers, typingUsers || EMPTY_MAP)).forEach(([userId, [from, to]]) => {
     if (to) {
       nextTypingUsersMap = updateIn(nextTypingUsersMap, [userId, 'name'], () => to.name);
 

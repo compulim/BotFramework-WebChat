@@ -9,6 +9,7 @@ import addVersion from './addVersion';
 import AnimationCardContent from './adaptiveCards/Attachment/AnimationCardContent';
 import AudioCardContent from './adaptiveCards/Attachment/AudioCardContent';
 import coreRenderWebChat from './renderWebChat';
+import coreRenderWebChatForACS from './renderWebChatForACS';
 import createAdaptiveCardsAttachmentMiddleware from './adaptiveCards/createAdaptiveCardsAttachmentMiddleware';
 import createAdaptiveCardsAttachmentForScreenReaderMiddleware from './adaptiveCards/createAdaptiveCardsAttachmentForScreenReaderMiddleware';
 import createCognitiveServicesSpeechServicesPonyfillFactory from './createCognitiveServicesSpeechServicesPonyfillFactory';
@@ -29,6 +30,7 @@ import useAdaptiveCardsPackage from './adaptiveCards/hooks/useAdaptiveCardsPacka
 import VideoCardContent from './adaptiveCards/Attachment/VideoCardContent';
 
 const renderWebChat = coreRenderWebChat.bind(null, ReactWebChat);
+const renderWebChatForACS = coreRenderWebChatForACS.bind(null, ReactWebChat);
 
 export const createDirectLine = options => {
   options.botAgent &&
@@ -79,7 +81,8 @@ export {
   createStyleSet,
   patchedHooks as hooks,
   renderMarkdown,
-  renderWebChat
+  renderWebChat,
+  renderWebChatForACS
 };
 
 window['WebChat'] = {
@@ -95,7 +98,8 @@ window['WebChat'] = {
   hooks: patchedHooks,
   ReactWebChat,
   renderMarkdown,
-  renderWebChat
+  renderWebChat,
+  renderWebChatForACS
 };
 
 addVersion('full');

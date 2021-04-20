@@ -13,11 +13,13 @@ import ReactWebChat, {
 
 import addVersion from './addVersion';
 import coreRenderWebChat from './renderWebChat';
+import coreRenderWebChatForACS from './renderWebChatForACS';
 import createBrowserWebSpeechPonyfillFactory from './createBrowserWebSpeechPonyfillFactory';
 import defaultCreateDirectLine from './createDirectLine';
 import defaultCreateDirectLineAppServiceExtension from './createDirectLineAppServiceExtension';
 
 const renderWebChat = coreRenderWebChat.bind(null, ReactWebChat);
+const renderWebChatForACS = coreRenderWebChatForACS.bind(null, ReactWebChat);
 
 export const createDirectLine = options => {
   options.botAgent &&
@@ -50,6 +52,7 @@ export {
   createStyleSet,
   hooks,
   renderWebChat,
+  renderWebChatForACS,
   version
 };
 
@@ -66,7 +69,8 @@ window['WebChat'] = {
   createStyleSet,
   hooks,
   ReactWebChat,
-  renderWebChat
+  renderWebChat,
+  renderWebChatForACS
 };
 
 addVersion('minimal');
