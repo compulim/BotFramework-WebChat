@@ -8,7 +8,7 @@ import ACSChatMessage from '../types/ACSChatMessage';
 import createCriticalSection from '../utils/createCriticalSection';
 import createDebug from '../utils/debug';
 import diffMap from '../utils/diffMap';
-import SendMessageContext from '../contexts/SendMessageContext2';
+import SendMessageContext from '../contexts/SendMessageContext';
 import updateIn from 'simple-update-in';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSClients from '../hooks/useACSClients';
