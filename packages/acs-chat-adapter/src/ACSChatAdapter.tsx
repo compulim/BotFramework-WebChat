@@ -88,6 +88,8 @@ const ACSChatAdapter: FC<{
   threadId: string;
   token: ResolvableToken;
   userProfiles: UserProfiles;
+
+  // TODO: Should we have a prop to indicate how many messages to load from history?
 }> = ({ children, endpointURL, threadId, token, userProfiles }) => {
   // Lazy initializing constants to save loading speed and memory
   debug || (debug = createDebug('<ACSChatAdapter>', { backgroundColor: 'yellow', color: 'black' }));
