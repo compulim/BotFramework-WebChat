@@ -9,7 +9,7 @@ import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 import useACSClients from '../hooks/useACSClients';
 
-const PAGE_SIZE = 1000;
+const PAGE_SIZE = 100;
 let debug;
 let EMPTY_ARRAY;
 

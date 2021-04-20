@@ -45,11 +45,15 @@ export default function useDebugDeps<T>(depsMap: T, name: string): void {
             [key]: {
               from,
               to,
-              diff: Array.isArray(to)
-                ? diffArray(from || [], to)
-                : to instanceof Map
-                ? diffMap(from || new Map(), to)
-                : diffObject(from || {}, to || {})
+              ...(typeof to !== 'boolean' && typeof to !== 'number' && typeof to !== 'string'
+                ? {
+                    diff: Array.isArray(to)
+                      ? diffArray(from || [], to)
+                      : to instanceof Map
+                      ? diffMap(from || new Map(), to)
+                      : diffObject(from || {}, to || {})
+                  }
+                : {})
             }
           };
         }, {})
