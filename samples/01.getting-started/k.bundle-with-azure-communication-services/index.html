@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <title>Web Chat: Full-featured bundle</title>
+    <title>Web Chat: Connect to Azure Communication Services</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
       This CDN points to the latest official release of Web Chat. If you need to test against Web Chat's latest bits, please refer to using Web Chat's latest bits:
@@ -28,11 +28,6 @@
     <div id="webchat" role="main"></div>
     <script>
       (async function () {
-        // In this demo, we are using Direct Line token from MockBot.
-        // Your client code must provide either a secret or a token to talk to your bot.
-        // Tokens are more secure. To learn about the differences between secrets and tokens
-        // and to understand the risks associated with using secrets, visit https://docs.microsoft.com/en-us/azure/bot-service/rest-api/bot-framework-rest-direct-line-3-0-authentication?view=azure-bot-service-4.0
-
         window.WebChat.renderWebChatForACS(
           {
             endpointURL: 'https://your-service.communication.azure.com/',
