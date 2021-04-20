@@ -12,6 +12,7 @@ import Activity from '../types/Activity';
 import createACSMessageToWebChatActivityConverter from '../converters/createACSMessageToWebChatActivityConverter';
 import diffMap from '../utils/diffMap';
 import diffObject from '../utils/diffObject';
+import sequenceIdToSequenceNumber from '../converters/sequenceIdToSequenceNumber';
 import useACSChatMessages from '../hooks/useACSChatMessages';
 import useACSParticipants from '../hooks/useACSParticipants';
 import useACSReadReceipts from '../hooks/useACSReadReceipts';
@@ -23,14 +24,6 @@ import usePrevious from '../hooks/usePrevious';
 import UserProfiles from '../types/UserProfiles';
 
 let EMPTY_MAP;
-
-function sequenceIdToSequenceNumber(sequenceId) {
-  return typeof sequenceId === 'number'
-    ? sequenceId
-    : typeof sequenceId === 'string' && sequenceId
-    ? +sequenceId
-    : Infinity;
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
