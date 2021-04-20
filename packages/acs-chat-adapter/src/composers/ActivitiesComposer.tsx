@@ -26,7 +26,7 @@ import UserProfiles from '../types/UserProfiles';
 let EMPTY_MAP;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
+const ActivitiesComposer: FC<{ children: any; userProfiles: UserProfiles }> = ({ children, userProfiles }) => {
   EMPTY_MAP || (EMPTY_MAP = new Map());
 
   const [chatMessages] = useACSChatMessages();
@@ -190,12 +190,12 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
   return <ActivitiesContext.Provider value={activities}>{children}</ActivitiesContext.Provider>;
 };
 
-ActivitiesComposer2.defaultProps = {
+ActivitiesComposer.defaultProps = {
   children: undefined,
   userProfiles: undefined
 };
 
-ActivitiesComposer2.propTypes = {
+ActivitiesComposer.propTypes = {
   children: PropTypes.any,
   userProfiles: PropTypes.objectOf(
     PropTypes.shape({
@@ -206,4 +206,4 @@ ActivitiesComposer2.propTypes = {
   )
 };
 
-export default ActivitiesComposer2;
+export default ActivitiesComposer;
