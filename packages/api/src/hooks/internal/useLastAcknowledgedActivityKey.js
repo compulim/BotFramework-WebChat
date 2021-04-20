@@ -1,7 +1,7 @@
-import useWebChatActivitiesContext from './useWebChatActivitiesContext';
+import useActivitiesContext from './useActivitiesContext';
 
 export default function useLastAcknowledgedActivityKey() {
-  const { lastAcknowledgedActivityKey, setLastAcknowledgedActivityKey } = useWebChatActivitiesContext();
+  const { lastAcknowledgedActivityKey, setLastAcknowledgedActivityKey } = useActivitiesContext();
 
   return [lastAcknowledgedActivityKey, setLastAcknowledgedActivityKey];
 }

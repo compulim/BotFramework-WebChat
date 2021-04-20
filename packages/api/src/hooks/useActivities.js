@@ -1,12 +1,12 @@
 import { useContext } from 'react';
 
-import useWebChatActivitiesContext from './internal/useWebChatActivitiesContext';
+import useActivitiesContext from './internal/useActivitiesContext';
 import warn from '../utils/warn';
 import WebChatSpeechContext from './internal/WebChatSpeechContext';
 
 export default function useActivities(options = 'all') {
   // TODO: Verify all activities are valid, e.g. contains channelData, etc.
-  const { activities: allActivities, activitiesWithRenderer } = useWebChatActivitiesContext();
+  const { activities: allActivities, activitiesWithRenderer } = useActivitiesContext();
   const speechContext = useContext(WebChatSpeechContext);
 
   if (options === 'speech synthesis') {

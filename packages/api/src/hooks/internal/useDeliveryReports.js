@@ -1,7 +1,7 @@
 // TODO: Will our end-developers interested in delivery reports?
 //       The tracking number is already in the transcript.
-import useWebChatActivitiesContext from './useWebChatActivitiesContext';
+import useActivitiesContext from './useActivitiesContext';
 
 export default function useDeliveryReports() {
-  return [useWebChatActivitiesContext().deliveryReports];
+  return [useActivitiesContext().deliveryReports];
 }

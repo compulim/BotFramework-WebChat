@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
-import ActivitiesComposer from './internal/ActivitiesComposer';
+import ActivitiesComposer from '../composers/internal/ActivitiesComposer';
 import CardActionComposer from './internal/CardActionComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';

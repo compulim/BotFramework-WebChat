@@ -1,5 +1,5 @@
-import useWebChatActivitiesContext from './internal/useWebChatActivitiesContext';
+import useActivitiesContext from './internal/useActivitiesContext';
 
 export default function useDeliveryReports() {
-  return [useWebChatActivitiesContext().deliveryReports];
+  return [useActivitiesContext().deliveryReports];
 }

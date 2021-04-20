@@ -2,6 +2,6 @@ import { createContext } from 'react';
 
 const context = createContext();
 
-context.displayName = 'WebChatActivitiesContext';
+context.displayName = 'WebChat.ActivitiesContext';
 
 export default context;
