@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 
-import WebChatCardActionContext from './WebChatCardActionContext';
+import CardActionContext from '../../contexts/internal/CardActionContext';
 
-export default function useWebChatCardActionContext() {
-  const context = useContext(WebChatCardActionContext);
+export default function useCardActionContext() {
+  const context = useContext(CardActionContext);
 
   if (!context) {
     throw new Error('This hook can only be used on a component that is a descendant of <Composer>');

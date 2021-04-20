@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import applyMiddleware from '../middleware/applyMiddleware';
+import applyMiddleware from '../../hooks/middleware/applyMiddleware';
+import CardActionContext from '../../contexts/internal/CardActionContext';
 // import createDebug from '../utils/debug';
-import createDefaultCardActionMiddleware from '../middleware/createDefaultCardActionMiddleware';
-import singleToArray from '../utils/singleToArray';
-import useSendMessage from '../useSendMessage';
-import useSendMessageBack from '../useSendMessageBack';
-import useSendPostBack from '../useSendPostBack';
-import WebChatCardActionContext from './WebChatCardActionContext';
-import useClearSuggestedActions from '../useClearSuggestedActions';
+import createDefaultCardActionMiddleware from '../../hooks/middleware/createDefaultCardActionMiddleware';
+import singleToArray from '../../hooks/utils/singleToArray';
+import useClearSuggestedActions from '../../hooks/useClearSuggestedActions';
+import useSendMessage from '../../hooks/useSendMessage';
+import useSendMessageBack from '../../hooks/useSendMessageBack';
+import useSendPostBack from '../../hooks/useSendPostBack';
 
 // let debug;
 
@@ -97,7 +97,7 @@ const CardActionComposer = ({ cardActionMiddleware, children, getDirectLineOAuth
 
   // debug(['Render'], [cardActionContext]);
 
-  return <WebChatCardActionContext.Provider value={cardActionContext}>{children}</WebChatCardActionContext.Provider>;
+  return <CardActionContext.Provider value={cardActionContext}>{children}</CardActionContext.Provider>;
 };
 
 CardActionComposer.defaultProps = {

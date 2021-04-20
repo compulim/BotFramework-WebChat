@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
 import ActivitiesComposer from '../composers/internal/ActivitiesComposer';
-import CardActionComposer from './internal/CardActionComposer';
+import CardActionComposer from '../composers/internal/CardActionComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';
 import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGroupActivitiesMiddleware';

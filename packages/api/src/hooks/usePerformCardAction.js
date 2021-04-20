@@ -1,5 +1,5 @@
-import useWebChatCardActionContext from './internal/useWebChatCardActionContext';
+import useCardActionContext from './internal/useCardActionContext';
 
 export default function usePerformCardAction() {
-  return useWebChatCardActionContext().onCardAction;
+  return useCardActionContext().onCardAction;
 }
