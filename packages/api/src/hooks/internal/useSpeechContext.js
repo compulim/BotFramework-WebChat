@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 
-import WebChatSpeechContext from './WebChatSpeechContext';
+import SpeechContext from '../../contexts/internal/SpeechContext';
 
-export default function useWebChatSpeechContext() {
-  const context = useContext(WebChatSpeechContext);
+export default function useSpeechContext() {
+  const context = useContext(SpeechContext);
 
   if (!context) {
     throw new Error('This hook can only be used on a component that is a descendant of <Composer>');

@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import createDebug from '../../utils/debug';
+import SpeechContext from '../../contexts/internal/SpeechContext';
 import useActivities from '../useActivities';
 // import useGrammars from '../useGrammars';
 import useInputMode from '../useInputMode';
@@ -11,7 +12,6 @@ import useSendBoxValue from '../useSendBoxValue';
 import useSendMessage from '../useSendMessage';
 import useSpeechRecognition from './useSpeechRecognition';
 import warn from '../../utils/warn';
-import WebChatSpeechContext from './WebChatSpeechContext';
 
 const {
   DictateState: { DICTATING, IDLE, STARTING }
@@ -261,7 +261,7 @@ const SpeechComposer = ({ children, directLineReferenceGrammarId, webSpeechPonyf
     ]
   );
 
-  return <WebChatSpeechContext.Provider value={speechContext}>{children}</WebChatSpeechContext.Provider>;
+  return <SpeechContext.Provider value={speechContext}>{children}</SpeechContext.Provider>;
 };
 
 SpeechComposer.defaultProps = {

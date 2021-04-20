@@ -1,5 +1,5 @@
-import useWebChatSpeechContext from './useWebChatSpeechContext';
+import useSpeechContext from './useSpeechContext';
 
 export default function useStartSynthesizeActivityFromOthers() {
-  return useWebChatSpeechContext().startSynthesizeActivityFromOthers;
+  return useSpeechContext().startSynthesizeActivityFromOthers;
 }

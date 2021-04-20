@@ -1,5 +1,5 @@
-import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
+import useSpeechContext from './internal/useSpeechContext';
 
 export default function useMarkActivityAsSpoken() {
-  return useWebChatSpeechContext().markActivityAsSpoken;
+  return useSpeechContext().markActivityAsSpoken;
 }

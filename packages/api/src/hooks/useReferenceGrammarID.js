@@ -1,5 +1,5 @@
-import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
+import useSpeechContext from './internal/useSpeechContext';
 
 export default function useReferenceGrammarID() {
-  return [useWebChatSpeechContext().directLineReferenceGrammarId];
+  return [useSpeechContext().directLineReferenceGrammarId];
 }

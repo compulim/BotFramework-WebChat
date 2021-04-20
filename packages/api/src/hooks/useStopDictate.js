@@ -1,5 +1,5 @@
-import useWebChatSpeechContext from './internal/useWebChatSpeechContext';
+import useSpeechContext from './internal/useSpeechContext';
 
 export default function useStopDictate() {
-  return useWebChatSpeechContext().stopSpeechRecognition;
+  return useSpeechContext().stopSpeechRecognition;
 }
