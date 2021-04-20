@@ -2,15 +2,15 @@ import { useCallback, useMemo } from 'react';
 
 import createCustomEvent from '../utils/createCustomEvent';
 import isObject from '../utils/isObject';
+import useAPIContext from './internal/useAPIContext';
 import useReadTelemetryDimensions from './internal/useReadTelemetryDimensions';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
 function isNonNegativeFiniteNumberOrString(value) {
   return (typeof value === 'number' && isFinite(value) && value >= 0) || typeof value === 'string';
 }
 
 export default function useTrackEvent() {
-  const { onTelemetry } = useWebChatAPIContext();
+  const { onTelemetry } = useAPIContext();
   const readTelemetryDimensions = useReadTelemetryDimensions();
 
   const trackEvent = useCallback(

@@ -5,14 +5,14 @@ import React, { useMemo } from 'react';
 
 // import useGetSendTimeoutForActivity from './useGetSendTimeoutForActivity';
 // import useTimePassed from './internal/useTimePassed';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 const {
   ActivityClientState: { SEND_FAILED, SENDING, SENT }
 } = Constants;
 
 const ActivityStatusContainer = ({ activity, hideTimestamp, nextVisibleActivity }) => {
-  const { activityStatusRenderer: createActivityStatusRenderer } = useWebChatAPIContext();
+  const { activityStatusRenderer: createActivityStatusRenderer } = useAPIContext();
   // const getSendTimeoutForActivity = useGetSendTimeoutForActivity();
 
   // SEND_FAILED from the activity is ignored, and is instead based on styleOptions.sendTimeout.

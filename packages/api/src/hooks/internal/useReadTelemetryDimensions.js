@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 
-import useWebChatAPIContext from './useWebChatAPIContext';
+import useAPIContext from './useAPIContext';
 
 export default function useReadTelemetryDimensions() {
-  const { telemetryDimensionsRef } = useWebChatAPIContext();
+  const { telemetryDimensionsRef } = useAPIContext();
 
   return useCallback(() => ({ ...telemetryDimensionsRef.current }), [telemetryDimensionsRef]);
 }

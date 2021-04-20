@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 export default function useDisabled() {
-  return [useWebChatAPIContext().disabled];
+  return [useAPIContext().disabled];
 }

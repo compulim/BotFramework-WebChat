@@ -1,8 +1,8 @@
+import useAPIContext from './internal/useAPIContext';
 import useLocalizedStrings from './internal/useLocalizedStrings';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
 export default function useLanguage(options) {
-  const { language } = useWebChatAPIContext();
+  const { language } = useAPIContext();
   const localizedStrings = useLocalizedStrings();
 
   if (options === 'speech') {

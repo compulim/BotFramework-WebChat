@@ -1,7 +1,7 @@
-import useWebChatAPIContext from './useWebChatAPIContext';
+import useAPIContext from './useAPIContext';
 
 export default function useDownscaleImageToDataURL() {
-  const { downscaleImageToDataURL } = useWebChatAPIContext();
+  const { downscaleImageToDataURL } = useAPIContext();
 
   return downscaleImageToDataURL;
 }

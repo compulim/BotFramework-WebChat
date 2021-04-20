@@ -1,12 +1,12 @@
 import { getMetadata } from 'botframework-webchat-core';
 import { useMemo } from 'react';
 
+import useAPIContext from './internal/useAPIContext';
 import useStyleOptions from './useStyleOptions';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
 export default function useCreateAvatarRenderer() {
   const [styleOptions] = useStyleOptions();
-  const { avatarRenderer } = useWebChatAPIContext();
+  const { avatarRenderer } = useAPIContext();
 
   return useMemo(
     () => ({ activity }) => {

@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
 import createCustomEvent from '../utils/createCustomEvent';
+import useAPIContext from './internal/useAPIContext';
 import useReadTelemetryDimensions from './internal/useReadTelemetryDimensions';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
 export default function useTrackException() {
-  const { onTelemetry } = useWebChatAPIContext();
+  const { onTelemetry } = useAPIContext();
   const readTelemetryDimensions = useReadTelemetryDimensions();
 
   return useCallback(

@@ -1,7 +1,7 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 export default function useRenderAttachment() {
-  const { attachmentRenderer } = useWebChatAPIContext();
+  const { attachmentRenderer } = useAPIContext();
 
   return attachmentRenderer;
 }

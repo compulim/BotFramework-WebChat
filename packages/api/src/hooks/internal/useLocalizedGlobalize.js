@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './useWebChatAPIContext';
+import useAPIContext from './useAPIContext';
 
 export default function useLocalizedGlobalize() {
-  return useWebChatAPIContext().localizedGlobalizeState;
+  return useAPIContext().localizedGlobalizeState;
 }

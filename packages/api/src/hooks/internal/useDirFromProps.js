@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './useWebChatAPIContext';
+import useAPIContext from './useAPIContext';
 
 export default function useDirFromProps() {
-  return [useWebChatAPIContext().dir];
+  return [useAPIContext().dir];
 }

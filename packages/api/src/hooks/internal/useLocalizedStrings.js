@@ -1,7 +1,7 @@
-import useWebChatAPIContext from './useWebChatAPIContext';
+import useAPIContext from './useAPIContext';
 
 export default function useLocalizedStrings() {
-  const { localizedStrings } = useWebChatAPIContext();
+  const { localizedStrings } = useAPIContext();
 
   return localizedStrings;
 }

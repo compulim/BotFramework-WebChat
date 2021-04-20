@@ -1,7 +1,7 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 export default function useTrackDimension() {
-  const { trackDimension } = useWebChatAPIContext();
+  const { trackDimension } = useAPIContext();
 
   return trackDimension;
 }

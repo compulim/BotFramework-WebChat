@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
 import ActivitiesComposer from '../composers/internal/ActivitiesComposer';
+import APIContext from '../contexts/internal/APIContext';
 import CardActionComposer from '../composers/internal/CardActionComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';
@@ -22,7 +23,6 @@ import singleToArray from './utils/singleToArray';
 import SpeechComposer from './internal/SpeechComposer';
 import Tracker from './internal/Tracker';
 import TypingComposer from '../composers/internal/TypingComposer';
-import WebChatAPIContext from './internal/WebChatAPIContext';
 
 import applyMiddleware, {
   forLegacyRenderer as applyMiddlewareForLegacyRenderer,
@@ -410,7 +410,7 @@ const Composer = ({
   );
 
   return (
-    <WebChatAPIContext.Provider value={context}>
+    <APIContext.Provider value={context}>
       <ActivitiesComposer
         activities={activities}
         honorReadReceipts={patchedHonorReadReceipts}
@@ -442,7 +442,7 @@ const Composer = ({
           </TypingComposer>
         </NotificationComposer>
       </ActivitiesComposer>
-    </WebChatAPIContext.Provider>
+    </APIContext.Provider>
   );
 };
 

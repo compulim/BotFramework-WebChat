@@ -1,6 +1,6 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 // TODO: Rename to "useUserId".
 export default function useUserID() {
-  return [useWebChatAPIContext().userId];
+  return [useAPIContext().userId];
 }

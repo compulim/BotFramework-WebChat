@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 export default function useStyleOptions() {
-  return [useWebChatAPIContext().styleOptions];
+  return [useAPIContext().styleOptions];
 }

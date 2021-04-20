@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 
-import WebChatAPIContext from './WebChatAPIContext';
+import APIContext from '../../contexts/internal/APIContext';
 
-export default function useWebChatAPIContext() {
-  const context = useContext(WebChatAPIContext);
+export default function useAPIContext() {
+  const context = useContext(APIContext);
 
   if (!context) {
     throw new Error('This hook can only be used on a component that is a descendant of <Composer>');

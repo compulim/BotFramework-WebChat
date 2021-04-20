@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
+import useAPIContext from './internal/useAPIContext';
 import useStyleOptions from './useStyleOptions';
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
 export default function useCreateTypingIndicatorRenderer() {
   const [styleOptions] = useStyleOptions();
-  const { typingIndicatorRenderer } = useWebChatAPIContext();
+  const { typingIndicatorRenderer } = useAPIContext();
 
   return useMemo(
     () => ({ activeTyping, typing }) => {

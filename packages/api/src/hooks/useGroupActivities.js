@@ -1,5 +1,5 @@
-import useWebChatAPIContext from './internal/useWebChatAPIContext';
+import useAPIContext from './internal/useAPIContext';
 
 export default function useGroupActivities() {
-  return useWebChatAPIContext().groupActivities;
+  return useAPIContext().groupActivities;
 }

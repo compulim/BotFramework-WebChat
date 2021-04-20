@@ -1,7 +1,7 @@
-import useWebChatAPIContext from './useWebChatAPIContext';
+import useAPIContext from './useAPIContext';
 
 export default function useErrorBoxClass() {
-  const { internalErrorBoxClass } = useWebChatAPIContext();
+  const { internalErrorBoxClass } = useAPIContext();
 
   return [internalErrorBoxClass];
 }
