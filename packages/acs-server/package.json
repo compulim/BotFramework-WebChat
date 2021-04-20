@@ -18,5 +18,8 @@
     "node-fetch": "^2.6.1",
     "otplib": "^12.0.1",
     "rate-limiter-flexible": "2.2.1"
+  },
+  "devDependencies": {
+    "qrcode": "1.4.4"
   }
 }
