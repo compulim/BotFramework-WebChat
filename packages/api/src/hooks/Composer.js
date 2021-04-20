@@ -21,7 +21,7 @@ import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
 import SpeechComposer from './internal/SpeechComposer';
 import Tracker from './internal/Tracker';
-import TypingComposer from './internal/TypingComposer';
+import TypingComposer from '../composers/internal/TypingComposer';
 import WebChatAPIContext from './internal/WebChatAPIContext';
 
 import applyMiddleware, {

@@ -6,7 +6,7 @@ import InternalTypingUsers from '../../types/internal/TypingUsers';
 
 import diffObject from '../../utils/diffObject';
 import InternalTypingContext from '../../contexts/internal/TypingContext';
-import usePrevious from './usePrevious';
+import usePrevious from '../../hooks/internal/usePrevious';
 
 // If no argument is passed to `emitTypingIndicator`, it is in "pulse" mode.
 // In pulse mode, if another pulse was not received within a predefined period, it will stop the typing signal.
