@@ -1,7 +1,7 @@
 /* eslint no-magic-numbers: ["error", { "ignore": [-1, 0, 1] }] */
 /* eslint complexity: "off" */
 
-import { ReadBy, updateMetadata } from 'botframework-webchat-core';
+import { ReadBy } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React, { FC, useCallback, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
@@ -134,7 +134,7 @@ const ActivitiesComposer2: FC<{ children: any; userProfiles: UserProfiles }> = (
   const activities = useMemoAll<Activity, Activity[]>(
     useCallback(
       (key, chatMessage, readBy, trackingNumber) =>
-        updateMetadata(convert(chatMessage), {
+        convert(chatMessage, {
           key,
           readBy,
           trackingNumber

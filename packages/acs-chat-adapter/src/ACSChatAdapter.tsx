@@ -170,7 +170,6 @@ ACSChatAdapter.defaultProps = {
   userProfiles: {}
 };
 
-// TODO: Since ACS do not provide profile data, we should have a mapProfile function to convert userId -> (avatar image, initials, name).
 ACSChatAdapter.propTypes = {
   children: PropTypes.func.isRequired,
   endpointURL: PropTypes.string.isRequired,

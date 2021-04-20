@@ -1,19 +1,13 @@
 /* eslint complexity: ["error", 30] */
 
-import { EventActivity, MessageActivity, updateMetadata } from 'botframework-webchat-core';
+import { EventActivity, MessageActivity, ReadBy, updateMetadata } from 'botframework-webchat-core';
 
 import ACSChatMessage from '../types/ACSChatMessage';
 import Activity from '../types/Activity';
 import createDebug from '../utils/debug';
-import styleConsole from '../utils/styleConsole';
 import UserProfiles from '../types/UserProfiles';
 
 let debug;
-
-// TODO: Verify this logic with ACS team to see if this is correct.
-// function isOthersUserId(userId: string) {
-//   return userId.startsWith('8:');
-// }
 
 // "threadId" is undefined for messages from others, so we prefer to use the "threadId" from setup.
 export default function createACSMessageToWebChatActivityConverter({
@@ -24,39 +18,32 @@ export default function createACSMessageToWebChatActivityConverter({
   threadId: string;
   userId: string;
   userProfiles: UserProfiles;
-}): (chatMessage: ACSChatMessage) => Activity {
+}): (acsChatMessage: ACSChatMessage, metadata: { key: string; readBy: ReadBy; trackingNumber: string }) => Activity {
   debug ||
     (debug = createDebug('util:acsMessageToWebChatActivity', {
       backgroundColor: 'lightgray',
       color: 'black'
     }));
 
-  return acsChatMessage => {
+  return (
+    acsChatMessage: ACSChatMessage,
+    metadata: { key: string; readBy: ReadBy; trackingNumber: string }
+  ): Activity => {
     const now = new Date();
     const { clientMessageId, content, createdOn, id, sender, senderDisplayName, status, type } = acsChatMessage;
 
     // TODO: Checks with ACS team to see if this is a good strategy to find out "user.kind".
-    const who: 'others' | 'self' | 'service' = sender
-      ? sender.communicationUserId && sender.communicationUserId !== userId
-        ? 'others'
-        : 'self'
-      : 'service';
+    const who: 'others' | 'self' | 'service' = !sender
+      ? 'service'
+      : sender.communicationUserId && sender.communicationUserId !== userId
+      ? 'others'
+      : 'self';
 
     const communicationUserId = who === 'self' ? userId : who === 'service' ? undefined : sender.communicationUserId;
 
-    const userProfile = who === 'others' || who === 'self' ? userProfiles[communicationUserId || userId] : undefined;
+    const userProfile = who === 'others' || who === 'self' ? userProfiles[communicationUserId] : undefined;
 
-    // TODO: Assert data if it met our expectation.
-    if (who === 'self') {
-      // Assertion: to work properly, every activity must contains an ID during their lifetime, and this ID must not be changed during any moment of its life.
-      if (!clientMessageId && !id) {
-        // TODO: Check if conversation history contains "clientMessageId".
-        // TODO: After the message is sent and echoed back from ACS, the "clientMessageId" is gone.
-        //       This is crucial for the operation of Web Chat, because, if we can't reference the same message, we will be creating new DOM elements.
-        //       Creating new DOM elements will hurt accessibility (ARIA live region).
-        debug('🔥🔥🔥 %cFor all self messages, "clientMessageId" and/or "id" must be set.%c', ...styleConsole('red'));
-      }
-    }
+    // TODO: Add assertions here to make sure the data met our expectation.
 
     const senderName = (userProfile || {}).name || senderDisplayName;
 
@@ -83,8 +70,10 @@ export default function createACSMessageToWebChatActivityConverter({
       } as any,
       {
         avatarInitials: (userProfile || {}).initials,
-        key: clientMessageId || id,
+        key: metadata.key,
+        readBy: metadata.readBy,
         senderName,
+        trackingNumber: metadata.trackingNumber,
         who
       }
     );
@@ -117,9 +106,6 @@ export default function createACSMessageToWebChatActivityConverter({
           ...activityContent
         },
         {
-          // deliveryStatus: createdOn ? undefined : 'sending' // If it contains "createdOn", it's sent.
-
-          // 'delivered' | 'sending' | 'seen' | 'failed'
           deliveryStatus: status === 'failed' ? 'error' : status === 'sending' ? status : undefined
         }
       );

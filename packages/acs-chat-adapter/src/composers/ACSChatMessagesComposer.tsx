@@ -9,7 +9,6 @@ import createDebug from '../utils/debug';
 import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 import useACSClients from '../hooks/useACSClients';
-import useDebounced from '../hooks/useDebounced';
 import usePrevious from '../hooks/usePrevious';
 import warn from '../utils/warn';
 
@@ -76,24 +75,12 @@ const ACSChatMessageComposer: FC = ({ children }) => {
     }
   }
 
-  // const context = useMemo(
-  //   () => ({
-  //     chatMessages,
-  //     connectivityStatus
-  //   }),
-  //   [chatMessages, connectivityStatus]
-  // );
-
-  // TODO: Remove useDebounced.
-  // eslint-disable-next-line no-magic-numbers
-  const debouncedChatMessages = useDebounced(chatMessages, 1000);
-
   const context = useMemo(
     () => ({
-      chatMessages: debouncedChatMessages,
+      chatMessages,
       connectivityStatus
     }),
-    [connectivityStatus, debouncedChatMessages]
+    [chatMessages, connectivityStatus]
   );
 
   return <ACSChatMessagesContext.Provider value={context}>{children}</ACSChatMessagesContext.Provider>;

@@ -53,10 +53,8 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
   const chatClient = useMemo(() => new ChatClient(endpointURL, credentials), [credentials, endpointURL]);
 
   const declarativeChatClient = useMemo(
-    // TODO: Type ChatClient from @azure/communication-chat is not compatible with @azure/acs-chat-declarative.
     // TODO: What to do with "displayName" and "userId"?
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => chatClientDeclaratify(chatClient as any, { displayName: '', userId: '' }),
+    () => chatClientDeclaratify(chatClient, { displayName: '', userId: '' }),
     [chatClient]
   );
 
@@ -71,9 +69,7 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
     (async function () {
       const declarativeChatThreadClient = await declarativeChatClient.getChatThreadClient(threadId);
 
-      // TODO: Fix the typing. Declarative SDK should export the type DeclarativeChatThreadClient.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      abortController.signal.aborted || setDeclarativeChatThreadClient(declarativeChatThreadClient as any);
+      abortController.signal.aborted || setDeclarativeChatThreadClient(declarativeChatThreadClient);
     })();
 
     return () => abortController.abort();
