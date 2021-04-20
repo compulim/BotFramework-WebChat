@@ -12,7 +12,7 @@ import useACSClients from '../hooks/useACSClients';
 import usePrevious from '../hooks/usePrevious';
 import warn from '../utils/warn';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 1000;
 let debug;
 let EMPTY_MAP;
 

@@ -7,7 +7,7 @@ import styleConsole from '../utils/styleConsole';
 import useACSChatThreadSelector from '../hooks/useACSChatThreadSelector';
 import useACSClients from '../hooks/useACSClients';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 1000;
 let debug;
 
 const ACSParticipantsComposer: FC = ({ children }) => {
