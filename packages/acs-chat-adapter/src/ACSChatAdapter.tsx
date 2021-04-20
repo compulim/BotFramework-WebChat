@@ -12,6 +12,7 @@ import ActivitiesComposer from './composers/ActivitiesComposer';
 import createDebug from './utils/debug';
 import EmitTypingComposer from './composers/EmitTypingComposer';
 import HonorReadReceiptsComposer from './composers/HonorReadReceiptsComposer';
+import ResolvableToken from './types/ResolvableToken';
 import resolveFunction from './utils/resolveFunction';
 import SendMessageComposer from './composers/SendMessageComposer';
 import styleConsole from './utils/styleConsole';
@@ -79,8 +80,6 @@ InternalACSChatAdapter.propTypes = {
   ).isRequired
 };
 
-type ResolvableToken = string | Promise<string> | (() => string) | (() => Promise<string>);
-
 const ACSChatAdapter: FC<{
   // TODO: We should type "children" prop.
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -129,11 +128,10 @@ const ACSChatAdapter: FC<{
   const credentialsProvided = !!(endpointURL && initialToken && threadId);
 
   return credentialsProvided ? (
-    <ACSClientsComposer endpointURL={endpointURL} threadId={threadId} token={initialToken}>
+    <ACSClientsComposer endpointURL={endpointURL} threadId={threadId} token={token}>
       <ACSChatMessagesComposer>
         <ACSParticipantsComposer>
           <ACSReadReceiptsComposer>
-            {/* <KeyOfChatMessageComposer> */}
             <SendMessageComposer>
               <ActivitiesComposer userProfiles={patchedUserProfiles}>
                 <HonorReadReceiptsComposer>
@@ -156,7 +154,6 @@ const ACSChatAdapter: FC<{
                 </HonorReadReceiptsComposer>
               </ActivitiesComposer>
             </SendMessageComposer>
-            {/* </KeyOfChatMessageComposer> */}
           </ACSReadReceiptsComposer>
         </ACSParticipantsComposer>
       </ACSChatMessagesComposer>

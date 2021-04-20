@@ -6,6 +6,8 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 
 import { default as ACSDeclarativesContext } from '../contexts/ACSClientsContext';
 import createDebug from '../utils/debug';
+import ResolvableToken from '../types/ResolvableToken';
+import resolveFunction from '../utils/resolveFunction';
 import styleConsole from '../utils/styleConsole';
 
 // TODO: This is from acs-ui-sdk, we need it.
@@ -28,7 +30,7 @@ let debug;
 
 // TODO: Type "children".
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId: string; token: string }> = ({
+const ACSClientsComposer: FC<{ children: any; endpointURL: string; threadId: string; token: ResolvableToken }> = ({
   children,
   endpointURL,
   threadId,
@@ -40,12 +42,12 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
   const credentials = useMemo<{ dispose(): void; getToken(): Promise<{ expiresOnTimestamp: number; token: string }> }>(
     () => ({
       dispose: () => undefined,
-      getToken: () =>
-        Promise.resolve({
-          // TODO: Should we extract the expiry from the token?
-          expiresOnTimestamp: Infinity,
-          token
-        })
+      getToken: async () => {
+        const actualToken = await resolveFunction(token);
+
+        // TODO: Should we extract the expiry from the token?
+        return { expiresOnTimestamp: Infinity, token: actualToken };
+      }
     }),
     [token]
   );
@@ -119,15 +121,15 @@ const ACSDeclarativesComposer: FC<{ children: any; endpointURL: string; threadId
   return <ACSDeclarativesContext.Provider value={context}>{children}</ACSDeclarativesContext.Provider>;
 };
 
-ACSDeclarativesComposer.defaultProps = {
+ACSClientsComposer.defaultProps = {
   children: undefined
 };
 
-ACSDeclarativesComposer.propTypes = {
+ACSClientsComposer.propTypes = {
   children: PropTypes.any,
   endpointURL: PropTypes.string.isRequired,
   threadId: PropTypes.string.isRequired,
-  token: PropTypes.string.isRequired
+  token: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired
 };
 
-export default ACSDeclarativesComposer;
+export default ACSClientsComposer;
