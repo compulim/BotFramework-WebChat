@@ -28,7 +28,9 @@ jobs:
         env:
           NODE_ENV: production
 
-      - run: mkdir -p artifacts/tarballs/
+      - run: |
+          mkdir -p artifacts/bundles/
+          mkdir -p artifacts/tarballs/
 
       - name: Pack all packages
         run: |
@@ -39,6 +41,16 @@ jobs:
           cp *.tgz ../../artifacts/tarballs/
           cd ../../
           done
+
+      - name: Copy all bundles
+        run: |
+          cp packages/bundle/dist/*.js artifacts/bundles/
+
+      - name: Upload all bundles
+        uses: actions/upload-artifact@v2
+        with:
+          name: bundles
+          path: artifacts/bundles/
 
       - name: Upload all packages
         uses: actions/upload-artifact@v2
@@ -67,6 +79,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: packages
+          path: assets
 
       - name: Delete existing release
         # When this workflow is run in its first time, or 2+ are running side-by-side, the release may not exists. It is okay to ignore 404s.
@@ -89,13 +102,17 @@ jobs:
             | Build time | Run ID | Source version | Git ref | Package version |
             | - | - | - | - | - |
             | ${{ steps.compute_hash.outputs.release_date }}Z | [`${{ github.run_id }}`](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) | [`${{ steps.compute_hash.outputs.git_short_sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) | `${{ github.ref }}` | `${{ steps.compute_hash.outputs.package_version }}` |
+
+            ```html
+            <script src="https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_NAME }}/webchat.js"></script>
+            ```
           draft: false
           prerelease: true
 
       - name: Upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload $RELEASE_NAME *.tgz --repo ${{ github.repository }}
+        run: gh release upload $RELEASE_NAME assets/* --repo ${{ github.repository }}
 
   # release:
   #   needs: build
