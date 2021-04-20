@@ -5,9 +5,9 @@ import updateIn from 'simple-update-in';
 
 import createDebug from '../../utils/debug';
 import diffObject from '../../utils/diffObject';
-import useForceRender from './useForceRender';
-import usePrevious from './usePrevious';
-import WebChatNotificationContext from './WebChatNotificationContext';
+import NotificationContext from '../../contexts/internal/NotificationContext';
+import useForceRender from '../../hooks/internal/useForceRender';
+import usePrevious from '../../hooks/internal/usePrevious';
 
 let debug;
 
@@ -114,7 +114,7 @@ const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; childr
     [dismissNotification, notifications, setNotification]
   );
 
-  return <WebChatNotificationContext.Provider value={context}>{children}</WebChatNotificationContext.Provider>;
+  return <NotificationContext.Provider value={context}>{children}</NotificationContext.Provider>;
 };
 
 NotificationComposer.defaultProps = {

@@ -1,5 +1,5 @@
-import useWebChatNotificationContext from './internal/useWebChatNotificationContext';
+import useNotificationContext from './internal/useNotificationContext';
 
 export default function useSetNotification() {
-  return useWebChatNotificationContext().setNotification;
+  return useNotificationContext().setNotification;
 }

@@ -15,7 +15,7 @@ import InputComposer from '../composers/internal/InputComposer';
 import isObject from '../utils/isObject';
 import LegacyChatAdapterBridge from './internal/LegacyChatAdapterBridge';
 import normalizeLanguage from '../utils/normalizeLanguage';
-import NotificationComposer from './internal/NotificationComposer';
+import NotificationComposer from '../composers/internal/NotificationComposer';
 import patchStyleOptions from '../patchStyleOptions';
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
