@@ -3,11 +3,11 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import createDebug from '../../utils/debug';
+import InputContext from '../../contexts/internal/InputContext';
 import styleConsole from '../../utils/styleConsole';
-import useActivities from '../useActivities';
-import useForceRender from './useForceRender';
-import useTrackEvent from '../useTrackEvent';
-import WebChatInputContext from './WebChatInputContext';
+import useActivities from '../../hooks/useActivities';
+import useForceRender from '../../hooks/internal/useForceRender';
+import useTrackEvent from '../../hooks/useTrackEvent';
 
 let debug;
 let EMPTY_ARRAY;
@@ -195,7 +195,7 @@ const InputComposer = ({ children, resend, sendEvent, sendFiles, sendMessage, se
     ]
   );
 
-  return <WebChatInputContext.Provider value={inputContext}>{children}</WebChatInputContext.Provider>;
+  return <InputContext.Provider value={inputContext}>{children}</InputContext.Provider>;
 };
 
 InputComposer.defaultProps = {

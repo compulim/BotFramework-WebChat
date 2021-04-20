@@ -1,5 +1,5 @@
-import useWebChatInputContext from './internal/useWebChatInputContext';
+import useInputContext from './internal/useInputContext';
 
 export default function useSendFiles() {
-  return useWebChatInputContext().sendFiles;
+  return useInputContext().sendFiles;
 }

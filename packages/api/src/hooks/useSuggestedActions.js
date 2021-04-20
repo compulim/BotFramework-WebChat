@@ -1,7 +1,7 @@
-import useWebChatInputContext from './internal/useWebChatInputContext';
+import useInputContext from './internal/useInputContext';
 
 export default function useSuggestedActions() {
-  const { suggestedActionsRef } = useWebChatInputContext();
+  const { suggestedActionsRef } = useInputContext();
 
   return [suggestedActionsRef.current];
 }

@@ -11,7 +11,7 @@ import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGr
 import defaultSelectVoice from './internal/defaultSelectVoice';
 import ErrorBoundary from './utils/ErrorBoundary';
 import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
-import InputComposer from './internal/InputComposer';
+import InputComposer from '../composers/internal/InputComposer';
 import isObject from '../utils/isObject';
 import LegacyChatAdapterBridge from './internal/LegacyChatAdapterBridge';
 import normalizeLanguage from '../utils/normalizeLanguage';

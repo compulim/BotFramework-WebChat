@@ -1,7 +1,7 @@
-import useWebChatInputContext from './internal/useWebChatInputContext';
+import useInputContext from './internal/useInputContext';
 
 export default function useInputMode() {
-  const { inputMode, setInputMode } = useWebChatInputContext();
+  const { inputMode, setInputMode } = useInputContext();
 
   return [inputMode, setInputMode];
 }

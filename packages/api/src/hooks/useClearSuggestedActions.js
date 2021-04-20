@@ -1,5 +1,5 @@
-import useWebChatInputContext from './internal/useWebChatInputContext';
+import useInputContext from './internal/useInputContext';
 
 export default function useClearSuggestedActions() {
-  return useWebChatInputContext().clearSuggestedActions;
+  return useInputContext().clearSuggestedActions;
 }

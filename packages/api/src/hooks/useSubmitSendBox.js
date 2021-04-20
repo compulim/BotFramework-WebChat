@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
+import useInputContext from './internal/useInputContext';
 import useTrackEvent from './useTrackEvent';
-import useWebChatInputContext from './internal/useWebChatInputContext';
 
 export default function useSubmitSendBox() {
-  const { submitSendBox } = useWebChatInputContext();
+  const { submitSendBox } = useInputContext();
   const trackEvent = useTrackEvent();
 
   return useCallback(
