@@ -7,8 +7,8 @@
   "scripts": {
     "build": "concurrently \"npm run build:babel\"",
     "build:babel": "concurrently \"npm run build:babel:*\" \"npm run build:typescript\"",
-    "build:babel:cjs": "babel --config-file ./babel.cjs.config.json --extensions \".js,.jsx,.ts,.tsx\" --out-dir lib src",
-    "build:babel:esm": "babel --config-file ./babel.esm.config.json --extensions \".js,.jsx,.ts,.tsx\" --out-dir lib/esm src",
+    "build:babel:cjs": "babel --config-file ./babel.cjs.config.json --extensions \".js,.jsx,.ts,.tsx\" --ignore \"src/**/*.spec.js\",\"src/**/*.test.js\" --out-dir lib src",
+    "build:babel:esm": "babel --config-file ./babel.esm.config.json --extensions \".js,.jsx,.ts,.tsx\" --ignore \"src/**/*.spec.js\",\"src/**/*.test.js\" --out-dir lib/esm src",
     "build:typescript": "tsc --project ./src",
     "eslint": "npm run precommit",
     "precommit": "concurrently --raw \"npm run precommit:*\"",
