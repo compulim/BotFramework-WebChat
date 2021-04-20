@@ -18,9 +18,9 @@ import useACSReadReceipts from '../hooks/useACSReadReceipts';
 import useACSThreadId from '../hooks/useACSThreadId';
 import useACSUserId from '../hooks/useACSUserId';
 import useKeyToTrackingNumber from '../hooks/useKeyToTrackingNumber';
+import useMemoAll from '../hooks/useMemoAll';
 import usePrevious from '../hooks/usePrevious';
 import UserProfiles from '../types/UserProfiles';
-import useMemoAll from '../hooks/useMemoAll';
 
 let EMPTY_MAP;
 

@@ -17,18 +17,11 @@ export default function useACSChatThreadSelector<T>(selector: (state: ChatThread
   const { declarativeChatClient, threadId } = useACSClients();
   const forceRender = useForceRender();
 
-  const getValue = useCallback<() => T>(() => {
-    const result = selector(declarativeChatClient.state.threads.get(threadId));
-
-    // debug('getValue', {
-    //   client: declarativeChatClient,
-    //   state: declarativeChatClient.state,
-    //   threadState: declarativeChatClient.state.threads.get(threadId),
-    //   result
-    // });
-
-    return result;
-  }, [declarativeChatClient, selector, threadId]);
+  const getValue = useCallback<() => T>(() => selector(declarativeChatClient.state.threads.get(threadId)), [
+    declarativeChatClient,
+    selector,
+    threadId
+  ]);
 
   const prevGetValue = usePrevious(getValue);
 
