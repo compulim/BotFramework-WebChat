@@ -20,7 +20,7 @@ import NotificationComposer from '../composers/internal/NotificationComposer';
 import patchStyleOptions from '../patchStyleOptions';
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
-import SpeechComposer from '../contexts/internal/SpeechComposer';
+import SpeechComposer from '../composers/internal/SpeechComposer';
 import Tracker from './internal/Tracker';
 import TypingComposer from '../composers/internal/TypingComposer';
 

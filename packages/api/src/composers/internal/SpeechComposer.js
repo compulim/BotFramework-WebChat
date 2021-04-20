@@ -4,13 +4,13 @@ import PropTypes from 'prop-types';
 
 import createDebug from '../../utils/debug';
 import SpeechContext from '../../contexts/internal/SpeechContext';
-import useActivities from '../useActivities';
+import useActivities from '../../hooks/useActivities';
 // import useGrammars from '../useGrammars';
-import useInputMode from '../useInputMode';
-import useLanguage from '../useLanguage';
-import useSendBoxValue from '../useSendBoxValue';
-import useSendMessage from '../useSendMessage';
-import useSpeechRecognition from './useSpeechRecognition';
+import useInputMode from '../../hooks/useInputMode';
+import useLanguage from '../../hooks/useLanguage';
+import useSendBoxValue from '../../hooks/useSendBoxValue';
+import useSendMessage from '../../hooks/useSendMessage';
+import useSpeechRecognition from '../../hooks/internal/useSpeechRecognition';
 import warn from '../../utils/warn';
 
 const {
