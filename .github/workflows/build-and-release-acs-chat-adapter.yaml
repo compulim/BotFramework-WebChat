@@ -76,7 +76,14 @@ jobs:
           echo package_version=${{ steps.compute_hash.outputs.package_version }}
           echo release_date=${{ steps.compute_hash.outputs.release_date }}
 
-      - uses: actions/download-artifact@v2
+      - name: Download bundles
+        uses: actions/download-artifact@v2
+        with:
+          name: bundles
+          path: assets
+
+      - name: Download packages
+        uses: actions/download-artifact@v2
         with:
           name: packages
           path: assets
