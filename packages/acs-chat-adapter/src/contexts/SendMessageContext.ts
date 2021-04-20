@@ -1,9 +1,9 @@
 import { createContext } from 'react';
 
 const context = createContext<{
-  keyToTrackingNumber: { [key: string]: string };
-  resend: (trackingNumber: string) => string;
-  sendMessage: (message: string) => string;
+  keyToTrackingNumber?: { [key: string]: string };
+  resend?: (trackingNumber: string) => string;
+  sendMessage: (message: string) => string | undefined;
 }>(undefined);
 
 context.displayName = 'ACSChatAdapter.SendMessageContext';
