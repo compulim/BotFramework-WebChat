@@ -2,11 +2,11 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
-import InternalTypingUsers from '../../types/internal/TypingUsers';
+import InternalTypingUsers from '../types/TypingUsers';
 
-import diffObject from '../../utils/diffObject';
-import InternalTypingContext from '../../contexts/internal/TypingContext';
-import usePrevious from '../../hooks/internal/usePrevious';
+import diffObject from '../utils/diffObject';
+import InternalTypingContext from '../contexts/TypingContext';
+import usePrevious from '../hooks/internal/usePrevious';
 
 // If no argument is passed to `emitTypingIndicator`, it is in "pulse" mode.
 // In pulse mode, if another pulse was not received within a predefined period, it will stop the typing signal.

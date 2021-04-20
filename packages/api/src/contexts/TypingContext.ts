@@ -1,6 +1,6 @@
 import { createContext, useContext as useReactContext } from 'react';
 
-import InternalTypingUsers from '../../types/internal/TypingUsers';
+import InternalTypingUsers from '../types/TypingUsers';
 
 const context = createContext<{
   emitTyping: () => void;

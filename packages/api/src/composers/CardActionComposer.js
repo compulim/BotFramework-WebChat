@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import applyMiddleware from '../../hooks/middleware/applyMiddleware';
-import CardActionContext from '../../contexts/internal/CardActionContext';
+import applyMiddleware from '../hooks/middleware/applyMiddleware';
+import CardActionContext from '../contexts/CardActionContext';
 // import createDebug from '../utils/debug';
-import createDefaultCardActionMiddleware from '../../hooks/middleware/createDefaultCardActionMiddleware';
-import singleToArray from '../../hooks/utils/singleToArray';
-import useClearSuggestedActions from '../../hooks/useClearSuggestedActions';
-import useSendMessage from '../../hooks/useSendMessage';
-import useSendMessageBack from '../../hooks/useSendMessageBack';
-import useSendPostBack from '../../hooks/useSendPostBack';
+import createDefaultCardActionMiddleware from '../hooks/middleware/createDefaultCardActionMiddleware';
+import singleToArray from '../hooks/utils/singleToArray';
+import useClearSuggestedActions from '../hooks/useClearSuggestedActions';
+import useSendMessage from '../hooks/useSendMessage';
+import useSendMessageBack from '../hooks/useSendMessageBack';
+import useSendPostBack from '../hooks/useSendPostBack';
 
 // let debug;
 

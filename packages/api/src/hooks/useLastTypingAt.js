@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useContext } from '../contexts/internal/TypingContext';
+import { useContext } from '../contexts/TypingContext';
 
 let showDeprecationNotes = true;
 

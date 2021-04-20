@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
-import createDebug from '../../utils/debug';
-import diffObject from '../../utils/diffObject';
-import NotificationContext from '../../contexts/internal/NotificationContext';
-import useForceRender from '../../hooks/internal/useForceRender';
-import usePrevious from '../../hooks/internal/usePrevious';
+import createDebug from '../utils/debug';
+import diffObject from '../utils/diffObject';
+import NotificationContext from '../contexts/NotificationContext';
+import useForceRender from '../hooks/internal/useForceRender';
+import usePrevious from '../hooks/internal/usePrevious';
 
 let debug;
 

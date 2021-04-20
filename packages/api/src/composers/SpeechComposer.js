@@ -2,16 +2,16 @@ import { Constants, getMetadata } from 'botframework-webchat-core';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import createDebug from '../../utils/debug';
-import SpeechContext from '../../contexts/internal/SpeechContext';
-import useActivities from '../../hooks/useActivities';
+import createDebug from '../utils/debug';
+import SpeechContext from '../contexts/SpeechContext';
+import useActivities from '../hooks/useActivities';
 // import useGrammars from '../useGrammars';
-import useInputMode from '../../hooks/useInputMode';
-import useLanguage from '../../hooks/useLanguage';
-import useSendBoxValue from '../../hooks/useSendBoxValue';
-import useSendMessage from '../../hooks/useSendMessage';
-import useSpeechRecognition from '../../hooks/internal/useSpeechRecognition';
-import warn from '../../utils/warn';
+import useInputMode from '../hooks/useInputMode';
+import useLanguage from '../hooks/useLanguage';
+import useSendBoxValue from '../hooks/useSendBoxValue';
+import useSendMessage from '../hooks/useSendMessage';
+import useSpeechRecognition from '../hooks/internal/useSpeechRecognition';
+import warn from '../utils/warn';
 
 const {
   DictateState: { DICTATING, IDLE, STARTING }

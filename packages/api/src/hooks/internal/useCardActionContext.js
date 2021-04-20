@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import CardActionContext from '../../contexts/internal/CardActionContext';
+import CardActionContext from '../../contexts/CardActionContext';
 
 export default function useCardActionContext() {
   const context = useContext(CardActionContext);

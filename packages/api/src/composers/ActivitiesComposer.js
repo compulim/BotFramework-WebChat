@@ -2,13 +2,13 @@ import { getMetadata } from 'botframework-webchat-core';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo } from 'react';
 
-import ActivitiesContext from '../../contexts/internal/ActivitiesContext';
-import createDebug from '../../utils/debug';
-import useCreateActivityRenderer from '../../hooks/useCreateActivityRenderer';
-import useCreateActivityStatusRenderer from '../../hooks/useCreateActivityStatusRenderer';
-import useMemoAll from '../../hooks/internal/useMemoAll';
-import useMemoWithPrevious from '../../hooks/internal/useMemoWithPrevious';
-import warn from '../../utils/warn';
+import ActivitiesContext from '../contexts/ActivitiesContext';
+import createDebug from '../utils/debug';
+import useCreateActivityRenderer from '../hooks/useCreateActivityRenderer';
+import useCreateActivityStatusRenderer from '../hooks/useCreateActivityStatusRenderer';
+import useMemoAll from '../hooks/internal/useMemoAll';
+import useMemoWithPrevious from '../hooks/internal/useMemoWithPrevious';
+import warn from '../utils/warn';
 
 let debug;
 

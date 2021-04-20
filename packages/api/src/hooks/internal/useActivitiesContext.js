@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import ActivitiesContext from '../../contexts/internal/ActivitiesContext';
+import ActivitiesContext from '../../contexts/ActivitiesContext';
 
 export default function useActivitiesContext() {
   const context = useContext(ActivitiesContext);

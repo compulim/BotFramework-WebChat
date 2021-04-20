@@ -3,26 +3,26 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import updateIn from 'simple-update-in';
 
-import ActivitiesComposer from '../composers/internal/ActivitiesComposer';
-import APIContext from '../contexts/internal/APIContext';
-import CardActionComposer from '../composers/internal/CardActionComposer';
+import ActivitiesComposer from '../composers/ActivitiesComposer';
+import APIContext from '../contexts/APIContext';
+import CardActionComposer from '../composers/CardActionComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';
 import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGroupActivitiesMiddleware';
 import defaultSelectVoice from './internal/defaultSelectVoice';
 import ErrorBoundary from './utils/ErrorBoundary';
 import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
-import InputComposer from '../composers/internal/InputComposer';
+import InputComposer from '../composers/InputComposer';
 import isObject from '../utils/isObject';
 import LegacyChatAdapterBridge from './internal/LegacyChatAdapterBridge';
 import normalizeLanguage from '../utils/normalizeLanguage';
-import NotificationComposer from '../composers/internal/NotificationComposer';
+import NotificationComposer from '../composers/NotificationComposer';
 import patchStyleOptions from '../patchStyleOptions';
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import singleToArray from './utils/singleToArray';
-import SpeechComposer from '../composers/internal/SpeechComposer';
+import SpeechComposer from '../composers/SpeechComposer';
 import Tracker from './internal/Tracker';
-import TypingComposer from '../composers/internal/TypingComposer';
+import TypingComposer from '../composers/TypingComposer';
 
 import applyMiddleware, {
   forLegacyRenderer as applyMiddlewareForLegacyRenderer,

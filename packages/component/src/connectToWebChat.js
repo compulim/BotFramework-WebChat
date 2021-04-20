@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 import React from 'react';
 
-import APIContext from 'botframework-webchat-api/lib/contexts/internal/APIContext';
-import LegacyReduxContext from 'botframework-webchat-api/lib/contexts/internal/LegacyReduxContext';
+import APIContext from 'botframework-webchat-api/lib/contexts/APIContext';
+import LegacyReduxContext from 'botframework-webchat-api/lib/contexts/LegacyReduxContext';
 
 function removeUndefinedValues(map) {
   return Object.keys(map).reduce((result, key) => {

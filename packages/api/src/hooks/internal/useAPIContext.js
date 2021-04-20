@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import APIContext from '../../contexts/internal/APIContext';
+import APIContext from '../../contexts/APIContext';
 
 export default function useAPIContext() {
   const context = useContext(APIContext);

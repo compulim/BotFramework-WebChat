@@ -2,12 +2,12 @@ import { getMetadata } from 'botframework-webchat-core';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import createDebug from '../../utils/debug';
-import InputContext from '../../contexts/internal/InputContext';
-import styleConsole from '../../utils/styleConsole';
-import useActivities from '../../hooks/useActivities';
-import useForceRender from '../../hooks/internal/useForceRender';
-import useTrackEvent from '../../hooks/useTrackEvent';
+import createDebug from '../utils/debug';
+import InputContext from '../contexts/InputContext';
+import styleConsole from '../utils/styleConsole';
+import useActivities from '../hooks/useActivities';
+import useForceRender from '../hooks/internal/useForceRender';
+import useTrackEvent from '../hooks/useTrackEvent';
 
 let debug;
 let EMPTY_ARRAY;

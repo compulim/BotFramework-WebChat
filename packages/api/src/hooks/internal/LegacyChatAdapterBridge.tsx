@@ -19,7 +19,7 @@ import random from 'math-random';
 import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import updateIn from 'simple-update-in';
 
-import { default as LegacyReduxContext, useDispatch, useSelector } from '../../contexts/internal/LegacyReduxContext';
+import { default as LegacyReduxContext, useDispatch, useSelector } from '../../contexts/LegacyReduxContext';
 import createDebug from '../../utils/debug';
 import diffObject from '../../utils/diffObject';
 import mime from '../../utils/mime-wrapper';

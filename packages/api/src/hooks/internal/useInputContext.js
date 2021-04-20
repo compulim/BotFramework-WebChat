@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import InputContext from '../../contexts/internal/InputContext';
+import InputContext from '../../contexts/InputContext';
 
 export default function useInputContext() {
   const context = useContext(InputContext);

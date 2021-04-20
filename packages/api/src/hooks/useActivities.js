@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import SpeechContext from '../contexts/internal/SpeechContext';
+import SpeechContext from '../contexts/SpeechContext';
 import useActivitiesContext from './internal/useActivitiesContext';
 import warn from '../utils/warn';
 
