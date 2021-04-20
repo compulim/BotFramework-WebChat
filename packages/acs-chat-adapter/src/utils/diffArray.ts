@@ -1,5 +1,3 @@
-// TODO: Write tests
-
 export default function diffArray<T>(
   from: T[],
   to: T[]

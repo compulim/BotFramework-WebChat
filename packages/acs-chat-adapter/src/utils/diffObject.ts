@@ -1,5 +1,3 @@
-// TODO: Write tests
-
 export default function diffObject<T>(
   from: { [key: string]: T },
   to: { [key: string]: T }

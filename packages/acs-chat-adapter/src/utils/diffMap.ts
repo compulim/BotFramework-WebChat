@@ -1,5 +1,3 @@
-// TODO: Write tests
-
 export default function diffMap<K, V>(from: Map<K, V>, to: Map<K, V>): Map<K, [V, V]> {
   if (!(from instanceof Map)) {
     throw new Error('The first argument must be a Map.');
