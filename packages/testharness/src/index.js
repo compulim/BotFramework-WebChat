@@ -46,6 +46,19 @@ import sleep from './utils/sleep';
 import stringToArrayBuffer from './utils/stringToArrayBuffer';
 import subscribeConsole, { getHistory as getConsoleHistory, shiftDeprecationHistory } from './utils/subscribeConsole';
 
+function appendTestResultLayout(modifier, textContent) {
+  const block = document.createElement('div');
+  const element = document.createElement('div');
+
+  block.className = `test-result test-result--${modifier}`;
+  element.className = `test-result__body`;
+  element.textContent = textContent;
+
+  block.append(element);
+
+  document.body.append(block);
+}
+
 function waitForFinishKey() {
   const { promise, resolve } = createDeferred();
   const handler = event => {
@@ -93,6 +106,12 @@ if (!webDriverMode) {
             log('WebChatTest: Done.');
           }
 
+          appendTestResultLayout('success', '✔️');
+
+          break;
+
+        case 'error':
+          appendTestResultLayout('failed', '❌');
           break;
 
         case 'snapshot':

@@ -17,3 +17,34 @@ body.webdriver textarea,
 [contenteditable] {
   caret-color: Transparent;
 }
+
+.test-result {
+  display: flex;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.test-result__body {
+  align-items: center;
+  border: solid 4px rgba(0, 0, 0, 0.1);
+  border-radius: 100%;
+  display: flex;
+  font-size: 60px;
+  height: 100px;
+  justify-content: center;
+  line-height: 100px;
+  margin: auto;
+  width: 100px;
+}
+
+.test-result--failed .test-result__body {
+  background-color: rgba(255, 0, 0, 0.4);
+}
+
+.test-result--success .test-result__body {
+  background-color: rgba(0, 255, 0, 0.4);
+}
