@@ -6,6 +6,7 @@ import updateIn from 'simple-update-in';
 import ActivitiesComposer from '../composers/ActivitiesComposer';
 import APIContext from '../contexts/APIContext';
 import CardActionComposer from '../composers/CardActionComposer';
+import ChatAdapterRefComposer from '../composers/ChatAdapterRefComposer';
 import createCustomEvent from '../utils/createCustomEvent';
 import createDebug from '../utils/debug';
 import createDefaultGroupActivitiesMiddleware from './middleware/createDefaultGroupActivitiesMiddleware';
@@ -88,6 +89,7 @@ const Composer = ({
   internalErrorBoxClass,
   locale,
   notifications,
+  onConnect,
   onTelemetry,
   overrideLocalizedStrings,
   renderMarkdown,
@@ -411,37 +413,54 @@ const Composer = ({
 
   return (
     <APIContext.Provider value={context}>
-      <ActivitiesComposer
+      <ChatAdapterRefComposer
         activities={activities}
-        honorReadReceipts={patchedHonorReadReceipts}
+        emitTyping={emitTyping}
+        honorReadReceipts={honorReadReceipts}
+        notifications={notifications}
+        resend={resend}
+        sendEvent={sendEvent}
+        sendFiles={sendFiles}
+        sendMessage={sendMessage}
+        sendMessageBack={sendMessageBack}
+        sendPostBack={sendPostBack}
         setHonorReadReceipts={setHonorReadReceipts}
+        typingUsers={typingUsers}
+        userId={userId}
+        username={username}
       >
-        <NotificationComposer chatAdapterNotifications={notifications}>
-          <TypingComposer emitTyping={emitTyping} sendTypingIndicator={sendTypingIndicator} typingUsers={typingUsers}>
-            <InputComposer
-              resend={resend}
-              sendEvent={sendEvent}
-              sendFiles={sendFiles}
-              sendMessage={sendMessage}
-              sendMessageBack={sendMessageBack}
-              sendPostBack={sendPostBack}
-            >
-              <SpeechComposer
-                directLineReferenceGrammarId={directLineReferenceGrammarId}
-                webSpeechPonyfillFactory={webSpeechPonyfillFactory}
+        <ActivitiesComposer
+          activities={activities}
+          honorReadReceipts={patchedHonorReadReceipts}
+          setHonorReadReceipts={setHonorReadReceipts}
+        >
+          <NotificationComposer chatAdapterNotifications={notifications} onConnect={onConnect}>
+            <TypingComposer emitTyping={emitTyping} sendTypingIndicator={sendTypingIndicator} typingUsers={typingUsers}>
+              <InputComposer
+                resend={resend}
+                sendEvent={sendEvent}
+                sendFiles={sendFiles}
+                sendMessage={sendMessage}
+                sendMessageBack={sendMessageBack}
+                sendPostBack={sendPostBack}
               >
-                <CardActionComposer
-                  cardActionMiddleware={cardActionMiddleware}
-                  getDirectLineOAuthCodeChallenge={getDirectLineOAuthCodeChallenge}
+                <SpeechComposer
+                  directLineReferenceGrammarId={directLineReferenceGrammarId}
+                  webSpeechPonyfillFactory={webSpeechPonyfillFactory}
                 >
-                  {typeof children === 'function' ? children(context) : children}
-                  {onTelemetry && <Tracker />}
-                </CardActionComposer>
-              </SpeechComposer>
-            </InputComposer>
-          </TypingComposer>
-        </NotificationComposer>
-      </ActivitiesComposer>
+                  <CardActionComposer
+                    cardActionMiddleware={cardActionMiddleware}
+                    getDirectLineOAuthCodeChallenge={getDirectLineOAuthCodeChallenge}
+                  >
+                    {typeof children === 'function' ? children(context) : children}
+                    {onTelemetry && <Tracker />}
+                  </CardActionComposer>
+                </SpeechComposer>
+              </InputComposer>
+            </TypingComposer>
+          </NotificationComposer>
+        </ActivitiesComposer>
+      </ChatAdapterRefComposer>
     </APIContext.Provider>
   );
 };
@@ -567,6 +586,7 @@ Composer.defaultProps = {
   internalErrorBoxClass: undefined,
   locale: window.navigator.language || 'en-US',
   notifications: undefined,
+  onConnect: undefined,
   onTelemetry: undefined,
   overrideLocalizedStrings: undefined,
   renderMarkdown: undefined,
@@ -616,6 +636,7 @@ Composer.propTypes = {
   internalErrorBoxClass: PropTypes.func, // This is for internal use only. We don't allow customization of error box.
   locale: PropTypes.string,
   notifications: WebChatPropTypes.Notifications,
+  onConnect: PropTypes.func,
   onTelemetry: PropTypes.func,
   overrideLocalizedStrings: PropTypes.oneOfType([PropTypes.any, PropTypes.func]),
   renderMarkdown: PropTypes.func,

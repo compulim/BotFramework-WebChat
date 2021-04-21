@@ -63,6 +63,16 @@
           {
             directLine: window.WebChat.createDirectLine({ token }),
             // We will use a custom version of Redux store, which we added middleware to handle backchannel messages.
+            // extraChannelData: {
+            //   email: 'johndoe@example.com'
+            // },
+            extraChannelData: async ({ activity }) => {
+              console.log(activity);
+
+              return {
+                email: 'johndoe@example.com'
+              };
+            },
             store
           },
           document.getElementById('webchat')

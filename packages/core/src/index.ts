@@ -1,6 +1,7 @@
 // import clearSuggestedActions from './actions/clearSuggestedActions';
 import connect from './actions/connect';
 import createStore, { withDevTools as createStoreWithDevTools } from './createStore';
+import deprecation from './utils/deprecation';
 import disconnect from './actions/disconnect';
 import dismissNotification from './actions/dismissNotification';
 import emitTypingIndicator from './actions/emitTypingIndicator';
@@ -82,6 +83,7 @@ export {
   Constants,
   createStore,
   createStoreWithDevTools,
+  deprecation,
   disconnect,
   dismissNotification,
   emitTypingIndicator,

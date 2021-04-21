@@ -6,15 +6,17 @@ import updateIn from 'simple-update-in';
 import createDebug from '../utils/debug';
 import diffObject from '../utils/diffObject';
 import NotificationContext from '../contexts/NotificationContext';
+import useChatAdapterRef from '../hooks/internal/useChatAdapterRef';
 import useForceRender from '../hooks/internal/useForceRender';
 import usePrevious from '../hooks/internal/usePrevious';
 
 let debug;
 
-const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; children: any }> = ({
-  chatAdapterNotifications,
-  children
-}) => {
+const NotificationComposer: FC<{
+  chatAdapterNotifications: Notifications;
+  children: any;
+  onConnect: ({ chatAdapter }) => void;
+}> = ({ chatAdapterNotifications, children, onConnect }) => {
   debug || (debug = createDebug('<NotificationComposer>', { backgroundColor: 'yellow', color: 'black' }));
 
   const notificationsWithMismatchId = Object.entries(chatAdapterNotifications).filter(
@@ -105,6 +107,13 @@ const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; childr
   //   [{ chatAdapterNotifications, localNotifications, notifications, ourChatAdapterNotificationsRef }]
   // );
 
+  const connectivityStatus = notifications?.connectivitystatus?.data;
+  const chatAdapterRef = useChatAdapterRef();
+
+  useMemo(() => {
+    connectivityStatus === 'connected' && onConnect && onConnect({ chatAdapter: chatAdapterRef.current });
+  }, [chatAdapterRef, connectivityStatus, onConnect]);
+
   const context = useMemo(
     () => ({
       dismissNotification,
@@ -119,12 +128,14 @@ const NotificationComposer: FC<{ chatAdapterNotifications: Notifications; childr
 
 NotificationComposer.defaultProps = {
   chatAdapterNotifications: undefined,
-  children: undefined
+  children: undefined,
+  onConnect: undefined
 };
 
 NotificationComposer.propTypes = {
   chatAdapterNotifications: WebChatPropTypes.Notifications,
-  children: PropTypes.any
+  children: PropTypes.any,
+  onConnect: PropTypes.func
 };
 
 export default NotificationComposer;

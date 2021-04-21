@@ -56,8 +56,22 @@
         window.WebChat.renderWebChat(
           {
             directLine: window.WebChat.createDirectLine({ token }),
-            // We will use a custom version of Redux store, which we added middleware to handle backchannel messages.
-            store
+
+            onConnect: ({ chatAdapter }) => {
+              // After connected, we will send a message by dispatching a Redux action.
+              chatAdapter.sendMessage('sample:backchannel');
+            },
+
+            onReceiveActivity: ({ activity, chatAdapter }) => {
+              // When receiving an activity of type "event" with name of "sample:backchannel", prompt it out.
+              if (activity.name === 'sample:backchannel' && activity.type === 'event') {
+                alert(JSON.stringify(activity, null, 2));
+              }
+            },
+
+            onSendActivity: ({ activity }) => {
+              return { ...activity, channelData: { ...activity.channelData, email: 'johndoe@example.com' } };
+            }
           },
           document.getElementById('webchat')
         );

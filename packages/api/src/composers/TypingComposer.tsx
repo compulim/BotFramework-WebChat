@@ -81,6 +81,9 @@ const TypingComposer = ({
     () =>
       emitTypingFromProps &&
       ((start?: boolean) => {
+        // TODO: I think checking the "sendTypingIndicator" should be handled by the SendBox, instead of in this hook.
+        //       Dev can still force emit typing indicator if they set "sendTypingIndicator" to false.
+        //       If they really want to disable that feature, they should remove it from chat adapter.
         if (!sendTypingIndicator) {
           return;
         }
