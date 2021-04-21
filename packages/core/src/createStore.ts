@@ -5,6 +5,7 @@ import { applyMiddleware, createStore as createReduxStore } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import createSagaMiddleware from 'redux-saga';
 
+import deprecation from './utils/deprecation';
 import reducer from './reducer';
 import sagaError from './actions/sagaError';
 import sagas from './sagas';
@@ -28,7 +29,11 @@ function createEnhancerAndSagaMiddleware(getStore, ...middlewares) {
   };
 }
 
+const deprecate = deprecation('Redux store is being deprecated. Please use Hooks API instead.', '2023-04-21');
+
 export default function createStore(initialState?: any, ...middlewares: any[]): any {
+  deprecate();
+
   const { enhancer, sagaMiddleware } = createEnhancerAndSagaMiddleware(() => store, ...middlewares);
   const store = createReduxStore(reducer, initialState || {}, enhancer);
 
@@ -38,6 +43,8 @@ export default function createStore(initialState?: any, ...middlewares: any[]): 
 }
 
 export function withDevTools(initialState?: any, ...middlewares: any[]): any {
+  deprecate();
+
   const { enhancer, sagaMiddleware } = createEnhancerAndSagaMiddleware(() => store, ...middlewares);
   const store = createReduxStore(reducer, initialState || {}, composeWithDevTools(enhancer));
 

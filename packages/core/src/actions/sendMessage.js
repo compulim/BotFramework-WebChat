@@ -1,4 +1,4 @@
-// const SEND_MESSAGE = 'WEB_CHAT/SEND_MESSAGE';
+export const SEND_MESSAGE = 'WEB_CHAT/SEND_MESSAGE';
 
 // export default function sendMessage(text, method, { channelData } = {}) {
 //   return {

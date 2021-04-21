@@ -33,6 +33,8 @@ import usePrevious from './usePrevious';
 const EMIT_TYPING_INTERVAL = 3000;
 let debug;
 
+type Expando<T> = Omit<any, keyof T> & T;
+
 function useSelectMap<T, U, V>(
   array: T[],
   data: U,
@@ -437,6 +439,31 @@ PostActivity.propTypes = {
   children: PropTypes.func.isRequired
 };
 
+// To bridge deprecated actions, we will need to send some functions from chat adapter to Redux store.
+// We will use saga to convert action into function call to chat adapter.
+const SetChatAdapterDeprecationBridge: FC<Expando<{ children: any }>> = ({ children, ...props }) => {
+  const { sendMessage } = props;
+  const dispatch = useDispatch();
+
+  const deprecationBridge = useMemo(
+    () => ({
+      sendMessage
+    }),
+    [sendMessage]
+  );
+
+  useMemo(
+    () =>
+      dispatch({
+        payload: deprecationBridge,
+        type: 'WEB_CHAT/SET_CHAT_ADAPTER_DEPRECATION_BRIDGE'
+      }),
+    [deprecationBridge, dispatch]
+  );
+
+  return children && children(props);
+};
+
 const ConnectedLegacyChatAdapterBridge: FC<{
   children: any;
   directLine: any;
@@ -500,25 +527,26 @@ const ConnectedLegacyChatAdapterBridge: FC<{
                 <TypingUsers typingAnimationDuration={styleOptions.typingAnimationDuration}>
                   {({ typingUsers }) => (
                     <ChatAdapterNotifications>
-                      {({ notifications }) =>
-                        children &&
-                        children({
-                          activities,
-                          directLineReferenceGrammarId,
-                          emitTyping,
-                          getDirectLineOAuthCodeChallenge,
-                          notifications,
-                          resend,
-                          sendEvent,
-                          sendFiles,
-                          sendMessage,
-                          sendMessageBack,
-                          sendPostBack,
-                          typingUsers,
-                          userId,
-                          username
-                        })
-                      }
+                      {({ notifications }) => (
+                        <SetChatAdapterDeprecationBridge
+                          activities={activities}
+                          directLineReferenceGrammarId={directLineReferenceGrammarId}
+                          emitTyping={emitTyping}
+                          getDirectLineOAuthCodeChallenge={getDirectLineOAuthCodeChallenge}
+                          notifications={notifications}
+                          resend={resend}
+                          sendEvent={sendEvent}
+                          sendFiles={sendFiles}
+                          sendMessage={sendMessage}
+                          sendMessageBack={sendMessageBack}
+                          sendPostBack={sendPostBack}
+                          typingUsers={typingUsers}
+                          userId={userId}
+                          username={username}
+                        >
+                          {children}
+                        </SetChatAdapterDeprecationBridge>
+                      )}
                     </ChatAdapterNotifications>
                   )}
                 </TypingUsers>

@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 
 import activities from './reducers/activities';
+import chatAdapterDeprecationBridge from './reducers/chatAdapterDeprecationBridge';
 import clockSkewAdjustment from './reducers/clockSkewAdjustment';
 // import connectivityStatus from './reducers/connectivityStatus';
 // import dictateInterims from './reducers/dictateInterims';
@@ -21,6 +22,7 @@ import user from './reducers/user';
 
 export default combineReducers({
   activities,
+  chatAdapterDeprecationBridge,
   clockSkewAdjustment,
   // connectivityStatus,
   // dictateInterims,

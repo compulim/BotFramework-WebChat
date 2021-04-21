@@ -13,7 +13,7 @@ import queueIncomingActivitySaga from './sagas/queueIncomingActivitySaga';
 // import sendEventToPostActivitySaga from './sagas/sendEventToPostActivitySaga';
 // import sendFilesToPostActivitySaga from './sagas/sendFilesToPostActivitySaga';
 // import sendMessageBackToPostActivitySaga from './sagas/sendMessageBackToPostActivitySaga';
-// import sendMessageToPostActivitySaga from './sagas/sendMessageToPostActivitySaga';
+import sendMessageToPostActivitySaga from './sagas/sendMessageToPostActivitySaga';
 // import sendPostBackToPostActivitySaga from './sagas/sendPostBackToPostActivitySaga';
 // import sendTypingIndicatorOnSetSendBoxSaga from './sagas/sendTypingIndicatorOnSetSendBoxSaga';
 // import speakActivityAndStartDictateOnIncomingActivityFromOthersSaga from './sagas/speakActivityAndStartDictateOnIncomingActivityFromOthersSaga';
@@ -39,7 +39,7 @@ export default function* sagas() {
   // yield fork(sendEventToPostActivitySaga);
   // yield fork(sendFilesToPostActivitySaga);
   // yield fork(sendMessageBackToPostActivitySaga);
-  // yield fork(sendMessageToPostActivitySaga);
+  yield fork(sendMessageToPostActivitySaga);
   // yield fork(sendPostBackToPostActivitySaga);
   // yield fork(sendTypingIndicatorOnSetSendBoxSaga);
   // yield fork(speakActivityAndStartDictateOnIncomingActivityFromOthersSaga);
