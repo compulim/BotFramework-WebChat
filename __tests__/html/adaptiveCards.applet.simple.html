@@ -44,6 +44,11 @@
             verb: 'unsupported'
           },
           {
+            title: 'Action.Execute: Bot throw error',
+            type: 'Action.Execute',
+            verb: 'error'
+          },
+          {
             data: 'Hello, World!',
             title: 'Action.Submit: Send an "IMBack"',
             type: 'Action.Submit'
@@ -167,6 +172,15 @@
                 }
               };
 
+            case 'error':
+              throw new Error('Artificial error');
+
+            case 'string':
+              return {
+                type: 'application/vnd.microsoft.activity.message',
+                value: value.data
+              };
+
             case 'unsupported':
               return {
                 type: 'application/vnd.microsoft.card.adaptive',
@@ -188,12 +202,6 @@
                   $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
                   version: '99.9'
                 }
-              };
-
-            case 'string':
-              return {
-                type: 'application/vnd.microsoft.activity.message',
-                value: value.data
               };
 
             default:
