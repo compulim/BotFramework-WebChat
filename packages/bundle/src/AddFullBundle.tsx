@@ -52,6 +52,7 @@ const AddFullBundle: FC<AddFullBundleProps> = ({
     <AdaptiveCardsComposer
       adaptiveCardsHostConfig={adaptiveCardHostConfig || adaptiveCardsHostConfig}
       adaptiveCardsPackage={adaptiveCardsPackage}
+      styleOptions={styleOptions}
     >
       {children(patchedProps)}
     </AdaptiveCardsComposer>

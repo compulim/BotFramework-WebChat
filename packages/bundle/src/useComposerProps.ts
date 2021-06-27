@@ -7,6 +7,7 @@ import createAdaptiveCardsAttachmentForScreenReaderMiddleware from './adaptiveCa
 import createAdaptiveCardsAttachmentMiddleware from './adaptiveCards/createAdaptiveCardsAttachmentMiddleware';
 import createAdaptiveCardsStyleSet from './adaptiveCards/Styles/createAdaptiveCardsStyleSet';
 import defaultRenderMarkdown from './renderMarkdown';
+import FullBundleStyleOptions from './types/FullBundleStyleOptions';
 
 export default function useComposerProps({
   attachmentForScreenReaderMiddleware,
@@ -18,7 +19,7 @@ export default function useComposerProps({
   attachmentForScreenReaderMiddleware: AttachmentForScreenReaderMiddleware[];
   attachmentMiddleware: AttachmentMiddleware[];
   renderMarkdown?: (markdown: string, { markdownRespectCRLF: boolean }, { externalLinkAlt: string }) => string;
-  styleOptions: any;
+  styleOptions: FullBundleStyleOptions;
   styleSet: any;
 }): {
   attachmentForScreenReaderMiddleware: AttachmentForScreenReaderMiddleware[];
