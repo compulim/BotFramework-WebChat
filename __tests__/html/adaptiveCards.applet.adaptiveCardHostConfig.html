@@ -202,8 +202,6 @@
           'Last message'
         ]);
 
-        const store = testHelpers.createStore();
-
         directLine.sendInvoke = async (name, value) => {
           expect(name).toBe('adaptiveCard/action');
           expect(value.verb).toBe('dump');
@@ -228,7 +226,10 @@
           };
         };
 
-        function render(props) {
+        const customAdaptiveCardHostConfig = createAdaptiveCardsHostConfig({ bubbleTextColor: '#FF0000' });
+        const store = testHelpers.createStore();
+
+        const render = props =>
           WebChat.renderWebChat(
             {
               directLine,
@@ -237,9 +238,6 @@
             },
             document.getElementById('webchat')
           );
-        }
-
-        const customAdaptiveCardHostConfig = createAdaptiveCardsHostConfig({ bubbleTextColor: '#FF0000' });
 
         render({ adaptiveCardHostConfig: customAdaptiveCardHostConfig });
 
@@ -265,7 +263,11 @@
         render({ adaptiveCardHostConfig: customAdaptiveCardHostConfig });
 
         // GIVEN: Card has completed re-render.
-        await pageConditions.became('Card has re-rendered', () => document.querySelector('.ac-textBlock') !== currentTextBlock, 1000);
+        await pageConditions.became(
+          'Card has re-rendered',
+          () => document.querySelector('.ac-textBlock') !== currentTextBlock,
+          1000
+        );
 
         // GIVEN: Go to second phase of the card.
         await clickButtonWithText('Action.Execute: Refresh this card');

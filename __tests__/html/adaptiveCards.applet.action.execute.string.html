@@ -63,8 +63,6 @@
           'Last message'
         ]);
 
-        const store = testHelpers.createStore();
-
         directLine.sendInvoke = async (name, value) => {
           expect(name).toBe('adaptiveCard/action');
           expect(value.verb).toBe('string');
@@ -74,6 +72,8 @@
             value: value.data
           };
         };
+
+        const store = testHelpers.createStore();
 
         WebChat.renderWebChat(
           {

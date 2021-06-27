@@ -137,8 +137,6 @@
           }
         );
 
-        const store = testHelpers.createStore();
-
         directLine.sendInvoke = async (name, value) => {
           expect(name).toBe('adaptiveCard/action');
 
@@ -211,6 +209,8 @@
               };
           }
         };
+
+        const store = testHelpers.createStore();
 
         WebChat.renderWebChat(
           {

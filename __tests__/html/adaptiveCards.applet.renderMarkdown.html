@@ -73,8 +73,6 @@
           'Last message'
         ]);
 
-        const store = testHelpers.createStore();
-
         directLine.sendInvoke = async (name, value) => {
           expect(name).toBe('adaptiveCard/action');
           expect(value.verb).toBe('dump');
@@ -99,7 +97,9 @@
           };
         };
 
-        function render(props) {
+        const store = testHelpers.createStore();
+
+        const render = props =>
           WebChat.renderWebChat(
             {
               directLine,
@@ -108,7 +108,6 @@
             },
             document.getElementById('webchat')
           );
-        }
 
         render({ renderMarkdown: false });
 

@@ -67,14 +67,14 @@
           'Last message'
         ]);
 
-        const store = testHelpers.createStore();
-
         directLine.sendInvoke = async (name, value) => {
           expect(name).toBe('adaptiveCard/action');
           expect(value.verb).toBe('error');
 
           throw new Error('Artificial error');
         };
+
+        const store = testHelpers.createStore();
 
         WebChat.renderWebChat(
           {
@@ -96,7 +96,11 @@
         await clickButtonWithText('Action.Execute: Bot throw error');
 
         // GIVEN: The progress overlay should show up.
-        await pageConditions.became('progress overlay should show up', () => document.querySelector('.aaf-progress-overlay'), 1000);
+        await pageConditions.became(
+          'progress overlay should show up',
+          () => document.querySelector('.aaf-progress-overlay'),
+          1000
+        );
       });
     </script>
   </body>

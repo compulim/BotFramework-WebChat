@@ -51,7 +51,7 @@
 
         const store = testHelpers.createStore();
 
-        function render(props) {
+        const render = props =>
           WebChat.renderWebChat(
             {
               directLine,
@@ -60,7 +60,6 @@
             },
             document.getElementById('webchat')
           );
-        }
 
         render({ disabled: true });
 
