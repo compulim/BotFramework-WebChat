@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      async function becameTextColor(colorInRgb) {
+        await pageConditions.became(
+          'text became black',
+          () => document.querySelector('.ac-textBlock').computedStyleMap().get('color') + '' === colorInRgb,
+          1000
+        );
+      }
+
+      function createAdaptiveCardsHostConfig({
+        accent = '#0063B1',
+        bubbleTextColor = 'Black',
+        cardEmphasisBackgroundColor = '#F0F0F0',
+        primaryFont = 'Calibri, "Helvetica Neue", Arial, "sans-serif"',
+        subtle = '#767676'
+      } = {}) {
+        return {
+          containerStyles: {
+            default: {
+              foregroundColors: {
+                default: {
+                  default: bubbleTextColor,
+                  subtle
+                },
+                accent: {
+                  default: accent,
+                  subtle: '#0078D4'
+                },
+                attention: {
+                  default: '#D13438',
+                  subtle: '#A4262C'
+                },
+                dark: {
+                  default: '#000000',
+                  subtle: '#646464'
+                },
+                good: {
+                  default: '#0B6A0B',
+                  subtle: '#028A02'
+                },
+                light: {
+                  default: '#FFFFFF',
+                  subtle
+                },
+                warning: {
+                  default: '#B75C00',
+                  subtle: '#986F0B'
+                }
+              }
+            },
+            emphasis: {
+              backgroundColor: cardEmphasisBackgroundColor,
+              foregroundColors: {
+                default: {
+                  default: '#000000',
+                  subtle: '#484644'
+                }
+              }
+            },
+            accent: {
+              backgroundColor: '#C7DEF9',
+              foregroundColors: {
+                default: {
+                  default: '#333333',
+                  subtle: '#484644'
+                }
+              }
+            },
+            good: {
+              backgroundColor: '#CCFFCC',
+              foregroundColors: {
+                default: {
+                  default: '#333333',
+                  subtle: '#484644'
+                }
+              }
+            },
+            attention: {
+              backgroundColor: '#FFC5B2',
+              foregroundColors: {
+                default: {
+                  default: '#333333',
+                  subtle: '#484644'
+                }
+              }
+            },
+            warning: {
+              backgroundColor: '#FFE2B2',
+              foregroundColors: {
+                default: {
+                  default: '#333333',
+                  subtle: '#484644'
+                }
+              }
+            }
+          },
+          supportsInteractivity: true,
+          fontFamily: primaryFont,
+          imageSizes: {
+            small: 40,
+            medium: 80,
+            large: 160
+          },
+          actions: {
+            actionAlignment: 'stretch',
+            actionsOrientation: 'vertical',
+            buttonSpacing: 8,
+            maxActions: 100,
+            showCard: {
+              actionMode: 'inline',
+              inlineTopMargin: 8
+            },
+            spacing: 'default'
+          },
+          adaptiveCard: {
+            allowCustomStyle: false
+          },
+          imageSet: {
+            imageSize: 'medium',
+            maxImageHeight: 100
+          },
+          factSet: {
+            title: {
+              color: 'default',
+              size: 'default',
+              isSubtle: false,
+              weight: 'bolder',
+              wrap: true,
+              maxWidth: 150
+            },
+            value: {
+              color: 'default',
+              size: 'default',
+              isSubtle: false,
+              weight: 'default',
+              wrap: true
+            },
+            spacing: 8
+          }
+        };
+      }
+
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      function sleep(durationInMS = 100) {
+        return new Promise(resolve => setTimeout(resolve, durationInMS));
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript([
+          'First message',
+          {
+            attachments: [
+              {
+                content: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Root**',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      data: {
+                        hello: 'World!'
+                      },
+                      title: 'Action.Execute: Refresh this card',
+                      type: 'Action.Execute',
+                      verb: 'dump'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                },
+                contentType: 'application/vnd.microsoft.card.adaptive'
+              }
+            ],
+            from: {
+              id: 'bot',
+              role: 'bot'
+            },
+            id: '1',
+            type: 'message'
+          },
+          'Last message'
+        ]);
+
+        const store = testHelpers.createStore();
+
+        directLine.sendInvoke = async (name, value) => {
+          expect(name).toBe('adaptiveCard/action');
+          expect(value.verb).toBe('dump');
+
+          return {
+            type: 'application/vnd.microsoft.card.adaptive',
+            value: {
+              type: 'AdaptiveCard',
+              body: [
+                {
+                  text: 'Card state: **Dump value**',
+                  type: 'TextBlock'
+                },
+                {
+                  text: '```\n' + JSON.stringify(value, null, 2) + '\n```',
+                  type: 'TextBlock'
+                }
+              ],
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              version: '1.4'
+            }
+          };
+        };
+
+        function render(props) {
+          WebChat.renderWebChat(
+            {
+              directLine,
+              store,
+              ...props
+            },
+            document.getElementById('webchat')
+          );
+        }
+
+        const customAdaptiveCardHostConfig = createAdaptiveCardsHostConfig({ bubbleTextColor: '#FF0000' });
+
+        render({ adaptiveCardHostConfig: customAdaptiveCardHostConfig });
+
+        // GIVEN: Adaptive Applet showing Action.Execute button with `disabled` set to `true`.
+        await pageConditions.uiConnected();
+        await pageConditions.scrollToBottomCompleted();
+        await pageConditions.numActivitiesShown(3);
+
+        // THEN: Card should have red text.
+        await becameTextColor('rgb(255, 0, 0)');
+        await host.snapshot();
+
+        // GIVEN: Render with default Adaptive Cards host config.
+        render();
+
+        // THEN: Card should have black text.
+        await becameTextColor('rgb(0, 0, 0)');
+        await host.snapshot();
+
+        // GIVEN: Render with custom Adaptive Cards host config and refresh the card.
+        const currentTextBlock = document.querySelector('.ac-textBlock');
+
+        render({ adaptiveCardHostConfig: customAdaptiveCardHostConfig });
+
+        // GIVEN: Card has completed re-render.
+        await pageConditions.became('Card has re-rendered', () => document.querySelector('.ac-textBlock') !== currentTextBlock, 1000);
+
+        // GIVEN: Go to second phase of the card.
+        await clickButtonWithText('Action.Execute: Refresh this card');
+
+        // THEN: Card should have red text.
+        await becameTextColor('rgb(255, 0, 0)');
+        await host.snapshot();
+
+        // GIVEN: Render with default Adaptive Cards host config.
+        render();
+
+        // THEN: Card should have black text.
+        await becameTextColor('rgb(0, 0, 0)');
+        await host.snapshot();
+      });
+    </script>
+  </body>
+</html>

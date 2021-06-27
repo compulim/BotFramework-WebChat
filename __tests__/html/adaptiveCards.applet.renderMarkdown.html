@@ -110,18 +110,12 @@
           );
         }
 
-        render();
+        render({ renderMarkdown: false });
 
         // GIVEN: Adaptive Applet showing Action.Execute button with `disabled` set to `true`.
         await pageConditions.uiConnected();
         await pageConditions.scrollToBottomCompleted();
         await pageConditions.numActivitiesShown(3);
-
-        // GIVEN: The card is rendered in HTML.
-        await becameMarkdown();
-
-        // GIVEN: Disable render Markdown.
-        render({ renderMarkdown: false });
 
         // THEN: The card should be rendered as plain text.
         await becamePlainText();
