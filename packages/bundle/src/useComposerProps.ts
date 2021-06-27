@@ -1,6 +1,8 @@
 import { AttachmentForScreenReaderMiddleware, AttachmentMiddleware } from 'botframework-webchat-api';
 import { useMemo } from 'react';
 
+import createAdaptiveAppletFrameworkAttachmentMiddleware from './adaptiveAppletFramework/createAttachmentMiddleware';
+import createAdaptiveAppletFrameworkStyleSet from './adaptiveAppletFramework/styles/createAdaptiveAppletFrameworkStyleSet';
 import createAdaptiveCardsAttachmentForScreenReaderMiddleware from './adaptiveCards/createAdaptiveCardsAttachmentForScreenReaderMiddleware';
 import createAdaptiveCardsAttachmentMiddleware from './adaptiveCards/createAdaptiveCardsAttachmentMiddleware';
 import createAdaptiveCardsStyleSet from './adaptiveCards/Styles/createAdaptiveCardsStyleSet';
@@ -25,7 +27,11 @@ export default function useComposerProps({
   extraStyleSet: any;
 } {
   const patchedAttachmentMiddleware = useMemo(
-    () => [...attachmentMiddleware, createAdaptiveCardsAttachmentMiddleware()],
+    () => [
+      ...attachmentMiddleware,
+      createAdaptiveAppletFrameworkAttachmentMiddleware(),
+      createAdaptiveCardsAttachmentMiddleware()
+    ],
     [attachmentMiddleware]
   );
 
@@ -35,10 +41,13 @@ export default function useComposerProps({
   );
 
   // When styleSet is not specified, the styleOptions will be used to create Adaptive Cards styleSet and merged into useStyleSet.
-  const extraStyleSet = useMemo(() => (styleSet ? undefined : createAdaptiveCardsStyleSet(styleOptions)), [
-    styleOptions,
-    styleSet
-  ]);
+  const extraStyleSet = useMemo(
+    () =>
+      styleSet
+        ? undefined
+        : { ...createAdaptiveCardsStyleSet(styleOptions), ...createAdaptiveAppletFrameworkStyleSet() },
+    [styleOptions, styleSet]
+  );
 
   const patchedRenderMarkdown = useMemo(
     () => (typeof renderMarkdown === 'undefined' ? defaultRenderMarkdown : renderMarkdown),
