@@ -28,7 +28,9 @@
       run(async function () {
         const directLine = testHelpers.createDirectLineWithTranscript(
           [
-            'First message',
+            'Ad quis dolore reprehenderit dolor irure pariatur exercitation officia pariatur consequat pariatur incididunt. Sunt enim in ad esse laborum sint ullamco deserunt. Culpa mollit sunt do incididunt tempor excepteur amet. Non aliqua deserunt tempor commodo adipisicing dolore. Est Lorem nisi esse culpa nulla tempor occaecat velit occaecat nisi minim. Consequat proident pariatur eiusmod ullamco nulla dolore ad velit dolor. Adipisicing exercitation in ullamco velit commodo nisi qui minim anim.',
+            'Esse ad cupidatat laborum aute do occaecat cillum laboris eiusmod commodo duis. Consequat do consectetur eiusmod reprehenderit occaecat dolor nisi pariatur nostrud pariatur occaecat tempor duis adipisicing. Duis adipisicing mollit minim tempor. Duis consectetur ea sunt officia commodo do. Anim et in do et nostrud elit commodo esse velit dolore sit labore. Labore tempor et eu in laborum minim commodo consequat tempor.',
+            'Irure do est veniam enim duis aute ea culpa ex commodo sit in nisi labore. Esse nulla eu incididunt ullamco amet aliquip ut do. Voluptate ut excepteur ipsum excepteur dolore cillum esse laboris ut consectetur aliqua.',
             {
               attachments: [
                 {
@@ -87,8 +89,13 @@
 
         // GIVEN: Adaptive Applet showing Action.Submit button with value of { hello: 'World!' }.
         await pageConditions.uiConnected();
-        await pageConditions.numActivitiesShown(3);
+        await pageConditions.numActivitiesShown(5);
         await pageConditions.scrollToBottomCompleted();
+
+        // GIVEN: The scroll view is one above the bottom.
+        const transcriptScrollable = pageElements.transcriptScrollable();
+
+        transcriptScrollable.scrollTop = pageElements.activities()[4].offsetTop - transcriptScrollable.offsetHeight;
 
         await host.snapshot();
 
@@ -96,9 +103,9 @@
         await clickButtonWithText('Action.Submit: Send a "PostBack"');
 
         // THEN: A post back message { hello: 'World!' } should be sent.
-        await pageConditions.numActivitiesShown(4);
+        await pageConditions.numActivitiesShown(6);
 
-        expect(pageElements.activities()[3].querySelector('.webchat__bubble__content')).toHaveProperty(
+        expect(pageElements.activities()[5].querySelector('.webchat__bubble__content')).toHaveProperty(
           'innerText',
           'You sent a post back:\n\n{\n  "hello": "World!"\n}\n'
         );
@@ -108,6 +115,9 @@
 
         expect(button.getAttribute('aria-pressed')).toBe('true');
         expect(button.getAttribute('role')).toBe('button');
+
+        // THEN: It should scroll to the bottom.
+        await pageConditions.scrollToBottomCompleted();
 
         await host.snapshot();
       });

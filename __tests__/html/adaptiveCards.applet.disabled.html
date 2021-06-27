@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript([
+          'First message',
+          {
+            attachments: [
+              {
+                content: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Root**',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      data: {
+                        hello: 'World!'
+                      },
+                      title: 'Action.Execute: Refresh this card',
+                      type: 'Action.Execute',
+                      verb: 'dump'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                },
+                contentType: 'application/vnd.microsoft.card.adaptive'
+              }
+            ],
+            from: {
+              id: 'bot',
+              role: 'bot'
+            },
+            id: '1',
+            type: 'message'
+          },
+          'Last message'
+        ]);
+
+        const store = testHelpers.createStore();
+
+        function render(props) {
+          WebChat.renderWebChat(
+            {
+              directLine,
+              store,
+              ...props
+            },
+            document.getElementById('webchat')
+          );
+        }
+
+        render({ disabled: true });
+
+        // GIVEN: Adaptive Applet showing Action.Execute button with `disabled` set to `true`.
+        await pageConditions.uiConnected();
+        await pageConditions.scrollToBottomCompleted();
+        await pageConditions.numActivitiesShown(3);
+
+        // THEN: The button should be disabled.
+        expect(document.querySelector('.ac-pushButton').getAttribute('aria-disabled')).toBe('true');
+
+        await host.snapshot();
+
+        // GIVEN: Unset `disabled`.
+        render();
+
+        // THEN: The button should be re-enabled.
+        await pageConditions.became(
+          'Button to be enabled',
+          () => document.querySelector('.ac-pushButton').hasAttribute('aria-disabled'),
+          1000
+        );
+
+        await host.snapshot();
+
+        // GIVEN: Set `disabled` to `true`.
+        render({ disabled: true });
+
+        // THEN: The button should be disabled.
+        await pageConditions.became(
+          'Button to be disabled',
+          () => document.querySelector('.ac-pushButton').getAttribute('aria-disabled') === 'true',
+          1000
+        );
+
+        await host.snapshot();
+      });
+    </script>
+  </body>
+</html>

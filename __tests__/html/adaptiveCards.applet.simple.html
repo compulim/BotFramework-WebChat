@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      const ROOT_CARD = {
+        type: 'AdaptiveCard',
+        body: [
+          {
+            text: 'Card state: **Root**',
+            type: 'TextBlock'
+          },
+          {
+            id: 'toggleBlock',
+            isVisible: false,
+            text: "You've found me!",
+            type: 'TextBlock'
+          }
+        ],
+        actions: [
+          {
+            data: {
+              hello: 'World!'
+            },
+            title: 'Action.Execute: Refresh this card',
+            type: 'Action.Execute',
+            verb: 'dump'
+          },
+          {
+            data: 'Hello, World!',
+            title: 'Action.Execute: Return a string',
+            type: 'Action.Execute',
+            verb: 'string'
+          },
+          {
+            title: 'Action.Execute: Show an unsupported card',
+            type: 'Action.Execute',
+            verb: 'unsupported'
+          },
+          {
+            data: 'Hello, World!',
+            title: 'Action.Submit: Send an "IMBack"',
+            type: 'Action.Submit'
+          },
+          {
+            data: {
+              hello: 'World!'
+            },
+            title: 'Action.Submit: Send a "PostBack"',
+            type: 'Action.Submit'
+          },
+          {
+            title: 'Action.OpenUrl: Open an URL',
+            type: 'Action.OpenUrl',
+            url: 'https://bing.com/'
+          },
+          {
+            card: {
+              type: 'AdaptiveCard',
+              body: [
+                {
+                  type: 'TextBlock',
+                  text: "You've found me!"
+                }
+              ],
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              version: '1.4'
+            },
+            title: 'Action.ShowCard: Expand below',
+            type: 'Action.ShowCard'
+          },
+          {
+            targetElements: [{ elementId: 'toggleBlock' }],
+            title: 'Action.ToggleVisibility: Expand above',
+            type: 'Action.ToggleVisibility'
+          }
+        ],
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+        version: '1.4'
+      };
+
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      function cardStateBecame(state) {
+        return pageConditions.became(
+          `Card state become "${state}"`,
+          () => findElement('.ac-textBlock', textBlock => textBlock.innerText === `Card state: ${state}`),
+          1000
+        );
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript(
+          [
+            'First message',
+            {
+              attachments: [
+                {
+                  content: ROOT_CARD,
+                  contentType: 'application/vnd.microsoft.card.adaptive'
+                }
+              ],
+              from: {
+                id: 'bot',
+                role: 'bot'
+              },
+              id: '1',
+              type: 'message'
+            },
+            'Last message'
+          ],
+          {
+            overridePostActivity: activity => {
+              if (activity.type === 'message' && activity.value) {
+                directLine.activityDeferredObservable.next(
+                  `You sent a post back:\n\n\`\`\`\n${JSON.stringify(activity.value, null, 2)}\n\`\`\``
+                );
+              }
+            }
+          }
+        );
+
+        const store = testHelpers.createStore();
+
+        directLine.sendInvoke = async (name, value) => {
+          expect(name).toBe('adaptiveCard/action');
+
+          // console.log(value);
+
+          switch (value.verb) {
+            case 'dump':
+              return {
+                type: 'application/vnd.microsoft.card.adaptive',
+                value: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Dump value**',
+                      type: 'TextBlock'
+                    },
+                    {
+                      text: '```\n' + JSON.stringify(value, null, 2) + '\n```',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      title: 'Back',
+                      type: 'Action.Execute',
+                      verb: 'root'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                }
+              };
+
+            case 'unsupported':
+              return {
+                type: 'application/vnd.microsoft.card.adaptive',
+                value: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Unsupported**',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      title: 'Back',
+                      type: 'Action.Execute',
+                      verb: 'root'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '99.9'
+                }
+              };
+
+            case 'string':
+              return {
+                type: 'application/vnd.microsoft.activity.message',
+                value: value.data
+              };
+
+            default:
+              return {
+                type: 'application/vnd.microsoft.card.adaptive',
+                value: ROOT_CARD
+              };
+          }
+        };
+
+        WebChat.renderWebChat(
+          {
+            directLine,
+            store
+          },
+          document.getElementById('webchat')
+        );
+
+        await pageConditions.uiConnected();
+        await pageConditions.numActivitiesShown(3);
+        await pageConditions.scrollToBottomCompleted();
+
+        // TODO: Checks for WAI-ARIA conformity.
+
+        await host.snapshot();
+
+        console.log('TEST IS READY, WILL CLICK "DUMP VALUE"');
+
+        // await clickButtonWithText('Dump value');
+
+        // await cardStateBecame('Dump value');
+
+        // const value = JSON.parse(
+        //   findElement('.ac-textBlock', textBlock => textBlock.innerText.startsWith('{')).innerText
+        // );
+
+        // expect(value).toEqual({
+        //   data: {
+        //     hello: 'World!'
+        //   },
+        //   title: 'Dump value',
+        //   type: 'Action.Execute',
+        //   verb: 'dump'
+        // });
+
+        // // TODO: Checks for WAI-ARIA conformity.
+
+        // await clickButtonWithText('Back');
+
+        // await cardStateBecame('Root');
+      });
+    </script>
+  </body>
+</html>
