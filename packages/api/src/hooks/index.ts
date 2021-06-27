@@ -40,6 +40,7 @@ import useRenderTypingIndicator from './useRenderTypingIndicator';
 import useSendBoxValue from './useSendBoxValue';
 import useSendEvent from './useSendEvent';
 import useSendFiles from './useSendFiles';
+import useSendInvoke from './useSendInvoke';
 import useSendMessage from './useSendMessage';
 import useSendMessageBack from './useSendMessageBack';
 import useSendPostBack from './useSendPostBack';
@@ -107,6 +108,7 @@ export {
   useSendMessage,
   useSendMessageBack,
   useSendPostBack,
+  useSendInvoke,
   useSendTimeoutForActivity,
   useSendTypingIndicator,
   useSetNotification,

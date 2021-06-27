@@ -12,6 +12,7 @@ import { RenderAttachment } from '../../types/AttachmentMiddleware';
 import { RenderToast } from '../../types/ToastMiddleware';
 import { ScrollToEndButtonComponentFactory } from '../../types/ScrollToEndButtonMiddleware';
 import { StrictStyleOptions } from '../../StyleOptions';
+import AdaptiveCardInvokeResponse from '../../types/AdaptiveCardInvokeResponse';
 import LocalizedStrings from '../../types/LocalizedStrings';
 import PrecompiledGlobalize from '../../types/PrecompiledGlobalize';
 import TelemetryMeasurementEvent from '../../types/TelemetryMeasurementEvent';
@@ -44,6 +45,7 @@ type WebChatAPIContext = {
   selectVoice?: (voices: typeof window.SpeechSynthesisVoice[], activity: DirectLineActivity) => void;
   sendEvent?: (name: string, value: any) => void;
   sendFiles?: (files: File[]) => void;
+  sendInvoke?: (name: 'adaptiveCard/action', value?: any) => Promise<AdaptiveCardInvokeResponse>;
   sendMessage?: (text: string, method?: string, { channelData }?: { channelData?: any }) => void;
   sendMessageBack?: (value: any, text?: string, displayText?: string) => void;
   sendPostBack?: (value?: any) => void;

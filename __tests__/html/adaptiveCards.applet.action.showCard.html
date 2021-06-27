@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      function cardStateBecame(state) {
+        return pageConditions.became(
+          `Card state become "${state}"`,
+          () => findElement('.ac-textBlock', textBlock => textBlock.innerText === `Card state: ${state}`),
+          1000
+        );
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript([
+          'First message',
+          {
+            attachments: [
+              {
+                content: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Root**',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      card: {
+                        type: 'AdaptiveCard',
+                        body: [
+                          {
+                            type: 'TextBlock',
+                            text: 'You have found me!'
+                          }
+                        ],
+                        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                        version: '1.4'
+                      },
+                      title: 'Action.ShowCard: Expand below',
+                      type: 'Action.ShowCard'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                },
+                contentType: 'application/vnd.microsoft.card.adaptive'
+              }
+            ],
+            from: {
+              id: 'bot',
+              role: 'bot'
+            },
+            id: '1',
+            type: 'message'
+          },
+          'Last message'
+        ]);
+
+        const store = testHelpers.createStore();
+
+        directLine.sendInvoke = async (name, value) => {
+          expect(name).toBe('adaptiveCard/action');
+          expect(value.verb).toBe('dump');
+
+          return {
+            type: 'application/vnd.microsoft.card.adaptive',
+            value: {
+              type: 'AdaptiveCard',
+              body: [
+                {
+                  text: 'Card state: **Dump value**',
+                  type: 'TextBlock'
+                },
+                {
+                  text: '```\n' + JSON.stringify(value, null, 2) + '\n```',
+                  type: 'TextBlock'
+                }
+              ],
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              version: '1.4'
+            }
+          };
+        };
+
+        WebChat.renderWebChat(
+          {
+            directLine,
+            store
+          },
+          document.getElementById('webchat')
+        );
+
+        // GIVEN: Adaptive Applet showing Action.ShowCard button with a new card.
+        await pageConditions.uiConnected();
+        await pageConditions.scrollToBottomCompleted();
+        await pageConditions.numActivitiesShown(3);
+
+        await host.snapshot();
+
+        // WHEN: The Action.ShowCard button is clicked.
+        await clickButtonWithText('Action.ShowCard: Expand below');
+
+        expect(document.querySelectorAll('.ac-adaptiveCard')).toHaveLength(2);
+
+        // THEN: A card should append to the bottom.
+        await host.snapshot();
+      });
+    </script>
+  </body>
+</html>

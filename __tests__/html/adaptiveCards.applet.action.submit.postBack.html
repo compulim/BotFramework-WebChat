@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      function cardStateBecame(state) {
+        return pageConditions.became(
+          `Card state become "${state}"`,
+          () => findElement('.ac-textBlock', textBlock => textBlock.innerText === `Card state: ${state}`),
+          1000
+        );
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript(
+          [
+            'First message',
+            {
+              attachments: [
+                {
+                  content: {
+                    type: 'AdaptiveCard',
+                    body: [
+                      {
+                        text: 'Card state: **Root**',
+                        type: 'TextBlock'
+                      }
+                    ],
+                    actions: [
+                      {
+                        data: {
+                          hello: 'World!'
+                        },
+                        title: 'Action.Submit: Send a "PostBack"',
+                        type: 'Action.Submit'
+                      }
+                    ],
+                    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                    version: '1.4'
+                  },
+                  contentType: 'application/vnd.microsoft.card.adaptive'
+                }
+              ],
+              from: {
+                id: 'bot',
+                role: 'bot'
+              },
+              id: '1',
+              type: 'message'
+            },
+            'Last message'
+          ],
+          {
+            overridePostActivity: activity => {
+              if (activity.type === 'message' && activity.value) {
+                directLine.activityDeferredObservable.next(
+                  `You sent a post back:\n\n\`\`\`\n${JSON.stringify(activity.value, null, 2)}\n\`\`\``
+                );
+              }
+            }
+          }
+        );
+
+        const store = testHelpers.createStore();
+
+        WebChat.renderWebChat(
+          {
+            directLine,
+            store
+          },
+          document.getElementById('webchat')
+        );
+
+        // GIVEN: Adaptive Applet showing Action.Submit button with value of { hello: 'World!' }.
+        await pageConditions.uiConnected();
+        await pageConditions.numActivitiesShown(3);
+        await pageConditions.scrollToBottomCompleted();
+
+        await host.snapshot();
+
+        // WHEN: The Action.Submit button is clicked.
+        await clickButtonWithText('Action.Submit: Send a "PostBack"');
+
+        // THEN: A post back message { hello: 'World!' } should be sent.
+        await pageConditions.numActivitiesShown(4);
+
+        expect(pageElements.activities()[3].querySelector('.webchat__bubble__content')).toHaveProperty(
+          'innerText',
+          'You sent a post back:\n\n{\n  "hello": "World!"\n}\n'
+        );
+
+        // THEN: The Action.Submit button should be pushed.
+        const button = document.querySelector('.ac-pushButton');
+
+        expect(button.getAttribute('aria-pressed')).toBe('true');
+        expect(button.getAttribute('role')).toBe('button');
+
+        await host.snapshot();
+      });
+    </script>
+  </body>
+</html>

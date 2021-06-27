@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      function cardStateBecame(state) {
+        return pageConditions.became(
+          `Card state become "${state}"`,
+          () => findElement('.ac-textBlock', textBlock => textBlock.innerText === `Card state: ${state}`),
+          1000
+        );
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript([
+          'First message',
+          {
+            attachments: [
+              {
+                content: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Root**',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      data: 'Hello, World!',
+                      title: 'Action.Submit: Send an "IMBack"',
+                      type: 'Action.Submit'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                },
+                contentType: 'application/vnd.microsoft.card.adaptive'
+              }
+            ],
+            from: {
+              id: 'bot',
+              role: 'bot'
+            },
+            id: '1',
+            type: 'message'
+          },
+          'Last message'
+        ]);
+
+        const store = testHelpers.createStore();
+
+        WebChat.renderWebChat(
+          {
+            directLine,
+            store
+          },
+          document.getElementById('webchat')
+        );
+
+        // GIVEN: Adaptive Applet showing Action.Submit button with value of a string "Hello, World!".
+        await pageConditions.uiConnected();
+        await pageConditions.numActivitiesShown(3);
+        await pageConditions.scrollToBottomCompleted();
+
+        await host.snapshot();
+
+        // WHEN: The Action.Submit button is clicked.
+        await clickButtonWithText('Action.Submit: Send an "IMBack"');
+
+        // THEN: The message "Hello, World!" should be sent.
+        await pageConditions.numActivitiesShown(4);
+
+        // THEN: The Action.Submit button should be pushed.
+        const button = document.querySelector('.ac-pushButton');
+
+        expect(button.getAttribute('aria-pressed')).toBe('true');
+        expect(button.getAttribute('role')).toBe('button');
+
+        await host.snapshot();
+      });
+    </script>
+  </body>
+</html>

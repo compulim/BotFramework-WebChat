@@ -2,6 +2,9 @@
  * Adaptive Cards styling
  */
 type AdaptiveCardsStyleOptions = {
+  /** Cards: Specify the class name to applies to card actions that are clicked/tapped/executed. */
+  actionPerformedClassName?: string;
+
   /** Adaptive Cards: Specify the maximum schema version supported by the Adaptive Card serializer. */
   adaptiveCardsParserMaxVersion?: string;
 

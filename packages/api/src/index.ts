@@ -1,6 +1,7 @@
 import * as hooks from './hooks';
 import ActivityMiddleware, { ActivityComponentFactory } from './types/ActivityMiddleware';
 import ActivityStatusMiddleware, { RenderActivityStatus } from './types/ActivityStatusMiddleware';
+import AdaptiveCardInvokeResponse from './types/AdaptiveCardInvokeResponse';
 import AttachmentForScreenReaderMiddleware, {
   AttachmentForScreenReaderComponentFactory
 } from './types/AttachmentForScreenReaderMiddleware';
@@ -26,6 +27,7 @@ export type {
   ActivityComponentFactory,
   ActivityMiddleware,
   ActivityStatusMiddleware,
+  AdaptiveCardInvokeResponse,
   AttachmentForScreenReaderComponentFactory,
   AttachmentForScreenReaderMiddleware,
   AttachmentMiddleware,

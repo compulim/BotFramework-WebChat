@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      function cardStateBecame(state) {
+        return pageConditions.became(
+          `Card state become "${state}"`,
+          () => findElement('.ac-textBlock', textBlock => textBlock.innerText === `Card state: ${state}`),
+          1000
+        );
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript([
+          'First message',
+          {
+            attachments: [
+              {
+                content: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Card state: **Root**',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      title: 'Action.Execute: Show an unsupported card',
+                      type: 'Action.Execute',
+                      verb: 'unsupported'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                },
+                contentType: 'application/vnd.microsoft.card.adaptive'
+              }
+            ],
+            from: {
+              id: 'bot',
+              role: 'bot'
+            },
+            id: '1',
+            type: 'message'
+          },
+          'Last message'
+        ]);
+
+        const store = testHelpers.createStore();
+
+        directLine.sendInvoke = async (name, value) => {
+          expect(name).toBe('adaptiveCard/action');
+          expect(value.verb).toBe('unsupported');
+
+          return {
+            type: 'application/vnd.microsoft.card.adaptive',
+            value: {
+              type: 'AdaptiveCard',
+              body: [
+                {
+                  text: 'Card state: **Unsupported**',
+                  type: 'TextBlock'
+                }
+              ],
+              actions: [
+                {
+                  title: 'Back',
+                  type: 'Action.Execute',
+                  verb: 'root'
+                }
+              ],
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              version: '99.9'
+            }
+          };
+        };
+
+        WebChat.renderWebChat(
+          {
+            directLine,
+            store
+          },
+          document.getElementById('webchat')
+        );
+
+        // GIVEN: Adaptive Applet showing Action.Execute button with verb of "dump".
+        //        This button trigger the bot to reply with "application/vnd.microsoft.card.adaptive" and a card of version "99.9".
+        await pageConditions.uiConnected();
+        await pageConditions.numActivitiesShown(3);
+        await pageConditions.scrollToBottomCompleted();
+
+        await host.snapshot();
+
+        // WHEN: The Action.Execute button is clicked.
+        await clickButtonWithText('Action.Execute: Show an unsupported card');
+
+        // THEN: The card should refresh with an error message saying version "99.9" is not supported.
+        await host.snapshot();
+      });
+    </script>
+  </body>
+</html>

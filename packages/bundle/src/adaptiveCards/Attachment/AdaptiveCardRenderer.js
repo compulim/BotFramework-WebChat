@@ -244,6 +244,7 @@ const AdaptiveCardRenderer = ({ actionPerformedClassName, adaptiveCard, disabled
 
   // TODO: [P2] #3199 We should consider using `adaptiveCard.selectAction` instead.
   // The null check for "tapAction" is in "handleClickAndKeyPressForTapAction".
+  // "tapAction" is only available for rich cards.
   const handleClickAndKeyPress = useCallback(
     event => {
       const { key, target, type } = event;

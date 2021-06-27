@@ -13,7 +13,7 @@ function updateRelativeTimestamp(now, activity) {
       },
       id: Math.random().toString(36).substr(2, 5),
       text: activity,
-      timestamp: 0,
+      timestamp: new Date(now).toISOString(),
       type: 'message'
     };
   }
@@ -23,7 +23,8 @@ function updateRelativeTimestamp(now, activity) {
 
     ...(activity.from.role === 'user' &&
     activity.channelData &&
-    typeof activity.channelData.clientTimestamp === 'number'
+    (typeof activity.channelData.clientTimestamp === 'number' ||
+      typeof activity.channelData.clientTimestamp === 'undefined')
       ? {
           channelData: {
             ...activity.channelData,
@@ -32,15 +33,15 @@ function updateRelativeTimestamp(now, activity) {
         }
       : {}),
 
-    ...(typeof activity.timestamp === 'number'
+    ...(typeof activity.timestamp === 'number' || typeof activity.timestamp === 'undefined'
       ? { timestamp: new Date(now + (activity.timestamp || 0)).toISOString() }
       : {})
   };
 }
 
 export default function createDirectLineWithTranscript(activitiesOrFilename, { overridePostActivity } = {}) {
-  const now = Date.now();
-  const patchActivity = updateRelativeTimestamp.bind(null, now);
+  let now = Date.now();
+  const patchActivity = (...args) => updateRelativeTimestamp(now++, ...args);
   const connectionStatusDeferredObservable = createDeferredObservable(() => {
     connectionStatusDeferredObservable.next(0);
   });
@@ -75,7 +76,11 @@ export default function createDirectLineWithTranscript(activitiesOrFilename, { o
     end: () => {},
     postActivity: activity => {
       if (overridePostActivity) {
-        return overridePostActivity(activity);
+        const result = overridePostActivity(activity);
+
+        if (typeof result !== 'undefined') {
+          return result;
+        }
       }
 
       const id = Math.random().toString(36).substr(2, 5);
