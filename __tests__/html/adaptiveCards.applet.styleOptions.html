@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script>
+      async function becameTextColor(colorInRgb) {
+        await pageConditions.became(
+          'text became black',
+          () => document.querySelector('.ac-textBlock').computedStyleMap().get('color') + '' === colorInRgb,
+          1000
+        );
+      }
+
+      function findElement(selectors, predicate) {
+        return [...document.querySelectorAll(selectors)].find(predicate);
+      }
+
+      function clickButtonWithText(text) {
+        return host.click(findElement('.ac-pushButton', ({ innerText }) => innerText === text));
+      }
+
+      run(async function () {
+        const directLine = testHelpers.createDirectLineWithTranscript([
+          'First message',
+          {
+            attachments: [
+              {
+                content: {
+                  type: 'AdaptiveCard',
+                  body: [
+                    {
+                      text: 'Hello, World!',
+                      type: 'TextBlock'
+                    }
+                  ],
+                  actions: [
+                    {
+                      data: {
+                        hello: 'World!'
+                      },
+                      title: 'Action.Execute: Refresh this card',
+                      type: 'Action.Execute',
+                      verb: 'dump'
+                    }
+                  ],
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                  version: '1.4'
+                },
+                contentType: 'application/vnd.microsoft.card.adaptive'
+              }
+            ],
+            from: {
+              id: 'bot',
+              role: 'bot'
+            },
+            id: '1',
+            type: 'message'
+          },
+          'Last message'
+        ]);
+
+        directLine.sendInvoke = async (name, value) => {
+          expect(name).toBe('adaptiveCard/action');
+          expect(value.verb).toBe('dump');
+
+          return {
+            type: 'application/vnd.microsoft.card.adaptive',
+            value: {
+              type: 'AdaptiveCard',
+              body: [
+                {
+                  text: 'Card state: **Dump value**',
+                  type: 'TextBlock'
+                },
+                {
+                  text: '```\n' + JSON.stringify(value, null, 2) + '\n```',
+                  type: 'TextBlock'
+                }
+              ],
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              version: '1.4'
+            }
+          };
+        };
+
+        const store = testHelpers.createStore();
+        const telemetry = [];
+
+        const render = props =>
+          WebChat.renderWebChat(
+            {
+              directLine,
+              onTelemetry: ({ data, dimensions, duration, error, name, type }) =>
+                telemetry.push({
+                  data,
+                  dimensions,
+                  duration,
+                  error,
+                  name,
+                  type
+                }),
+              store,
+              ...props
+            },
+            document.getElementById('webchat')
+          );
+
+        render({ styleOptions: { bubbleTextColor: 'red' } });
+
+        // GIVEN: Adaptive Applet showing a message "Hello, World!".
+        await pageConditions.uiConnected();
+        await pageConditions.scrollToBottomCompleted();
+        await pageConditions.numActivitiesShown(3);
+
+        // WHEN: Text color is set to red.
+
+        // THEN: It should show the card in red color.
+        await becameTextColor('rgb(255, 0, 0)');
+        await host.snapshot();
+
+        // THEN: AdaptiveApplet should have created once.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
+        // WHEN: "styleOptions" to unset.
+        render();
+
+        // THEN: It should show the card in black color.
+        await becameTextColor('rgb(0, 0, 0)');
+        await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
+        // WHEN: Setting "styleOptions.bubbleTextColor" to "red".
+        render({ styleOptions: { bubbleTextColor: 'red' } });
+
+        // THEN: It should show the card in red color.
+        await becameTextColor('rgb(255, 0, 0)');
+        await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
+        // WHEN: Navigate to a new card.
+        const textBlock = document.querySelector('.ac-textBlock');
+
+        await clickButtonWithText('Action.Execute: Refresh this card');
+        await pageConditions.became('Card has refreshed', () => document.querySelector('.ac-textBlock') !== textBlock, 1000);
+
+        // THEN: It should show the refreshed card in red color.
+        await becameTextColor('rgb(255, 0, 0)');
+        await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
+        // WHEN: "styleOptions" to unset.
+        render();
+
+        // THEN: It should show the refreshed card in black color.
+        await becameTextColor('rgb(0, 0, 0)');
+        await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+      });
+    </script>
+  </body>
+</html>

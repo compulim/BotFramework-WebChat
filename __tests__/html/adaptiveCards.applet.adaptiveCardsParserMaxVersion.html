@@ -40,11 +40,21 @@
         ]);
 
         const store = testHelpers.createStore();
+        const telemetry = [];
 
         const render = props =>
           WebChat.renderWebChat(
             {
               directLine,
+              onTelemetry: ({ data, dimensions, duration, error, name, type }) =>
+                telemetry.push({
+                  data,
+                  dimensions,
+                  duration,
+                  error,
+                  name,
+                  type
+                }),
               store,
               ...props
             },
@@ -64,6 +74,11 @@
         await pageConditions.errorBoxShown();
         await host.snapshot();
 
+        // THEN: AdaptiveApplet should have created once.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
         // WHEN: "styleOptions.adaptiveCardsParserMaxVersion" is not set (default to "1.4").
         render({ styleOptions: { showErrors: true } });
 
@@ -71,12 +86,22 @@
         await pageConditions.errorBoxShown(0);
         await host.snapshot();
 
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
         // WHEN: "styleOptions.adaptiveCardsParserMaxVersion" is set to "1.3" and showing a card of "1.4".
         render({ styleOptions: { adaptiveCardsParserMaxVersion: '1.3', showErrors: true } });
 
         // THEN: It should show an error message.
         await pageConditions.errorBoxShown();
         await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
       });
     </script>
   </body>
