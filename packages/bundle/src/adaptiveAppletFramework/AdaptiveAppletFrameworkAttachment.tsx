@@ -81,6 +81,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
   const disabled = disabledFromComposer || disabledFromProps;
   const performCardActionRef = useRefFrom(performCardAction);
   const prevAdaptiveCardsHostConfig = usePrevious(adaptiveCardsHostConfig, adaptiveCardsHostConfig);
+  const prevMaxVersion = usePrevious(maxVersion, maxVersion);
   const prevRenderMarkdownAsHTML = usePrevious(renderMarkdownAsHTML, renderMarkdownAsHTML);
   const renderMarkdownAsHTMLRef = useRefFrom(renderMarkdownAsHTML);
 
@@ -186,6 +187,8 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
   );
 
   const handleCardChanging = useCallback(() => {
+    // Host config and max version need to be applied before "onCardChanging".
+    // Only render Markdown can be applied here.
     AdaptiveCard.onProcessMarkdown = handleProcessMarkdown;
 
     return true;
@@ -195,11 +198,8 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     (applet: AdaptiveApplet) => {
       const { validationEvents } = applet.card.validateProperties();
 
-      if (validationEvents.length) {
-        setErrors(validationEvents.map(({ message }) => new Error(message)));
-      }
-
       setActionsPerformed([]);
+      setErrors(validationEvents.map(({ message }) => new Error(message)));
       setLastCardChanged(Date.now());
     },
     [setActionsPerformed, setErrors, setLastCardChanged]
@@ -229,8 +229,8 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
           ? new HostConfig(adaptiveCardsHostConfig)
           : adaptiveCardsHostConfig;
 
-        if (maxVersion) {
-          SerializableObject.defaultMaxVersion = maxVersion;
+        if (maxVersionRef) {
+          SerializableObject.defaultMaxVersion = maxVersionRef.current;
         }
 
         applet.setCard(content);
@@ -241,7 +241,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
         return applet;
       }),
     [
-      adaptiveCardsHostConfigRef, // Host config change should not recreate applet, we will re-set the card below.
+      adaptiveCardsHostConfigRef, // "hostConfig" change should not recreate applet, we will re-set the card below.
       channelAdapter,
       content,
       handleAppletAction,
@@ -249,7 +249,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
       handleCardChanging,
       handleCreateSerializationContext,
       handleProcessMarkdown,
-      maxVersion,
+      maxVersionRef, // "maxVersion" change should not recreate applet, we will re-set the card below.
       setLastCardChanged
     ]
   );
@@ -261,6 +261,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     // Only applies if the applet has not changed.
     if (applet && applet === prevApplet) {
       const adaptiveCardsHostConfigChanged = adaptiveCardsHostConfig !== prevAdaptiveCardsHostConfig;
+      const maxVersionChanged = maxVersion !== prevMaxVersion;
 
       // If either AC host config or renderMarkdownAsHTML changed, we should re-render the card.
       if (adaptiveCardsHostConfigChanged) {
@@ -270,7 +271,12 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
           : adaptiveCardsHostConfig;
       }
 
-      if (adaptiveCardsHostConfigChanged || renderMarkdownAsHTML !== prevRenderMarkdownAsHTML) {
+      if (maxVersionChanged) {
+        // We must change "SerializableObject.defaultMaxVersion" before "onCardChanging".
+        SerializableObject.defaultMaxVersion = maxVersion;
+      }
+
+      if (adaptiveCardsHostConfigChanged || maxVersionChanged || renderMarkdownAsHTML !== prevRenderMarkdownAsHTML) {
         // "applet.refreshCard" is not meant for re-rendering the card. Instead, we need to re-set the card.
         applet.setCard(applet.card.toJSON());
       }
@@ -278,6 +284,8 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
   }, [
     adaptiveCardsHostConfig,
     applet,
+    maxVersion,
+    prevMaxVersion,
     prevAdaptiveCardsHostConfig,
     prevApplet,
     prevRenderMarkdownAsHTML,
