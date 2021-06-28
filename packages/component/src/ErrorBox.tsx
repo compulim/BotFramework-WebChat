@@ -1,6 +1,7 @@
 /* eslint no-console: "off" */
 
 import { hooks } from 'botframework-webchat-api';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { FC } from 'react';
 
@@ -21,12 +22,12 @@ const ErrorBox: FC<ErrorBoxProps> = ({ error, type }) => {
   return (
     <React.Fragment>
       <ScreenReaderText text={localize('ACTIVITY_ERROR_BOX_TITLE')} />
-      <div className={errorBoxStyleSet}>
-        <div>{type}</div>
+      <div className={classNames('webchat__error-box', errorBoxStyleSet)}>
+        <div className="webchat__error-box__title">{type}</div>
         {/* The callstack between production and development are different, thus, we should hide it for visual regression test */}
-        <details>
+        <details className="webchat__error-box__details">
           <summary>{error.message}</summary>
-          <pre>{error.stack}</pre>
+          <pre className="webchat__error-box__code">{error.stack}</pre>
         </details>
       </div>
     </React.Fragment>

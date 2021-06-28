@@ -228,11 +228,21 @@
 
         const customAdaptiveCardHostConfig = createAdaptiveCardsHostConfig({ bubbleTextColor: '#FF0000' });
         const store = testHelpers.createStore();
+        const telemetry = [];
 
         const render = props =>
           WebChat.renderWebChat(
             {
               directLine,
+              onTelemetry: ({ data, dimensions, duration, error, name, type }) =>
+                telemetry.push({
+                  data,
+                  dimensions,
+                  duration,
+                  error,
+                  name,
+                  type
+                }),
               store,
               ...props
             },
@@ -250,12 +260,22 @@
         await becameTextColor('rgb(255, 0, 0)');
         await host.snapshot();
 
+        // THEN: AdaptiveApplet should have created once.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
         // GIVEN: Render with default Adaptive Cards host config.
         render();
 
         // THEN: Card should have black text.
         await becameTextColor('rgb(0, 0, 0)');
         await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
 
         // GIVEN: Render with custom Adaptive Cards host config and refresh the card.
         const currentTextBlock = document.querySelector('.ac-textBlock');
@@ -276,12 +296,22 @@
         await becameTextColor('rgb(255, 0, 0)');
         await host.snapshot();
 
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
+
         // GIVEN: Render with default Adaptive Cards host config.
         render();
 
         // THEN: Card should have black text.
         await becameTextColor('rgb(0, 0, 0)');
         await host.snapshot();
+
+        // THEN: AdaptiveApplet should not be recreated.
+        expect(
+          telemetry.filter(({ name, type }) => name === 'AdaptiveApplet.create' && type === 'timingend')
+        ).toHaveLength(1);
       });
     </script>
   </body>

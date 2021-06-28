@@ -3,6 +3,9 @@ import { warnOnce } from 'botframework-webchat-core';
 import defaultStyleOptions from './defaultStyleOptions';
 import StyleOptions, { StrictStyleOptions } from './StyleOptions';
 
+// eslint-disable-next-line no-undef
+const node_env = process.env.node_env || process.env.NODE_ENV;
+
 const hideScrollToEndButtonDeprecation = warnOnce(
   '"styleOptions.hideScrollToEndButton" has been deprecated. To hide scroll to end button, set "scrollToEndBehavior" to false. This deprecation migration will be removed on or after 2023-06-02.'
 );
@@ -24,7 +27,7 @@ export default function normalizeStyleOptions({
   const filledOptions: Required<StyleOptions> = { ...defaultStyleOptions, ...options };
 
   // Keep this list flat (no nested style) and serializable (no functions)
-  const { bubbleFromUserNubOffset, bubbleNubOffset, emojiSet } = filledOptions;
+  const { bubbleFromUserNubOffset, bubbleNubOffset, emojiSet, showErrors } = filledOptions;
 
   let normalizedBubbleFromUserNubOffset: number;
   let normalizedBubbleNubOffset: number;
@@ -107,11 +110,14 @@ export default function normalizeStyleOptions({
     filledOptions.scrollToEndButtonFontSize = options.scrollToEndButtonFontSize || newMessagesButtonFontSize;
   }
 
+  const patchedShowErrors = typeof showErrors === 'boolean' ? showErrors : node_env === 'development';
+
   return {
     ...filledOptions,
     bubbleFromUserNubOffset: normalizedBubbleFromUserNubOffset,
     bubbleNubOffset: normalizedBubbleNubOffset,
     emojiSet: normalizedEmojiSet,
-    scrollToEndButtonBehavior: patchedScrollToEndButtonBehavior
+    scrollToEndButtonBehavior: patchedScrollToEndButtonBehavior,
+    showErrors: patchedShowErrors
   };
 }

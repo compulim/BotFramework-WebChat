@@ -2,20 +2,29 @@ import { useCallback } from 'react';
 
 import createCustomEvent from '../utils/createCustomEvent';
 import randomId from '../utils/randomId';
+import tryCatchFinally from '../utils/tryCatchFinally';
 import useReadTelemetryDimensions from './internal/useReadTelemetryDimensions';
 import useTrackException from './useTrackException';
 import useWebChatAPIContext from './internal/useWebChatAPIContext';
 
-export default function useTrackTiming<T>(): (
-  name: string,
-  functionOrPromise: (() => T) | Promise<T>
-) => Promise<T | void> {
+/**
+ * This function will emit timing measurements for the execution of a synchronous or asynchronous function. Before the execution,
+ * the `onTelemetry` handler will be triggered with a `timingstart` event. After completion, regardless of resolve or reject, the
+ * `onTelemetry` handler will be triggered again with a `timingend` event.
+ *
+ * If the function throws an exception while executing, the exception will be reported to `useTrackException` hook as a non-fatal error.
+ */
+export default function useTrackTiming<T>(): {
+  (name: string, fn: () => T): T;
+  (name: string, fn: () => Promise<T>): Promise<T>;
+  (name: string, promise: Promise<T>): Promise<T>;
+} {
   const { onTelemetry } = useWebChatAPIContext();
   const readTelemetryDimensions = useReadTelemetryDimensions();
   const trackException = useTrackException();
 
-  return useCallback(
-    async (name, functionOrPromise) => {
+  return useCallback<any>(
+    (name: string, functionOrPromise: any) => {
       if (!name || typeof name !== 'string') {
         return console.warn(
           'botframework-webchat: "name" passed to "useTrackTiming" hook must be specified and of type string.'
@@ -39,25 +48,27 @@ export default function useTrackTiming<T>(): (
 
       const startTime = Date.now();
 
-      try {
-        return await (typeof functionOrPromise === 'function' ? functionOrPromise() : functionOrPromise);
-      } catch (err) {
-        trackException(err, false);
+      return tryCatchFinally(
+        functionOrPromise,
+        err => {
+          trackException(err, false);
 
-        throw err;
-      } finally {
-        const duration = Date.now() - startTime;
+          throw err;
+        },
+        () => {
+          const duration = Date.now() - startTime;
 
-        onTelemetry &&
-          onTelemetry(
-            createCustomEvent('timingend', {
-              dimensions: readTelemetryDimensions(),
-              duration,
-              name,
-              timingId
-            })
-          );
-      }
+          onTelemetry &&
+            onTelemetry(
+              createCustomEvent('timingend', {
+                dimensions: readTelemetryDimensions(),
+                duration,
+                name,
+                timingId
+              })
+            );
+        }
+      );
     },
     [onTelemetry, readTelemetryDimensions, trackException]
   );

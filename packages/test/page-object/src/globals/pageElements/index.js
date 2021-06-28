@@ -1,5 +1,6 @@
 import activities from './activities';
 import connectivityStatus from './connectivityStatus';
+import errorBoxes from './errorBoxes';
 import focusedActivity from './focusedActivity';
 import microphoneButton from './microphoneButton';
 import scrollToEndButton from './scrollToEndButton';
@@ -16,6 +17,7 @@ import transcriptTerminator from './transcriptTerminator';
 export {
   activities,
   connectivityStatus,
+  errorBoxes,
   focusedActivity,
   microphoneButton,
   scrollToEndButton,

@@ -514,6 +514,11 @@ type StyleOptions = {
    */
 
   videoHeight?: number | string;
+
+  /**
+   * Show errors. If not set, will default to `NODE_ENV` environment variable.
+   */
+  showErrors?: boolean;
 };
 
 // StrictStyleOptions is only used internally in Web Chat and for simplifying our code:

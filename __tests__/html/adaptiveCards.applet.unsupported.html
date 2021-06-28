@@ -48,13 +48,17 @@
 
         const store = testHelpers.createStore();
 
-        WebChat.renderWebChat(
-          {
-            directLine,
-            store
-          },
-          document.getElementById('webchat')
-        );
+        const render = props =>
+          WebChat.renderWebChat(
+            {
+              directLine,
+              store,
+              ...props
+            },
+            document.getElementById('webchat')
+          );
+
+        render();
 
         // GIVEN: Adaptive Applet showing Action.Execute button with verb of "dump".
         //        This button trigger the bot to reply with "application/vnd.microsoft.card.adaptive" and a card.
@@ -65,6 +69,21 @@
         // WHEN: An activity with unsupported version (99.9) is shown.
 
         // THEN: It should show an error message.
+        await pageConditions.errorBoxShown();
+        await host.snapshot();
+
+        // WHEN: Setting "styleOptions" to hide error box.
+        render({ styleOptions: { showErrors: false } });
+
+        // THEN: No error message should show.
+        await pageConditions.errorBoxShown(0);
+        await host.snapshot();
+
+        // WHEN: Unsetting "styleOptions".
+        render();
+
+        // THEN: It should show an error message.
+        await pageConditions.errorBoxShown();
         await host.snapshot();
       });
     </script>

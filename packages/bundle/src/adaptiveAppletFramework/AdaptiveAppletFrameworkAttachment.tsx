@@ -26,9 +26,6 @@ import useRefFrom from '../utils/hooks/useRefFrom';
 import useStyleOptions from '../hooks/useStyleOptions';
 import useAdaptiveCardsMaxVersion from '../adaptiveCards/hooks/internal/useAdaptiveCardsMaxVersion';
 
-// eslint-disable-next-line no-undef
-const node_env = process.env.node_env || process.env.NODE_ENV;
-
 const {
   useDisabled,
   useLocalizer,
@@ -36,7 +33,8 @@ const {
   useRenderMarkdownAsHTML,
   useScrollToEnd,
   useSendInvoke,
-  useStyleSet
+  useStyleSet,
+  useTrackTiming
 } = hooks;
 
 const { ErrorBox, TextContent } = Components;
@@ -57,7 +55,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
   attachment: { content },
   disabled: disabledFromProps = false
 }) => {
-  const [{ actionPerformedClassName }] = useStyleOptions();
+  const [{ actionPerformedClassName, showErrors }] = useStyleOptions();
   const [
     {
       adaptiveAppletFrameworkAttachment: adaptiveAppletFrameworkAttachmentStyleSet,
@@ -77,7 +75,9 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
   const renderMarkdownAsHTML = useRenderMarkdownAsHTML();
   const scrollToEnd = useScrollToEnd();
   const sendInvoke = useSendInvoke();
+  const trackTiming = useTrackTiming<AdaptiveApplet>();
 
+  const adaptiveCardsHostConfigRef = useRefFrom(adaptiveCardsHostConfig);
   const disabled = disabledFromComposer || disabledFromProps;
   const performCardActionRef = useRefFrom(performCardAction);
   const prevAdaptiveCardsHostConfig = usePrevious(adaptiveCardsHostConfig, adaptiveCardsHostConfig);
@@ -209,49 +209,56 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     maxVersionRef
   ]);
 
-  const applet = useMemo(() => {
-    const applet = new AdaptiveApplet();
+  const applet: AdaptiveApplet = useMemo(
+    () =>
+      trackTiming('AdaptiveApplet.create', () => {
+        const { current: adaptiveCardsHostConfig } = adaptiveCardsHostConfigRef;
 
-    applet.channelAdapter = channelAdapter;
-    applet.onAction = handleAppletAction;
-    applet.onCreateSerializationContext = handleCreateSerializationContext;
+        const applet = new AdaptiveApplet();
 
-    // Both "onCardChanged" and "onCardChanging" will be called on initial render.
-    applet.onCardChanging = handleCardChanging;
-    applet.onCardChanged = handleCardChanged;
+        applet.channelAdapter = channelAdapter;
+        applet.onAction = handleAppletAction;
+        applet.onCreateSerializationContext = handleCreateSerializationContext;
 
-    // Host config must be applied before setCard() and cannot be applied during card changing.
-    applet.hostConfig = isPlainObject(adaptiveCardsHostConfig)
-      ? new HostConfig(adaptiveCardsHostConfig)
-      : adaptiveCardsHostConfig;
+        // Both "onCardChanged" and "onCardChanging" will be called on initial render.
+        applet.onCardChanging = handleCardChanging;
+        applet.onCardChanged = handleCardChanged;
 
-    if (maxVersion) {
-      SerializableObject.defaultMaxVersion = maxVersion;
-    }
+        // Host config must be applied before setCard() and cannot be applied during card changing.
+        applet.hostConfig = isPlainObject(adaptiveCardsHostConfig)
+          ? new HostConfig(adaptiveCardsHostConfig)
+          : adaptiveCardsHostConfig;
 
-    applet.setCard(content);
+        if (maxVersion) {
+          SerializableObject.defaultMaxVersion = maxVersion;
+        }
 
-    // After return of this function, AdaptiveApplet will call "onCardChanged".
-    // Card will be validated and error messages will be shown as needed.
+        applet.setCard(content);
 
-    return applet;
-  }, [
-    adaptiveCardsHostConfig,
-    channelAdapter,
-    content,
-    handleAppletAction,
-    handleCardChanged,
-    handleCardChanging,
-    handleCreateSerializationContext,
-    handleProcessMarkdown,
-    maxVersion,
-    setLastCardChanged
-  ]);
+        // After return of this function, AdaptiveApplet will call "onCardChanged".
+        // Card will be validated and error messages will be shown as needed.
+
+        return applet;
+      }),
+    [
+      adaptiveCardsHostConfigRef, // Host config change should not recreate applet, we will re-set the card below.
+      channelAdapter,
+      content,
+      handleAppletAction,
+      handleCardChanged,
+      handleCardChanging,
+      handleCreateSerializationContext,
+      handleProcessMarkdown,
+      maxVersion,
+      setLastCardChanged
+    ]
+  );
 
   const prevApplet = usePrevious(applet, applet);
 
-  useEffect(() => {
-    // Content hasn't change, check if any render parameters changed.
+  useMemo(() => {
+    // If applet changed, it will automatically applies the latest host config and "renderMarkdown".
+    // Only applies if the applet has not changed.
     if (applet && applet === prevApplet) {
       const adaptiveCardsHostConfigChanged = adaptiveCardsHostConfig !== prevAdaptiveCardsHostConfig;
 
@@ -264,7 +271,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
       }
 
       if (adaptiveCardsHostConfigChanged || renderMarkdownAsHTML !== prevRenderMarkdownAsHTML) {
-        // "applet.refreshCard" is not for re-rendering the card. Instead, we need to re-set the card.
+        // "applet.refreshCard" is not meant for re-rendering the card. Instead, we need to re-set the card.
         applet.setCard(applet.card.toJSON());
       }
     }
@@ -277,7 +284,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     renderMarkdownAsHTML
   ]);
 
-  // Mount applet to DOM if its renderedElement changed.
+  // Mount applet to DOM if its "renderedElement" changed.
   useEffect(() => {
     const { current: hostElement } = hostElementRef;
     const { renderedElement } = applet;
@@ -289,6 +296,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     }
   }, [applet.renderedElement]);
 
+  // Applies DOM hacks that improves accessibility.
   useEffect(() => {
     const undoStack: (() => void)[] = [];
 
@@ -316,6 +324,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     return () => undoStack.forEach(undo => undo && undo());
   }, [actionsPerformed, actionPerformedClassName, applet, lastCardChanged]);
 
+  // Applies DOM hacks for "disabled" props.
   useEffect(() => {
     // If the Adaptive Card get re-rendered, re-disable elements as needed.
     if (disabled) {
@@ -335,9 +344,7 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
       {finalString ? (
         <TextContent text={finalString} />
       ) : errors.length ? (
-        node_env === 'development' && (
-          <ErrorBox error={errors[0]} type={localize('ADAPTIVE_CARD_ERROR_BOX_TITLE_RENDER')} />
-        )
+        showErrors && <ErrorBox error={errors[0]} type={localize('ADAPTIVE_CARD_ERROR_BOX_TITLE_RENDER')} />
       ) : (
         <div ref={hostElementRef} />
       )}

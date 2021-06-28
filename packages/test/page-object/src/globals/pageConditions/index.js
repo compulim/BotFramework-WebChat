@@ -3,6 +3,7 @@ import allImagesLoaded from './allImagesLoaded';
 import allOutgoingActivitiesSent from './allOutgoingActivitiesSent';
 import became from './became';
 import connectivityStatusShown from './connectivityStatusShown';
+import errorBoxShown from './errorBoxShown';
 import focusedActivityInView from './focusedActivityInView';
 import mediaBufferStabilized from './mediaBufferStabilized';
 import minNumActivitiesShown from './minNumActivitiesShown';
@@ -24,6 +25,7 @@ export {
   allOutgoingActivitiesSent,
   became,
   connectivityStatusShown,
+  errorBoxShown,
   focusedActivityInView,
   mediaBufferStabilized,
   minNumActivitiesShown,
