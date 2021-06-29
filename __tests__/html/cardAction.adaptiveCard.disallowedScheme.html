@@ -59,7 +59,11 @@
         window.open = (url, windowName, windowFeatures) => calls.push([url, windowName, windowFeatures]);
 
         const activities = pageElements.activities();
-        const adaptiveCard = activities[activities.length - 1].querySelector('.ac-adaptiveCard');
+        const adaptiveCard = await pageConditions.became(
+          'Adaptive Card is visible',
+          () => activities[activities.length - 1].querySelector('.ac-adaptiveCard'),
+          1000
+        );
 
         adaptiveCard.click();
 
