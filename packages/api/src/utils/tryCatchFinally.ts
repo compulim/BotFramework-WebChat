@@ -29,28 +29,35 @@ export default function tryCatchFinally<T>(
   catchFn: (err: Error) => void | Promise<T>,
   finallyFn: () => void
 ): T | Promise<T> {
-  try {
-    let promise: Promise<T>;
+  let promise: Promise<T>;
 
-    if (typeof functionOrPromise === 'function') {
-      // If it is a function, call it and check if it return synchronously or not.
-      const result = functionOrPromise();
+  if (isPromise(functionOrPromise)) {
+    promise = functionOrPromise as Promise<T>;
+  } else {
+    // If it is a function, call it and check if it return synchronously or not.
+    const fn = functionOrPromise as (() => T) | (() => Promise<T>);
+    let async: boolean;
 
-      // It is a synchronous function.
+    try {
+      const result = fn();
+
       if (!isPromise(result)) {
+        // It is a synchronous function.
         return result as T; // Returns synchronously.
       }
 
       // It is an asynchronous function.
+      async = true;
       promise = result as Promise<T>;
-    } else {
-      promise = functionOrPromise;
-    }
+    } catch (err) {
+      catchFn(err);
 
-    return promise.catch(catchFn as (err: Error) => Promise<T>).finally(finallyFn);
-  } catch (err) {
-    catchFn(err);
-  } finally {
-    finallyFn();
+      throw err;
+    } finally {
+      // If fn() is an async function, don't call finallyFn().
+      async || finallyFn();
+    }
   }
+
+  return promise.catch(catchFn as (err: Error) => Promise<T>).finally(finallyFn);
 }

@@ -13,7 +13,7 @@ type AdaptiveCardsComposerProps = {
   adaptiveCardsHostConfig: any;
   adaptiveCardsPackage: AdaptiveCardsPackage;
   children: ReactNode;
-  styleOptions: FullBundleStyleOptions;
+  styleOptions?: FullBundleStyleOptions;
 };
 
 const AdaptiveCardsComposer: FC<AdaptiveCardsComposerProps> = ({
@@ -59,14 +59,15 @@ const AdaptiveCardsComposer: FC<AdaptiveCardsComposerProps> = ({
 AdaptiveCardsComposer.defaultProps = {
   adaptiveCardsHostConfig: undefined,
   adaptiveCardsPackage: undefined,
-  children: undefined
+  children: undefined,
+  styleOptions: undefined
 };
 
 AdaptiveCardsComposer.propTypes = {
   adaptiveCardsHostConfig: PropTypes.any,
   adaptiveCardsPackage: PropTypes.any,
   children: PropTypes.any,
-  styleOptions: PropTypes.any.isRequired
+  styleOptions: PropTypes.any
 };
 
 export default AdaptiveCardsComposer;

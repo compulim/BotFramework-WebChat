@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+    <script crossorigin="anonymous" src="https://unpkg.com/@babel/standalone@7.8.7/babel.min.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react@16.8.6/umd/react.development.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react-dom@16.8.6/umd/react-dom.development.js"></script>
+    <script crossorigin="anonymous" src="/test-harness.js"></script>
+    <script crossorigin="anonymous" src="/test-page-object.js"></script>
+    <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+  </head>
+  <body>
+    <div id="webchat"></div>
+    <script type="text/babel" data-presets="env,stage-3,react">
+      const {
+        React: { useCallback, useEffect, useRef, useMemo },
+        WebChat: {
+          Components: { BasicWebChat, Composer },
+          hooks: { useTrackTiming }
+        }
+      } = window;
+
+      function usePrevious(value, initial) {
+        const ref = useRef(initial);
+
+        useEffect(() => {
+          ref.current = value;
+        });
+
+        return ref.current;
+      }
+
+      run(async function () {
+        // We don't exactly need lolex for sync version.
+        // But having lolex will ease the assertion of "duration" field.
+        const clock = lolex.install();
+        const directLine = testHelpers.createDirectLineWithTranscript([]);
+        const store = testHelpers.createStore();
+        const telemetry = [];
+
+        const RunFunction = ({ fn }) => {
+          const prevFnRef = useRef();
+
+          try {
+            prevFnRef.current === fn || fn();
+          } finally {
+            prevFnRef.current = fn;
+          }
+
+          return false;
+        };
+
+        const handleTelemetry = ({ data, dimensions, duration, error, name, type }) =>
+          name === 'init' || telemetry.push({ data, dimensions, duration, error, name, type });
+
+          const renderWithFunction = fn =>
+          new Promise(resolve =>
+            ReactDOM.render(
+              <Composer directLine={directLine} onTelemetry={handleTelemetry} store={store}>
+                <BasicWebChat />
+                <RunFunction fn={() => resolve(fn && fn())} key={Date.now() + ''} />
+              </Composer>,
+              document.getElementById('webchat')
+            )
+          );
+
+        // GIVEN: Web Chat rendered with lolex installed, no hook is called.
+        await renderWithFunction();
+        await pageConditions.webChatRendered();
+        clock.tick(600);
+        await pageConditions.uiConnected();
+
+        // WHEN: Timing is being tracked for "ping" promise, which will be resolved after 1000ms.
+        await renderWithFunction(() => {
+          const trackTiming = useTrackTiming();
+
+          expect(() =>
+            trackTiming('ping', () => {
+              expect(telemetry).toHaveLength(1);
+
+              throw new Error('Artificial error');
+            })
+          ).toThrow();
+
+          return false;
+        });
+
+        // THEN: It should have 3 measurements in total.
+        expect(telemetry).toHaveLength(3);
+
+        expect(telemetry[0]).toEqual({
+          data: undefined,
+          dimensions: {
+            'capability:downscaleImage:workerType': 'web worker',
+            'capability:renderer': 'html',
+            'prop:locale': 'en-US',
+            'prop:speechRecognition': 'false',
+            'prop:speechSynthesis': 'false'
+          },
+          duration: undefined,
+          error: undefined,
+          name: 'ping',
+          type: 'timingstart'
+        });
+
+        expect({ ...telemetry[1], error: telemetry[1].error.message }).toEqual({
+          data: undefined,
+          dimensions: {
+            'capability:downscaleImage:workerType': 'web worker',
+            'capability:renderer': 'html',
+            'prop:locale': 'en-US',
+            'prop:speechRecognition': 'false',
+            'prop:speechSynthesis': 'false'
+          },
+          duration: undefined,
+          error: 'Artificial error',
+          name: undefined,
+          type: 'exception'
+        });
+
+        expect(telemetry[2]).toEqual({
+          data: undefined,
+          dimensions: {
+            'capability:downscaleImage:workerType': 'web worker',
+            'capability:renderer': 'html',
+            'prop:locale': 'en-US',
+            'prop:speechRecognition': 'false',
+            'prop:speechSynthesis': 'false'
+          },
+          duration: 0,
+          error: undefined,
+          name: 'ping',
+          type: 'timingend'
+        });
+      });
+    </script>
+  </body>
+</html>
