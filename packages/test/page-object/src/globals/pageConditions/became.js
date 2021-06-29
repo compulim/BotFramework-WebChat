@@ -8,8 +8,10 @@ export default async function became(message, fn, timeout) {
   }
 
   for (const start = Date.now(); Date.now() < start + timeout; ) {
-    if (await fn()) {
-      return;
+    const result = await fn();
+
+    if (result) {
+      return result;
     }
 
     await sleep(CHECK_INTERVAL);
