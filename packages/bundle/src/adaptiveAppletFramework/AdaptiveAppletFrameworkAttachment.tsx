@@ -5,6 +5,7 @@ import {
   AdaptiveCard,
   ChannelAdapter,
   ErrorResponse,
+  GlobalSettings,
   HostConfig,
   SerializableObject,
   SerializationContext,
@@ -190,6 +191,10 @@ const AdaptiveAppletFrameworkAttachment: VFC<AdaptiveAppletFrameworkAttachmentPr
     // Host config and max version need to be applied before "onCardChanging".
     // Only render Markdown can be applied here.
     AdaptiveCard.onProcessMarkdown = handleProcessMarkdown;
+
+    // For accessibility issue #1340, `tabindex="0"` must not be set for the root container if it is not interactive.
+    // Only rich cards support tabbing at the root. Adaptive Cards do not support tabbing, so we can safely set this to false.
+    GlobalSettings.setTabIndexAtCardRoot = false;
 
     return true;
   }, [handleProcessMarkdown]);
