@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     strategy:
@@ -36,14 +37,17 @@ jobs:
       - run: npm run build
       - run: npm run eslint
 
-      - name: Upload a Build Artifact
+      - name: Upload bundle
         uses: actions/upload-artifact@v3.1.1
         with:
           name: bundle
           path: packages/bundle/dist
 
-      - run: docker-compose --file docker-compose-wsl2.yml build --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
-      - run: docker-compose --file docker-compose-wsl2.yml up --detach --scale chrome=4
+      - name: Build test harness image
+        run: docker-compose --file docker-compose-wsl2.yml build --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
+
+      - name: Run test harness container
+        run: docker-compose --file docker-compose-wsl2.yml up --detach --scale chrome=4
 
       - env:
           COGNITIVE_SERVICES_REGION: westus2
@@ -57,22 +61,24 @@ jobs:
         run: node_modules/.bin/jest --bail=20 --ci --colors --coverage true --maxWorkers=4 --no-watch
 
       - if: ${{ always() }}
+        name: Stop test harness container
         run: docker-compose down --file docker-compose-wsl2.yml --rmi all
 
       - if: ${{ always() }}
+        name: PUblish test result
         uses: EnricoMi/publish-unit-test-result-action@v2.2.0
         with:
           trx_files: coverage/result.trx
 
       - if: ${{ always() }}
-        name: Upload Test Result
+        name: Upload test result
         uses: actions/upload-artifact@v3.1.1
         with:
           name: test-result
           path: coverage/result.trx
 
       - if: ${{ always() }}
-        name: Upload Code Coverage
+        name: Upload code coverage
         uses: actions/upload-artifact@v3.1.1
         with:
           name: code-coverage
