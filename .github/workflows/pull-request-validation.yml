@@ -45,7 +45,12 @@ jobs:
       - run: docker-compose --file docker-compose-wsl2.yml build --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
       - run: docker-compose --file docker-compose-wsl2.yml up --detach --scale chrome=4
 
-      - name: Run Jest
+      - env:
+          COGNITIVE_SERVICES_REGION: westus2
+          COGNITIVE_SERVICES_SUBSCRIPTION_KEY: ${{ secrets.COGNITIVE_SERVICES_SUBSCRIPTION_KEY }}
+          DIRECT_LINE_SPEECH_REGION: westus2
+          DIRECT_LINE_SPEECH_SUBSCRIPTION_KEY: ${{ secrets.DIRECT_LINE_SPEECH_SUBSCRIPTION_KEY }}
+        name: Run Jest
         run: node_modules/.bin/jest --bail=20 --ci --coverage true --maxWorkers=4 --no-watch
 
       - if: ${{ always() }}
