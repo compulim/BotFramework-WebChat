@@ -68,6 +68,7 @@ jobs:
         name: PUblish test result
         uses: EnricoMi/publish-unit-test-result-action@v2.2.0
         with:
+          check_name: Test result
           trx_files: coverage/result.trx
 
       - if: ${{ always() }}
