@@ -54,9 +54,7 @@ jobs:
           SPEECH_SERVICES_REGION: westus2
           SPEECH_SERVICES_SUBSCRIPTION_KEY: ${{ secrets.SPEECH_SERVICES_SUBSCRIPTION_KEY }}
         name: Run Jest
-        run: |
-          export
-          node_modules/.bin/jest --bail=20 --ci --colors --coverage true --maxWorkers=4 --no-watch --testPathPattern speech
+        run: node_modules/.bin/jest --bail=20 --ci --colors --coverage true --maxWorkers=4 --no-watch
 
       - if: ${{ always() }}
         run: docker-compose down --file docker-compose-wsl2.yml --rmi all
