@@ -19,6 +19,10 @@ jobs:
         node-version: [14.x]
 
     steps:
+      - name: Set up environment variables
+        if: ${{ startsWith(github.ref, 'refs/pull/') }}
+        run: echo "CI_PULL_REQUEST=${{ github.ref }}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
