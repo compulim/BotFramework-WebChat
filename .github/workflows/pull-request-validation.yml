@@ -50,8 +50,11 @@ jobs:
           COGNITIVE_SERVICES_SUBSCRIPTION_KEY: ${{ secrets.COGNITIVE_SERVICES_SUBSCRIPTION_KEY }}
           DIRECT_LINE_SPEECH_REGION: westus2
           DIRECT_LINE_SPEECH_SUBSCRIPTION_KEY: ${{ secrets.DIRECT_LINE_SPEECH_SUBSCRIPTION_KEY }}
+          SPEECH_SERVICES_DIRECT_LINE_SECRET: ${{ secrets.SPEECH_SERVICES_DIRECT_LINE_SECRET }}
+          SPEECH_SERVICES_REGION: westus2
+          SPEECH_SERVICES_SUBSCRIPTION_KEY: ${{ secrets.SPEECH_SERVICES_SUBSCRIPTION_KEY }}
         name: Run Jest
-        run: node_modules/.bin/jest --bail=20 --ci --coverage true --maxWorkers=4 --no-watch
+        run: node_modules/.bin/jest --bail=20 --ci --colors --coverage true --maxWorkers=4 --no-watch
 
       - if: ${{ always() }}
         run: docker-compose down --file docker-compose-wsl2.yml --rmi all
