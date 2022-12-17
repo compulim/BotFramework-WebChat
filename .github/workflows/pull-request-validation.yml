@@ -1,0 +1,63 @@
+name: Pull request validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - qfe*
+  push:
+    branches:
+      - feat-gh-ci
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run bootstrap
+      - run: npm run build
+      - run: npm run eslint
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: bundle
+          path: packages/bundle/dist
+
+      - run: docker-compose build --file docker-compose-wsl2.yml --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
+      - run: docker-compose up --file docker-compose-wsl2.yml --detach --scale chrome=4
+
+      - name: Run Jest
+        run: node_modules/.bin/jest --bail=20 --ci --coverage true --maxWorkers=4 --no-watch
+
+      - run: docker-compose down --file docker-compose-wsl2.yml --rmi all
+
+      - uses: EnricoMi/publish-unit-test-result-action@v2.2.0
+        with:
+          trx_files: coverage/result.trx
+
+      - name: Upload Test Result
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: test-result
+          path: coverage/result.trx
+
+      - name: Upload Code Coverage
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: code-coverage
+          path: coverage/cobertura-coverage.xml
