@@ -7,12 +7,16 @@ import 'global-agent/bootstrap';
 import { PropertyId } from 'microsoft-cognitiveservices-speech-sdk';
 import { timeouts } from './constants.json';
 import createTestHarness from './utilities/createTestHarness';
+import fetch from 'node-fetch';
 import MockAudioContext from './utilities/MockAudioContext';
 
 jest.setTimeout(timeouts.test);
 
 beforeEach(() => {
   global.AudioContext = MockAudioContext;
+
+  // JSDOM does not offer fetch.
+  global.fetch || (global.fetch = fetch);
 });
 
 const realSetTimeout = setTimeout;
@@ -43,7 +47,9 @@ test.nightly('should refresh Direct Line token', async () => {
   jest.useFakeTimers('modern');
 
   const { directLine } = await createTestHarness({ enableInternalHTTPSupport: true });
-  const initialToken = directLine.dialogServiceConnector.properties.getProperty(PropertyId.Conversation_Agent_Connection_Id);
+  const initialToken = directLine.dialogServiceConnector.properties.getProperty(
+    PropertyId.Conversation_Agent_Connection_Id
+  );
 
   // We need to start the conversation, such as POST /conversations.
   // Otherwise, refreshing token will say "conversation not found".
