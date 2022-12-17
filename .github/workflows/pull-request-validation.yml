@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [14.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -38,8 +38,8 @@ jobs:
           name: bundle
           path: packages/bundle/dist
 
-      - run: docker-compose build --file docker-compose-wsl2.yml --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
-      - run: docker-compose up --file docker-compose-wsl2.yml --detach --scale chrome=4
+      - run: docker-compose --file docker-compose-wsl2.yml build --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
+      - run: docker-compose --file docker-compose-wsl2.yml up --detach --scale chrome=4
 
       - name: Run Jest
         run: node_modules/.bin/jest --bail=20 --ci --coverage true --maxWorkers=4 --no-watch
