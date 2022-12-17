@@ -19,6 +19,10 @@ jobs:
         node-version: [14.x]
 
     steps:
+      - name: Set up environment variables
+        if: ${{ startsWith(github.ref, 'refs/pull/') }}
+        run: echo "CI_PULL_REQUEST=${{ github.ref }}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
@@ -41,22 +45,36 @@ jobs:
       - run: docker-compose --file docker-compose-wsl2.yml build --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
       - run: docker-compose --file docker-compose-wsl2.yml up --detach --scale chrome=4
 
-      - name: Run Jest
-        run: node_modules/.bin/jest --bail=20 --ci --coverage true --maxWorkers=4 --no-watch
+      - env:
+          COGNITIVE_SERVICES_REGION: westus2
+          COGNITIVE_SERVICES_SUBSCRIPTION_KEY: ${{ secrets.COGNITIVE_SERVICES_SUBSCRIPTION_KEY }}
+          DIRECT_LINE_SPEECH_REGION: westus2
+          DIRECT_LINE_SPEECH_SUBSCRIPTION_KEY: ${{ secrets.DIRECT_LINE_SPEECH_SUBSCRIPTION_KEY }}
+          SPEECH_SERVICES_DIRECT_LINE_SECRET: ${{ secrets.SPEECH_SERVICES_DIRECT_LINE_SECRET }}
+          SPEECH_SERVICES_REGION: westus2
+          SPEECH_SERVICES_SUBSCRIPTION_KEY: ${{ secrets.SPEECH_SERVICES_SUBSCRIPTION_KEY }}
+        name: Run Jest
+        run: |
+          export
+          node_modules/.bin/jest --bail=20 --ci --colors --coverage true --maxWorkers=4 --no-watch --testPathPattern speech
 
-      - run: docker-compose down --file docker-compose-wsl2.yml --rmi all
+      - if: ${{ always() }}
+        run: docker-compose down --file docker-compose-wsl2.yml --rmi all
 
-      - uses: EnricoMi/publish-unit-test-result-action@v2.2.0
+      - if: ${{ always() }}
+        uses: EnricoMi/publish-unit-test-result-action@v2.2.0
         with:
           trx_files: coverage/result.trx
 
-      - name: Upload Test Result
+      - if: ${{ always() }}
+        name: Upload Test Result
         uses: actions/upload-artifact@v3.1.1
         with:
           name: test-result
           path: coverage/result.trx
 
-      - name: Upload Code Coverage
+      - if: ${{ always() }}
+        name: Upload Code Coverage
         uses: actions/upload-artifact@v3.1.1
         with:
           name: code-coverage
