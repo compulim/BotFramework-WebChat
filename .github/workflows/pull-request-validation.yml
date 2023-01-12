@@ -41,7 +41,15 @@ jobs:
         uses: actions/upload-artifact@v3.1.1
         with:
           name: bundle
-          path: packages/bundle/dist
+          path: |
+            packages/bundle/dist
+            !packages/bundle/dist/stats.json
+
+      - name: Upload bundle stats
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: bundle-stats
+          path: packages/bundle/dist/stats.json
 
       - name: Build test harness image
         run: docker-compose --file docker-compose-wsl2.yml build --build-arg REGISTRY=mcr.microsoft.com/mirror/docker/library
