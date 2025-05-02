@@ -1,22 +1,19 @@
-import React, { memo } from 'react';
 import classNames from 'classnames';
+import React, { memo } from 'react';
 import useStyleSet from '../../hooks/useStyleSet';
-import { useRenderMarkdownAsHTML } from '../../hooks';
+import Markdownable from './Markdownable';
 
-function FeedbackFormDisclaimer({ disclaimer }: Readonly<{ disclaimer?: string }>) {
+type FeedbackFormDisclaimerProps = Readonly<{ disclaimer?: string }>;
+
+function FeedbackFormDisclaimer({ disclaimer }: FeedbackFormDisclaimerProps) {
   const [{ feedbackForm }] = useStyleSet();
-  const renderMarkdownAsHTML = useRenderMarkdownAsHTML('message activity');
-  return disclaimer ? (
-    renderMarkdownAsHTML ? (
-      <span
-        className={classNames('webchat__feedback-form__caption1', feedbackForm + '')}
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: renderMarkdownAsHTML(disclaimer) }}
-      />
-    ) : (
-      <span className={classNames('webchat__feedback-form__caption1', feedbackForm + '')}>{disclaimer}</span>
+
+  return (
+    disclaimer && (
+      <Markdownable className={classNames('webchat__feedback-form__caption1', feedbackForm + '')} text={disclaimer} />
     )
-  ) : null;
+  );
 }
 
 export default memo(FeedbackFormDisclaimer);
+export { type FeedbackFormDisclaimerProps };
