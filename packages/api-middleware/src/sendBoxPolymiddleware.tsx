@@ -1,6 +1,6 @@
 import { validateProps } from '@msinternal/botframework-webchat-react-valibot';
 import React, { memo, useMemo } from 'react';
-import { object, pipe, readonly, type InferInput } from 'valibot';
+import { object, optional, pipe, readonly, string, type InferInput } from 'valibot';
 
 import createErrorBoundaryMiddleware from './private/createErrorBoundaryMiddleware';
 import templatePolymiddleware, {
@@ -30,7 +30,7 @@ type SendBoxPolymiddlewareRenderer = InferRenderer<typeof Provider>;
 type SendBoxPolymiddlewareRequest = InferRequest<typeof Provider>;
 type SendBoxPolymiddlewareProviderProps = InferProviderProps<typeof Provider>;
 
-const sendBoxPolymiddlewareProxyPropsSchema = pipe(object({}), readonly());
+const sendBoxPolymiddlewareProxyPropsSchema = pipe(object({ className: optional(string()) }), readonly());
 
 type SendBoxPolymiddlewareProxyProps = Readonly<InferInput<typeof sendBoxPolymiddlewareProxyPropsSchema>>;
 
@@ -38,11 +38,11 @@ type SendBoxPolymiddlewareProxyProps = Readonly<InferInput<typeof sendBoxPolymid
 const SendBoxPolymiddlewareProxy = memo(function SendBoxPolymiddlewareProxy(
   props: SendBoxPolymiddlewareProxyProps
 ) {
-  validateProps(sendBoxPolymiddlewareProxyPropsSchema, props);
+  const { className } = validateProps(sendBoxPolymiddlewareProxyPropsSchema, props);
 
   const request = useMemo(() => undefined, []);
 
-  return <Proxy request={request} />;
+  return <Proxy className={className} request={request} />;
 });
 
 const SendBoxPolymiddlewareProvider = memo(function SendBoxPolymiddlewareProvider({
