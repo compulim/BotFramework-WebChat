@@ -32,7 +32,7 @@
             const Downstream = () => createElement('div', {}, '<Downstream />');
 
             const sendBoxPolymiddleware = [
-               createSendBoxPolymiddleware(next => request => sendBoxComponent(Downstream))
+               createSendBoxPolymiddleware(next => () => sendBoxComponent(Downstream))
             ];
 
             WebChat.renderWebChat(
@@ -46,7 +46,7 @@
 
             await pageConditions.uiConnected();
 
-            await host.snapshot('poly-component');
+            await host.snapshot('local');
          });
       </script>
    </body>
