@@ -1,4 +1,3 @@
-import { type ComponentEnhancer } from 'react-chain-of-responsibility';
 import { type ComponentType, type ReactNode } from 'react';
 
 /**
@@ -11,7 +10,12 @@ type LegacySendBoxProps = {
 /**
  * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
  */
-type LegacySendBoxRenderer = () => ReactNode;
+type LegacySendBoxComponent = (props: LegacySendBoxProps) => Exclude<ReactNode, boolean | null | undefined>;
+
+/**
+ * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
+ */
+type LegacySendBoxRenderer = () => LegacySendBoxComponent;
 
 /**
  * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
@@ -21,7 +25,12 @@ type LegacySendBoxComponentFactory = ComponentType<LegacySendBoxProps>;
 /**
  * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
  */
-type LegacySendBoxMiddleware = () => ComponentEnhancer<void, LegacySendBoxProps, LegacySendBoxRenderer>;
+type LegacySendBoxEnhancer = (next: LegacySendBoxRenderer) => LegacySendBoxRenderer;
+
+/**
+ * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
+ */
+type LegacySendBoxMiddleware = () => LegacySendBoxEnhancer;
 
 export {
   type LegacySendBoxComponentFactory,

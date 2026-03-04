@@ -5,12 +5,12 @@ import {
 } from '@msinternal/botframework-webchat-api-middleware';
 import { type LegacySendBoxMiddleware } from '@msinternal/botframework-webchat-api-middleware/legacy';
 import { composeEnhancer } from 'handler-chain';
-import { type ReactNode } from 'react';
+import { type ComponentType } from 'react';
 import { custom, function_, never, object, optional, pipe, readonly, safeParse, string, type InferInput } from 'valibot';
 
 import LegacySendBoxBridge from './LegacySendBoxBridge';
 
-type LegacySendBoxRenderFunction = () => ReactNode;
+type LegacySendBoxRenderFunction = ComponentType<{ readonly className?: string | undefined }>;
 
 const legacySendBoxBridgeComponentPropsSchema = pipe(
   object({
@@ -38,16 +38,16 @@ function createSendBoxPolymiddlewareFromLegacy(
   const legacyEnhancer = composeEnhancer(...middleware.map(middleware => middleware()));
 
   return createSendBoxPolymiddleware(next => {
-    const legacyHandler = legacyEnhancer(request => {
-      const handler = next(request);
+    const legacyHandler = legacyEnhancer(() => {
+      const handler = next();
 
       return !!handler && (() => handler.render({}));
     });
 
-    return request => {
-      const legacyResult = legacyHandler(request);
+    return () => {
+      const legacyResult = legacyHandler();
 
-      return legacyResult ? sendBoxComponent(LegacySendBoxBridge, { render: legacyResult }) : undefined;
+      return legacyResult ? sendBoxComponent(LegacySendBoxBridge, { render: legacyResult() }) : undefined;
     };
   });
 }

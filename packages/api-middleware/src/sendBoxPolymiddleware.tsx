@@ -1,6 +1,6 @@
 import { validateProps } from '@msinternal/botframework-webchat-react-valibot';
 import React, { memo, useMemo } from 'react';
-import { object, optional, pipe, readonly, string, type InferInput } from 'valibot';
+import { object, pipe, readonly, type InferInput } from 'valibot';
 
 import createErrorBoundaryMiddleware from './private/createErrorBoundaryMiddleware';
 import templatePolymiddleware, {
