@@ -27,4 +27,19 @@ export {
   type ErrorBoxPolymiddlewareRequest
 } from 'botframework-webchat-api/middleware';
 
+export {
+  createSendBoxPolymiddleware,
+  sendBoxComponent,
+  SendBoxPolymiddlewareProxy,
+  useBuildRenderSendBoxCallback,
+  type SendBoxPolymiddleware,
+  type SendBoxPolymiddlewareHandler,
+  type SendBoxPolymiddlewareHandlerResult,
+  type SendBoxPolymiddlewareProps,
+  type SendBoxPolymiddlewareProxyProps,
+  type SendBoxPolymiddlewareRenderer,
+  type SendBoxPolymiddlewareRequest
+} from 'botframework-webchat-api/middleware';
+
 export { createActivityPolymiddlewareFromLegacy } from 'botframework-webchat-api/middleware';
+export { createSendBoxPolymiddlewareFromLegacy } from 'botframework-webchat-api/middleware';

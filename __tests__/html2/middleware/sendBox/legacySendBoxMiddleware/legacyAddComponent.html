@@ -23,26 +23,23 @@
             const {
                testHelpers: { createDirectLineEmulator },
                WebChat: {
-                  middleware: { createSendBoxPolymiddleware, createSendBoxPolymiddlewareFromLegacy, sendBoxComponent }
+                  middleware: { createSendBoxPolymiddlewareFromLegacy }
                }
             } = window;
 
             const { directLine, store } = createDirectLineEmulator();
 
-            const Downstream = () => createElement('div', {}, '<Downstream />');
-
-            const polymiddleware = [
+            const sendBoxPolymiddleware = [
                createSendBoxPolymiddlewareFromLegacy(() => next => request => {
                   const child = next(request);
                   return () => createElement('div', { style: { border: 'solid 2px blue' } }, child?.());
-               }),
-               createSendBoxPolymiddleware(next => request => sendBoxComponent(Downstream))
+               })
             ];
 
             WebChat.renderWebChat(
                {
                   directLine,
-                  polymiddleware,
+                  sendBoxPolymiddleware,
                   store
                },
                document.getElementById('webchat')
@@ -50,7 +47,7 @@
 
             await pageConditions.uiConnected();
 
-            await host.snapshot('local');
+            await host.snapshot('legacy-component');
          });
       </script>
    </body>
