@@ -4,13 +4,14 @@ import {
   type SendBoxPolymiddleware
 } from '@msinternal/botframework-webchat-api-middleware';
 import { type LegacySendBoxMiddleware } from '@msinternal/botframework-webchat-api-middleware/legacy';
-import { composeEnhancer } from 'handler-chain';
-import { type ComponentType } from 'react';
+import { composeEnhancer, type Enhancer } from 'handler-chain';
+import { type ReactNode } from 'react';
 import { custom, function_, never, object, optional, pipe, readonly, safeParse, string, type InferInput } from 'valibot';
 
 import LegacySendBoxBridge from './LegacySendBoxBridge';
 
-type LegacySendBoxRenderFunction = ComponentType<{ readonly className?: string | undefined }>;
+type LegacySendBoxRenderFunction = (props: { readonly className?: string | undefined }) => ReactNode;
+type LegacySendBoxComponent = ReactNode;
 
 const legacySendBoxBridgeComponentPropsSchema = pipe(
   object({
@@ -35,7 +36,9 @@ type LegacySendBoxBridgeComponentProps = Readonly<
 function createSendBoxPolymiddlewareFromLegacy(
   ...middleware: readonly LegacySendBoxMiddleware[]
 ): SendBoxPolymiddleware {
-  const legacyEnhancer = composeEnhancer(...middleware.map(middleware => middleware()));
+  const legacyEnhancer: Enhancer<LegacySendBoxComponent, void> = composeEnhancer<LegacySendBoxComponent, void>(
+    ...(middleware.map(middleware => middleware()) as Enhancer<LegacySendBoxComponent, void>[])
+  );
 
   return createSendBoxPolymiddleware(next => {
     const legacyHandler = legacyEnhancer(() => {
@@ -47,7 +50,7 @@ function createSendBoxPolymiddlewareFromLegacy(
     return () => {
       const legacyResult = legacyHandler();
 
-      return legacyResult ? sendBoxComponent(LegacySendBoxBridge, { render: legacyResult() }) : undefined;
+      return legacyResult ? sendBoxComponent(LegacySendBoxBridge, { render: () => legacyResult }) : undefined;
     };
   });
 }
