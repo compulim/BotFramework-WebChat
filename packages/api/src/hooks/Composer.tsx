@@ -50,6 +50,7 @@ import errorBoxTelemetryPolymiddleware from '../errorBox/errorBoxTelemetryPolymi
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import usePonyfill from '../hooks/usePonyfill';
 import createActivityPolymiddlewareFromLegacy from '../legacy/createActivityPolymiddlewareFromLegacy';
+import createSendBoxPolymiddlewareFromLegacy from '../legacy/createSendBoxPolymiddlewareFromLegacy';
 import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
 import { SendBoxMiddlewareProvider, type SendBoxMiddleware } from '../middleware/SendBoxMiddleware';
 import {
@@ -524,6 +525,11 @@ const ComposerCore = ({
     [activityMiddleware]
   );
 
+  const polymiddlewareForLegacySendBoxMiddleware = useMemo<readonly Polymiddleware[]>(
+    () => Object.freeze([createSendBoxPolymiddlewareFromLegacy(...singleToArray(sendBoxMiddleware))]),
+    [sendBoxMiddleware]
+  );
+
   const polymiddleware = useMemo<readonly Polymiddleware[]>(
     () =>
       Object.freeze([
@@ -532,9 +538,10 @@ const ComposerCore = ({
         errorBoxTelemetryPolymiddleware,
         ...(polymiddlewareFromProps || []),
         ...polymiddlewareForLegacyActivityMiddleware,
+        ...polymiddlewareForLegacySendBoxMiddleware,
         activityFallbackPolymiddleware
       ]),
-    [polymiddlewareForLegacyActivityMiddleware, polymiddlewareFromProps]
+    [polymiddlewareForLegacyActivityMiddleware, polymiddlewareForLegacySendBoxMiddleware, polymiddlewareFromProps]
   );
 
   /**
