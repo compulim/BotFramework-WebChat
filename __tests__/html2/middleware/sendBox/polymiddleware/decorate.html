@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en-US">
+   <head>
+      <link href="/assets/index.css" rel="stylesheet" type="text/css" />
+      <script type="importmap">
+         {
+            "imports": {
+               "react": "https://esm.sh/react@18.3.1"
+            }
+         }
+      </script>
+      <script crossorigin="anonymous" src="/test-harness.js"></script>
+      <script crossorigin="anonymous" src="/test-page-object.js"></script>
+      <script crossorigin="anonymous" src="/__dist__/webchat-es5.js"></script>
+   </head>
+
+   <body>
+      <main id="webchat"></main>
+      <script type="module">
+         import { createElement, memo } from 'react';
+
+         run(async function () {
+            const {
+               testHelpers: { createDirectLineEmulator },
+               WebChat: {
+                  middleware: { createSendBoxPolymiddleware, sendBoxComponent }
+               }
+            } = window;
+
+            const { directLine, store } = createDirectLineEmulator();
+
+            const DecoratedSendBox = memo(function DecoratedSendBox({ render }) {
+               return createElement('div', { style: { border: 'solid 2px red' } }, render({}));
+            });
+
+            const polymiddleware = [
+               createSendBoxPolymiddleware(next => () => {
+                  const result = next();
+
+                  return sendBoxComponent(DecoratedSendBox, { render: result.render });
+               })
+            ];
+
+            WebChat.renderWebChat(
+               {
+                  directLine,
+                  polymiddleware,
+                  store
+               },
+               document.getElementById('webchat')
+            );
+
+            await pageConditions.uiConnected();
+
+            await host.snapshot('local');
+         });
+      </script>
+   </body>
+</html>
