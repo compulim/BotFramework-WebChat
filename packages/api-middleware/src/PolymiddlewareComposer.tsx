@@ -16,6 +16,7 @@ import {
 
 import { ActivityPolymiddlewareProvider, extractActivityEnhancer } from './activityPolymiddleware';
 import { ErrorBoxPolymiddlewareProvider, extractErrorBoxEnhancer } from './errorBoxPolymiddleware';
+import { extractSendBoxEnhancer, SendBoxPolymiddlewareProvider } from './sendBoxPolymiddleware';
 import { Polymiddleware } from './types/Polymiddleware';
 
 const polymiddlewareComposerPropsSchema = pipe(
@@ -64,6 +65,21 @@ function PolymiddlewareComposer(props: PolymiddlewareComposerProps) {
 
   const errorBoxPolymiddleware = useMemo(() => errorBoxEnhancers.map(enhancer => () => enhancer), [errorBoxEnhancers]);
 
+  const sendBoxEnhancers = useMemoWithPrevious<ReturnType<typeof extractSendBoxEnhancer>>(
+    (prevSendBoxEnhancers = []) => {
+      const sendBoxEnhancers = extractSendBoxEnhancer(polymiddleware);
+
+      // Checks for array equality, return previous version if nothing has changed.
+      return prevSendBoxEnhancers.length === sendBoxEnhancers.length &&
+        sendBoxEnhancers.every((middleware, index) => Object.is(middleware, prevSendBoxEnhancers.at(index)))
+        ? prevSendBoxEnhancers
+        : sendBoxEnhancers;
+    },
+    [polymiddleware]
+  );
+
+  const sendBoxPolymiddleware = useMemo(() => sendBoxEnhancers.map(enhancer => () => enhancer), [sendBoxEnhancers]);
+
   // Didn't thoroughly think through this part yet, but I am using the first approach for now:
 
   // 1. <XXXProvider> for every type of middleware
@@ -75,7 +91,9 @@ function PolymiddlewareComposer(props: PolymiddlewareComposerProps) {
 
   return (
     <ActivityPolymiddlewareProvider middleware={activityPolymiddleware}>
-      <ErrorBoxPolymiddlewareProvider middleware={errorBoxPolymiddleware}>{children}</ErrorBoxPolymiddlewareProvider>
+      <ErrorBoxPolymiddlewareProvider middleware={errorBoxPolymiddleware}>
+        <SendBoxPolymiddlewareProvider middleware={sendBoxPolymiddleware}>{children}</SendBoxPolymiddlewareProvider>
+      </ErrorBoxPolymiddlewareProvider>
     </ActivityPolymiddlewareProvider>
   );
 }

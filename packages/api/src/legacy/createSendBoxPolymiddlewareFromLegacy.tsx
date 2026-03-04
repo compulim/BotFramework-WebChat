@@ -1,0 +1,57 @@
+import {
+  createSendBoxPolymiddleware,
+  sendBoxComponent,
+  type SendBoxPolymiddleware
+} from '@msinternal/botframework-webchat-api-middleware';
+import { type LegacySendBoxMiddleware } from '@msinternal/botframework-webchat-api-middleware/legacy';
+import { composeEnhancer } from 'handler-chain';
+import { type ReactNode } from 'react';
+import { custom, function_, never, object, optional, pipe, readonly, safeParse, string, type InferInput } from 'valibot';
+
+import LegacySendBoxBridge from './LegacySendBoxBridge';
+
+type LegacySendBoxRenderFunction = () => ReactNode;
+
+const legacySendBoxBridgeComponentPropsSchema = pipe(
+  object({
+    children: optional(never()),
+    className: optional(string()),
+    render: custom<LegacySendBoxRenderFunction>(value => safeParse(function_(), value).success)
+  }),
+  readonly()
+);
+
+type LegacySendBoxBridgeComponentProps = Readonly<
+  InferInput<typeof legacySendBoxBridgeComponentPropsSchema> & { children?: never }
+>;
+
+/**
+ * Polyfill legacy sendBox middleware into a polymiddleware.
+ *
+ * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
+ * @param middleware An array of legacy sendBox middleware.
+ * @returns A polymiddleware composed by legacy sendBox middleware.
+ */
+function createSendBoxPolymiddlewareFromLegacy(
+  ...middleware: readonly LegacySendBoxMiddleware[]
+): SendBoxPolymiddleware {
+  const legacyEnhancer = composeEnhancer(...middleware.map(middleware => middleware()));
+
+  return createSendBoxPolymiddleware(next => {
+    const legacyHandler = legacyEnhancer(request => {
+      const handler = next(request);
+
+      return !!handler && (() => handler.render({}));
+    });
+
+    return request => {
+      const legacyResult = legacyHandler(request);
+
+      return legacyResult ? sendBoxComponent(LegacySendBoxBridge, { render: legacyResult }) : undefined;
+    };
+  });
+}
+
+export default createSendBoxPolymiddlewareFromLegacy;
+
+export { legacySendBoxBridgeComponentPropsSchema, type LegacySendBoxBridgeComponentProps };

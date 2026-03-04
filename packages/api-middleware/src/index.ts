@@ -26,6 +26,20 @@ export {
   type ErrorBoxPolymiddlewareRequest
 } from './errorBoxPolymiddleware';
 
+export {
+  createSendBoxPolymiddleware,
+  sendBoxComponent,
+  SendBoxPolymiddlewareProxy,
+  useBuildRenderSendBoxCallback,
+  type SendBoxPolymiddleware,
+  type SendBoxPolymiddlewareHandler,
+  type SendBoxPolymiddlewareHandlerResult,
+  type SendBoxPolymiddlewareProps,
+  type SendBoxPolymiddlewareProxyProps,
+  type SendBoxPolymiddlewareRenderer,
+  type SendBoxPolymiddlewareRequest
+} from './sendBoxPolymiddleware';
+
 // TODO: [P0] Add tests for nesting `polymiddleware`.
 export { default as PolymiddlewareComposer } from './PolymiddlewareComposer';
 export { type Polymiddleware } from './types/Polymiddleware';
