@@ -6,7 +6,18 @@ import {
 import { type LegacySendBoxMiddleware } from '@msinternal/botframework-webchat-api-middleware/legacy';
 import { composeEnhancer, type Enhancer } from 'handler-chain';
 import { type ReactNode } from 'react';
-import { custom, function_, never, object, optional, pipe, readonly, safeParse, string, type InferInput } from 'valibot';
+import {
+  custom,
+  function_,
+  never,
+  object,
+  optional,
+  pipe,
+  readonly,
+  safeParse,
+  string,
+  type InferInput
+} from 'valibot';
 
 import LegacySendBoxBridge from './LegacySendBoxBridge';
 

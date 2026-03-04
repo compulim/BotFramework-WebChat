@@ -34,9 +34,9 @@
             });
 
             const polymiddleware = [
-               createSendBoxPolymiddleware(next => request => next(request)),
-               createSendBoxPolymiddleware(next => request => {
-                  const result = next(request);
+               createSendBoxPolymiddleware(next => () => next()),
+               createSendBoxPolymiddleware(next => () => {
+                  const result = next();
 
                   return sendBoxComponent(MySendBox, { render: result.render });
                })

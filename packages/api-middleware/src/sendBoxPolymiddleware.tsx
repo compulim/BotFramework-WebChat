@@ -35,9 +35,7 @@ const sendBoxPolymiddlewareProxyPropsSchema = pipe(object({ className: optional(
 type SendBoxPolymiddlewareProxyProps = Readonly<InferInput<typeof sendBoxPolymiddlewareProxyPropsSchema>>;
 
 // A friendlier version than the organic <Proxy>.
-const SendBoxPolymiddlewareProxy = memo(function SendBoxPolymiddlewareProxy(
-  props: SendBoxPolymiddlewareProxyProps
-) {
+const SendBoxPolymiddlewareProxy = memo(function SendBoxPolymiddlewareProxy(props: SendBoxPolymiddlewareProxyProps) {
   const { className } = validateProps(sendBoxPolymiddlewareProxyPropsSchema, props);
 
   const request = useMemo(() => undefined, []);

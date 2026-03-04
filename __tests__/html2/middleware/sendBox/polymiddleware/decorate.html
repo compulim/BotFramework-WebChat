@@ -29,8 +29,8 @@
 
             const { directLine, store } = createDirectLineEmulator();
 
-            const DecoratedSendBox = memo(function DecoratedSendBox({ render }) {
-               return createElement('div', { style: { border: 'solid 2px red' } }, render({}));
+            const DecoratedSendBox = memo(function DecoratedSendBox({ className, render }) {
+               return createElement('div', { className, style: { border: 'solid 2px red' } }, render({}));
             });
 
             const polymiddleware = [

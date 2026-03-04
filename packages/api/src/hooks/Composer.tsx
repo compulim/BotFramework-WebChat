@@ -525,13 +525,10 @@ const ComposerCore = ({
     [activityMiddleware]
   );
 
-  const polymiddlewareForLegacySendBoxMiddleware = useMemo<readonly Polymiddleware[]>(
-    () => {
-      const middleware = singleToArray(sendBoxMiddleware) as any[];
-      return Object.freeze([createSendBoxPolymiddlewareFromLegacy(...middleware)]);
-    },
-    [sendBoxMiddleware]
-  );
+  const polymiddlewareForLegacySendBoxMiddleware = useMemo<readonly Polymiddleware[]>(() => {
+    const middleware = singleToArray(sendBoxMiddleware) as any[];
+    return Object.freeze([createSendBoxPolymiddlewareFromLegacy(...middleware)]);
+  }, [sendBoxMiddleware]);
 
   const polymiddleware = useMemo<readonly Polymiddleware[]>(
     () =>

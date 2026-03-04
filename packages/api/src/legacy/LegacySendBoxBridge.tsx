@@ -1,7 +1,10 @@
 import { validateProps } from '@msinternal/botframework-webchat-react-valibot';
 import React, { Fragment, memo, useMemo } from 'react';
 
-import { legacySendBoxBridgeComponentPropsSchema, type LegacySendBoxBridgeComponentProps } from './createSendBoxPolymiddlewareFromLegacy';
+import {
+  legacySendBoxBridgeComponentPropsSchema,
+  type LegacySendBoxBridgeComponentProps
+} from './createSendBoxPolymiddlewareFromLegacy';
 
 /**
  * This component is solely for `createSendBoxPolymiddlewareFromLegacy`.

@@ -31,14 +31,14 @@
 
             const Downstream = () => createElement('div', {}, '<Downstream />');
 
-            const sendBoxPolymiddleware = [
+            const polymiddleware = [
                createSendBoxPolymiddleware(next => () => sendBoxComponent(Downstream))
             ];
 
             WebChat.renderWebChat(
                {
                   directLine,
-                  sendBoxPolymiddleware,
+                  polymiddleware,
                   store
                },
                document.getElementById('webchat')
