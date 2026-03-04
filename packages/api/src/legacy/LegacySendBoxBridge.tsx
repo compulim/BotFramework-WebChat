@@ -17,4 +17,6 @@ function LegacySendBoxBridge(props: LegacySendBoxBridgeComponentProps) {
   return <Fragment>{children}</Fragment>;
 }
 
+LegacySendBoxBridge.displayName = 'LegacySendBoxBridge';
+
 export default memo(LegacySendBoxBridge);

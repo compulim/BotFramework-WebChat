@@ -56,7 +56,7 @@ const SendBoxPolymiddlewareProvider = memo(function SendBoxPolymiddlewareProvide
         createErrorBoundaryMiddleware({
           createMiddleware: createSendBoxPolymiddleware,
           reactComponent: sendBoxComponent,
-          where: 'SendBox polymiddleware'
+          where: 'send box polymiddleware'
         }),
         ...middleware
       ]),

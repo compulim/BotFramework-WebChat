@@ -6,9 +6,9 @@ export type {
   /** @deprecated Use `polymiddleware` instead, this will be removed on or after 2027-08-16. */
   LegacyAttachmentMiddleware as AttachmentMiddleware,
   LegacyRenderAttachment as RenderAttachment,
-  /** @deprecated Use `polymiddleware` instead, this will be removed on or after 2027-08-16. */
+  /** @deprecated Use `polymiddleware` instead, this will be removed on or after 2028-03-04. */
   LegacySendBoxComponentFactory as SendBoxComponentFactory,
-  /** @deprecated Use `polymiddleware` instead, this will be removed on or after 2027-08-16. */
+  /** @deprecated Use `polymiddleware` instead, this will be removed on or after 2028-03-04. */
   LegacySendBoxRenderer as SendBoxRenderer
 } from '@msinternal/botframework-webchat-api-middleware/legacy';
 

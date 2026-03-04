@@ -29,7 +29,7 @@ type LegacySendBoxBridgeComponentProps = Readonly<
 /**
  * Polyfill legacy sendBox middleware into a polymiddleware.
  *
- * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2027-08-16.
+ * @deprecated Legacy sendBox middleware is being deprecated and will be removed on or after 2028-03-04.
  * @param middleware An array of legacy sendBox middleware.
  * @returns A polymiddleware composed by legacy sendBox middleware.
  */
