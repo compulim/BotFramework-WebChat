@@ -4,6 +4,9 @@ import templateMiddleware, {
   type InferRequest
 } from './private/templateMiddleware';
 
+/**
+ * @deprecated Legacy send box middleware is being deprecated and will be removed on or after 2028-03-04. Use `createSendBoxPolymiddleware` instead.
+ */
 const template = templateMiddleware<void, { className?: string | undefined }>('sendBoxMiddleware');
 
 const {
@@ -13,8 +16,19 @@ const {
   Proxy: SendBoxMiddlewareProxy
 } = template;
 
+/**
+ * @deprecated Legacy send box middleware is being deprecated and will be removed on or after 2028-03-04 Use `SendBoxPolymiddleware` instead.
+ */
 type SendBoxMiddleware = InferMiddleware<typeof template>;
+
+/**
+ * @deprecated Legacy send box middleware is being deprecated and will be removed on or after 2028-03-04. Use `SendBoxPolymiddlewareProps` instead.
+ */
 type SendBoxMiddlewareProps = InferProps<typeof template>;
+
+/**
+ * @deprecated Legacy send box middleware is being deprecated and will be removed on or after 2028-03-04. Use `SendBoxPolymiddlewareRequest` instead.
+ */
 type SendBoxMiddlewareRequest = InferRequest<typeof template>;
 
 export {

@@ -2,7 +2,8 @@
 /* eslint react/no-unsafe: off */
 
 import { validateProps } from '@msinternal/botframework-webchat-react-valibot';
-import { SendBoxMiddlewareProxy, hooks } from 'botframework-webchat-api';
+import { hooks } from 'botframework-webchat-api';
+import { SendBoxPolymiddlewareProxy } from 'botframework-webchat-api/middleware';
 import classNames from 'classnames';
 import React, { memo, useRef } from 'react';
 import { object, optional, pipe, readonly, string, type InferInput } from 'valibot';
@@ -72,7 +73,7 @@ function BasicWebChat(props: BasicWebChatProps) {
       {!options.hideToaster && <BasicToaster className={toasterClassName} />}
       <BasicTranscript className={transcriptClassName} />
       <BasicConnectivityStatus className={connectivityStatusClassName} />
-      <SendBoxMiddlewareProxy className={sendBoxClassName} request={undefined} />
+      <SendBoxPolymiddlewareProxy className={sendBoxClassName} />
     </AccessKeySinkSurface>
   );
 }

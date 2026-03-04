@@ -50,8 +50,9 @@ import errorBoxTelemetryPolymiddleware from '../errorBox/errorBoxTelemetryPolymi
 import PrecompiledGlobalize from '../external/PrecompiledGlobalize';
 import usePonyfill from '../hooks/usePonyfill';
 import createActivityPolymiddlewareFromLegacy from '../legacy/createActivityPolymiddlewareFromLegacy';
+import createSendBoxPolymiddlewareFromLegacy from '../legacy/createSendBoxPolymiddlewareFromLegacy';
 import getAllLocalizedStrings from '../localization/getAllLocalizedStrings';
-import { SendBoxMiddlewareProvider, type SendBoxMiddleware } from '../middleware/SendBoxMiddleware';
+import { type SendBoxMiddleware } from '../middleware/SendBoxMiddleware';
 import {
   SendBoxToolbarMiddlewareProvider,
   type SendBoxToolbarMiddleware
@@ -524,6 +525,11 @@ const ComposerCore = ({
     [activityMiddleware]
   );
 
+  const polymiddlewareForLegacySendBoxMiddleware = useMemo<readonly Polymiddleware[]>(() => {
+    const middleware = singleToArray(sendBoxMiddleware) as any[];
+    return Object.freeze([createSendBoxPolymiddlewareFromLegacy(...middleware)]);
+  }, [sendBoxMiddleware]);
+
   const polymiddleware = useMemo<readonly Polymiddleware[]>(
     () =>
       Object.freeze([
@@ -532,9 +538,10 @@ const ComposerCore = ({
         errorBoxTelemetryPolymiddleware,
         ...(polymiddlewareFromProps || []),
         ...polymiddlewareForLegacyActivityMiddleware,
+        ...polymiddlewareForLegacySendBoxMiddleware,
         activityFallbackPolymiddleware
       ]),
-    [polymiddlewareForLegacyActivityMiddleware, polymiddlewareFromProps]
+    [polymiddlewareForLegacyActivityMiddleware, polymiddlewareForLegacySendBoxMiddleware, polymiddlewareFromProps]
   );
 
   /**
@@ -615,18 +622,16 @@ const ComposerCore = ({
         <ActivityListenerComposer>
           <ActivitySendStatusComposer>
             <ActivityTypingComposer>
-              <SendBoxMiddlewareProvider middleware={sendBoxMiddleware || EMPTY_ARRAY}>
-                <SendBoxToolbarMiddlewareProvider middleware={sendBoxToolbarMiddleware || EMPTY_ARRAY}>
-                  <GroupActivitiesComposer groupActivitiesMiddleware={singleToArray(groupActivitiesMiddleware)}>
-                    <PolymiddlewareComposer polymiddleware={polymiddleware}>
-                      <SpeechToSpeechComposer>
-                        {typeof children === 'function' ? children(context) : children}
-                      </SpeechToSpeechComposer>
-                    </PolymiddlewareComposer>
-                  </GroupActivitiesComposer>
-                  <ActivitySendStatusTelemetryComposer />
-                </SendBoxToolbarMiddlewareProvider>
-              </SendBoxMiddlewareProvider>
+              <SendBoxToolbarMiddlewareProvider middleware={sendBoxToolbarMiddleware || EMPTY_ARRAY}>
+                <GroupActivitiesComposer groupActivitiesMiddleware={singleToArray(groupActivitiesMiddleware)}>
+                  <PolymiddlewareComposer polymiddleware={polymiddleware}>
+                    <SpeechToSpeechComposer>
+                      {typeof children === 'function' ? children(context) : children}
+                    </SpeechToSpeechComposer>
+                  </PolymiddlewareComposer>
+                </GroupActivitiesComposer>
+                <ActivitySendStatusTelemetryComposer />
+              </SendBoxToolbarMiddlewareProvider>
             </ActivityTypingComposer>
           </ActivitySendStatusComposer>
         </ActivityListenerComposer>

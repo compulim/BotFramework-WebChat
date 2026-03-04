@@ -30,4 +30,20 @@ export {
   type ErrorBoxPolymiddlewareRequest
 } from '@msinternal/botframework-webchat-api-middleware';
 
+export {
+  createSendBoxPolymiddleware,
+  sendBoxComponent,
+  SendBoxPolymiddlewareProxy,
+  useBuildRenderSendBoxCallback,
+  type SendBoxPolymiddleware,
+  type SendBoxPolymiddlewareHandler,
+  type SendBoxPolymiddlewareHandlerResult,
+  type SendBoxPolymiddlewareProps,
+  type SendBoxPolymiddlewareProxyProps,
+  type SendBoxPolymiddlewareRenderer,
+  type SendBoxPolymiddlewareRequest
+} from '@msinternal/botframework-webchat-api-middleware';
+
 export { default as createActivityPolymiddlewareFromLegacy } from '../legacy/createActivityPolymiddlewareFromLegacy';
+
+export { default as createSendBoxPolymiddlewareFromLegacy } from '../legacy/createSendBoxPolymiddlewareFromLegacy';
