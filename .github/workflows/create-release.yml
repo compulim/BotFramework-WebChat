@@ -36,7 +36,8 @@ jobs:
       - if: steps.version-type.outputs.version-type != 'production'
         name: Set version
         run: |
-          BRANCH_NAME=${{ github.ref_name }}
+          # BRANCH_NAME=${{ github.ref_name }}
+          BRANCH_NAME=main
           COMMITISH=${{ github.sha }}
           NOW=$(date +%Y%m%d%H%M)
 
