@@ -215,7 +215,7 @@ runs:
 
         # Download the artifact
         az pipelines runs artifact download \
-          --artifact-name "${{ inputs.artifact-name }}" \
+          --artifact-name "drop_build_main" \
           --detect false \
           --org ${{ inputs.azdo-org }} \
           --path "$GITHUB_WORKSPACE/artifact-download/" \
@@ -234,7 +234,7 @@ runs:
     - name: Upload artifact
       uses: actions/upload-artifact@v6
       with:
-        name: drop_build_main
+        name: ${{ inputs.artifact-name }}
         path: ./artifact-download/
 
     - id: get-version
