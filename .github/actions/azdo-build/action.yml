@@ -115,13 +115,13 @@ runs:
         set -e -o pipefail
 
         az extension add --name azure-devops --only-show-errors
-        # az pipelines list --org ${{ vars.azdo-org }} --project ${{ vars.azdo-project }}
+        # az pipelines list --org ${{ inputs.azdo-org }} --project ${{ inputs.azdo-project }}
         OUTPUT=$(
           az pipelines run \
             --detect false --output json) \
-            --name ${{ vars.azdo-pipeline-name }} \
-            --org ${{ vars.azdo-org }} \
-            --project ${{ vars.azdo-project }} \
+            --name ${{ inputs.azdo-pipeline-name }} \
+            --org ${{ inputs.azdo-org }} \
+            --project ${{ inputs.azdo-project }} \
             --variable ${{ inputs.pipeline-variable }}
         )
 
