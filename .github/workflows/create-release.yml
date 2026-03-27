@@ -68,17 +68,19 @@ jobs:
 
       - run: npm run build
 
-      - run: npm pack --workspaces
+      - name: Pack as tarball
+        run: |
+          npm pack \
+            --workspace=./packages/core \
+            --workspace=./packages/api \
+            --workspace=./packages/component \
+            --workspace=./packages/bundle \
+            --workspace=./packages/fluent-theme
 
       - uses: actions/upload-artifact@v7
         with:
           name: tarball
-          path: |
-            ./packages/core/*.tgz
-            ./packages/api/*.tgz
-            ./packages/component/*.tgz
-            ./packages/bundle/*.tgz
-            ./packages/fluent-theme/*.tgz
+          path: ./*.tgz
 
       - uses: actions/upload-artifact@v7
         with:
