@@ -26,10 +26,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug OIDC Claims
-        uses: github/actions-oidc-debugger@v1
-        with:
-          audience: '${{ github.server_url }}/${{ github.repository_owner }}'
+      # - name: Debug OIDC Claims
+      #   uses: github/actions-oidc-debugger@bc12dcf
+      #   with:
+      #     audience: '${{ github.server_url }}/${{ github.repository_owner }}'
 
       - uses: azure/login@v2
         with:
