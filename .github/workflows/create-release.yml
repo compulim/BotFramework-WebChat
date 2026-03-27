@@ -86,9 +86,9 @@ jobs:
             --workspace=./packages/bundle \
             --workspace=./packages/fluent-theme
 
-      - name: Generate SBOM
-        # --workspace has no effect, the resulting SBOM still contains other packages in the workspace
-        run: npm sbom --package-lock-only --sbom-format spdx --sbom-type library | tee ./sbom.spdx.json
+      # - name: Generate SBOM
+      #   # --workspace has no effect, the resulting SBOM still contains other packages in the workspace
+      #   run: npm sbom --package-lock-only --sbom-format spdx --sbom-type library | tee ./sbom.spdx.json
 
       - uses: actions/upload-artifact@v7
         with:
@@ -115,11 +115,11 @@ jobs:
           name: fluent-theme-esm
           path: ./packages/fluent-theme/static/**/*
 
-      - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: sbom
-          path: ./sbom.spdx.json
+      # - name: Upload SBOM artifact
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: sbom
+      #     path: ./sbom.spdx.json
 
   upload-changelog:
     name: Upload changelog
@@ -213,5 +213,5 @@ jobs:
           gh release upload ${{ steps.release.outputs.tag }} \
             --repo ${{ github.repository }} \
             ./asset/*.js \
-            ./asset/*.tgz \
-            ./aseet/sbom.spdx.json
+            ./asset/*.tgz
+        # ./aseet/sbom.spdx.json
