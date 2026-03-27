@@ -1,61 +1,42 @@
-name: Continuous deployment
+name: Create release
 
 on:
-  workflow_call:
-    inputs:
-      github-pages:
-        default: true
-        required: false
-        type: boolean
-      node-version:
-        default: lts/*
-        required: false
-        type: string
-      package-name:
-        required: true
-        type: string
-    secrets:
-      WORKFLOW_BOT_APP_ID:
-        required: true
-      WORKFLOW_BOT_PRIVATE_KEY:
-        required: true
+  pull_request: # Temporarily add pull_request for testing
+    branches: main
+  workflow_dispatch: {}
 
 defaults:
   run:
     shell: bash
 
 env:
-  node-version: ${{ inputs.node-version }}
+  node-version: 22
 
 jobs:
-  build:
-    name: Build
+  prepare:
+    name: Prepare
     outputs:
       version: ${{ steps.version.outputs.version }}
       version-type: ${{ steps.version-type.outputs.version-type }}
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@main
-      - id: find-package-path
-        name: Find package path
-        run: |
-          path=$(find packages -name "package.json" -exec sh -c 'jq -e ".name == \"${{ inputs.package-name }}\"" {} > /dev/null && dirname {}' \;)
-          [ -z "$path" ] && exit 1
-          echo package-path=$path | tee --append $GITHUB_OUTPUT
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.node-version }}
+
       - id: version-type
         name: Determine version type
         run: 'if [[ "$(cat ./package.json | jq -r ''.version'')" == *-0 ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi'
-      - name: Use Node.js ${{ env.node-version }}
-        uses: actions/setup-node@main
-        with:
-          node-version: ${{ env.node-version }}
-          cache: npm
+
       - if: steps.version-type.outputs.version-type != 'production'
         name: Set version
         run: |
-          # Temporarily set the BRANCH_NAME for PR validation
-          # BRANCH_NAME=${{ github.ref_name }}
-          BRANCH_NAME=main
+          BRANCH_NAME=${{ github.ref_name }}
           COMMITISH=${{ github.sha }}
           NOW=$(date +%Y%m%d%H%M)
 
@@ -63,156 +44,88 @@ jobs:
 
           # npm version simply ignoring the build metadata + (plus) sign, we need to use dot or hyphen instead.
           npm version --no-git-tag-version $(echo $(cat ./package.json | jq -r '.version') | cut -d- -f1)-$BRANCH_NAME.$NOW.$SHORT_COMMITISH
+
       - id: version
         name: Get version
         run: echo version=$(cat package.json | jq -r '.version') | tee --append $GITHUB_OUTPUT
-      - name: Uninstall current version
-        run: npm uninstall --workspaces ${{ inputs.package-name }}
-      - name: Update version
-        run: npm version --no-git-tag-version --no-workspaces-update --workspace=${{ inputs.package-name }} ${{ steps.version.outputs.version }}
-      - name: Propagate versions
-        run: npm install --workspaces ${{ inputs.package-name }}@${{ steps.version.outputs.version }}
-      - run: npm clean-install
-      - name: Run npm run build
-        run: npm run build --if-present --no-ignore-scripts
-      - name: Run npm pack
-        run: npm pack --no-ignore-scripts
-        working-directory: ${{ steps.find-package-path.outputs.package-path }}
-      - name: Upload tarball artifact
-        uses: actions/upload-artifact@main
-        with:
-          name: tarball
-          path: ${{ steps.find-package-path.outputs.package-path }}/*.tgz
-      - if: inputs.github-pages
-        name: Build pages
-        run: |
-          npm install ../../${{ steps.find-package-path.outputs.package-path }}/*.tgz
-          npm run build --no-ignore-scripts
-        working-directory: packages/pages
-      - if: inputs.github-pages
-        name: Upload pages artifact
-        uses: actions/upload-pages-artifact@main
-        with:
-          path: packages/pages/public
-      - name: Generate SBOM
-        # --workspace has no effect, the resulting SBOM still contains other packages in the workspace
-        run: npm sbom -package-lock-only --sbom-format spdx --sbom-type library | tee ./sbom.spdx.json
-      - name: Upload SBOM artifact
-        uses: actions/upload-artifact@main
-        with:
-          name: sbom
-          path: ./sbom.spdx.json
 
-  sign-attestations:
-    name: Sign attestations
-    needs:
-      - build
-    runs-on: ubuntu-latest
+  build:
+    name: Build
     permissions:
-      attestations: write
-      id-token: write
+      contents: read
+    needs: prepare
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Download tarball artifact
-        uses: actions/download-artifact@main
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.node-version }}
+
+      - run: npm clean-install
+
+      - run: npm run build
+
+      - run: npm pack --workspaces
+
+      - uses: actions/upload-artifact@v7
         with:
           name: tarball
-      - name: Download SBOM artifact
-        uses: actions/download-artifact@main
+          path: |
+            ./packages/core/*.tgz
+            ./packages/api/*.tgz
+            ./packages/component/*.tgz
+            ./packages/bundle/*.tgz
+            ./packages/fluent-theme/*.tgz
+
+      - uses: actions/upload-artifact@v7
         with:
-          name: sbom
-      - uses: actions/attest-build-provenance@main
+          name: bundle-iife
+          path: ./packages/bundle/dist/**/*
+
+      - uses: actions/upload-artifact@v7
         with:
-          subject-path: './*.tgz'
-      - uses: actions/attest-sbom@main
+          name: bundle-esm
+          path: ./packages/bundle/static/**/*
+
+      - uses: actions/upload-artifact@v7
         with:
-          sbom-path: './sbom.spdx.json'
-          subject-path: './*.tgz'
+          name: fluent-theme-iife
+          path: ./packages/fluent-theme/dist/**/*
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: fluent-theme-esm
+          path: ./packages/fluent-theme/static/**/*
 
   upload-changelog:
     continue-on-error: true
     name: Upload changelog
-    needs: build
+    needs: prepare
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@main
-      - if: needs.build.outputs.version-type == 'production'
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.node-version }}
+
+      - if: needs.prepare.outputs.version-type == 'production'
         name: Extract from latest release
         run: npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
-      - if: needs.build.outputs.version-type != 'production'
+
+      - if: needs.prepare.outputs.version-type != 'production'
         name: Extract from unreleased
         run: |
-          npx keep-a-changelog --format markdownlint --release ${{ needs.build.outputs.version }}
+          npx keep-a-changelog --format markdownlint --release ${{ needs.prepare.outputs.version }}
           npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
+
       - name: Upload changelog
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v7
         with:
           name: changelog
           path: ./CHANGELOG.latest.md
-
-  publish-release:
-    environment:
-      name: workflow-bot
-      url: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.build.outputs.version }}
-    # if: needs.build.outputs.version-type == 'production'
-    name: Publish release
-    needs:
-      - build
-      - upload-changelog
-    runs-on: ubuntu-latest
-    steps:
-      - id: generate-token
-        name: Generate token for workflow-bot
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.WORKFLOW_BOT_APP_ID }}
-          private-key: ${{ secrets.WORKFLOW_BOT_PRIVATE_KEY }}
-      - continue-on-error: true # Partial changelog could be unavailable before first production release
-        name: Download changelog artifact
-        uses: actions/download-artifact@main
-        with:
-          name: changelog
-      - name: Download SBOM artifact
-        uses: actions/download-artifact@main
-        with:
-          name: sbom
-      - name: Download tarball artifact
-        uses: actions/download-artifact@main
-        with:
-          name: tarball
-      - env:
-          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-        id: release
-        name: Create release
-        # Do not upload assets while creating release, otherwise, it will not trigger "release created" event.
-        run: |
-          if [[ "${{ needs.build.outputs.version-type }}" == "prerelease" ]]; then PRERELEASE=1; fi
-
-          TAG=v${{ needs.build.outputs.version }}
-
-          gh release create $TAG \
-            --notes-file ./CHANGELOG.latest.md \
-            ${PRERELEASE:+--prerelease} \
-            --repo ${{ github.repository }} \
-            --target ${{ github.ref }}
-
-          echo tag=$TAG | tee --append $GITHUB_OUTPUT
-      - env:
-          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-        name: Upload assets
-        run: gh release upload ${{ steps.release.outputs.tag }} *.tgz sbom.spdx.json --repo ${{ github.repository }}
-
-  publish-pages:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    if: inputs.github-pages
-    name: Publish to GitHub Pages
-    needs: build
-    permissions:
-      pages: write
-      id-token: write
-    runs-on: ubuntu-latest
-    steps:
-      - id: deployment
-        name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@main
