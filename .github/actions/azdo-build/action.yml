@@ -204,8 +204,6 @@ runs:
       run: |
         set -e -o pipefail
 
-        # tdnf install -y icu
-        # tdnf install -y jq
         az extension add --name azure-devops --only-show-errors
 
         RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
@@ -241,7 +239,7 @@ runs:
     - id: get-version
       name: Get version
       run: |
-        VERSION=$(tar -xzOf botframework-webchat-core-*.tgz package/package.json)
+        VERSION=$(tar -xzOf botframework-webchat-core-*.tgz package/package.json | jq -r '.version')
 
         echo version=$VERSION | tee --append $GITHUB_OUTPUT
 
@@ -410,8 +408,8 @@ runs:
 #           --draft=false \
 #           --repo ${{ github.repository }}
 
-    - continue-on-error: true
-      if: ${{ always() }}
-      name: Azure logout
-      run: az logout
-      shell: bash
+    # - continue-on-error: true
+    #   if: ${{ always() }}
+    #   name: Azure logout
+    #   run: az logout
+    #   shell: bash
