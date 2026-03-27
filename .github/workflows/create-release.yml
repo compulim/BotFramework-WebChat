@@ -177,7 +177,7 @@ jobs:
 
           tar \
             --extract \
-            --file=botframework-webchat-${{ steps.azdo-build.outputs.version }}.tgz \
+            --file=./tgzfiles/botframework-webchat-${{ steps.azdo-build.outputs.version }}.tgz \
             --strip-component=1 \
             package/dist/ \
             package/static/
@@ -189,7 +189,7 @@ jobs:
 
           tar \
             --extract \
-            --file=botframework-webchat-fluent-theme-${{ steps.azdo-build.outputs.version }}.tgz \
+            --file=./tgzfiles/botframework-webchat-fluent-theme-${{ steps.azdo-build.outputs.version }}.tgz \
             --strip-component=1 \
             package/dist/ \
             package/static/
