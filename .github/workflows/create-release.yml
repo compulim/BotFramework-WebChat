@@ -36,8 +36,7 @@ jobs:
       - if: steps.version-type.outputs.version-type != 'production'
         name: Set version
         run: |
-          # BRANCH_NAME=${{ github.ref_name }}
-          BRANCH_NAME=main
+          BRANCH_NAME=$(git branch --show-current)
           COMMITISH=${{ github.sha }}
           NOW=$(date +%Y%m%d%H%M)
 
@@ -117,11 +116,11 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
-      - run: npm install --global keep-a-changelog
+      - run: npm install --global keep-a-changelog@3
 
       - if: needs.prepare.outputs.version-type != 'production'
         name: Tag unreleased as latest
-        run: npx keep-a-changelog --format markdownlint --release ${{ needs.prepare.outputs.version }}
+        run: npx keep-a-changelog --format markdownlint --release=${{ needs.prepare.outputs.version }}
 
       - name: Extract latest entry
         run: npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
