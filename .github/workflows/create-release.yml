@@ -165,7 +165,7 @@ jobs:
           azure-tenant-id: ${{ vars.AZURE_TENANT_ID }}
           branch-name: ${{ steps.get-branch-name.outputs.branch-name }}
           download-artifact-name: drop_build_main
-          pipeline-variable: ProjectBranch=${{ inputs.branch-name }}
+          pipeline-variable: ProjectBranch=${{ steps.get-branch-name.outputs.branch-name }}
 
       - name: Download AzDO build artifact
         uses: actions/download-artifact@v8
