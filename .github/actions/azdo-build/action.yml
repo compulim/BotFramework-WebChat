@@ -120,7 +120,7 @@ runs:
           az pipelines run \
             --detect false --output json) \
             --name ${{ inputs.azdo-pipeline-name }} \
-            --org ${{ inputs.azdo-org }} \
+            --organization ${{ inputs.azdo-org }} \
             --project ${{ inputs.azdo-project }} \
             --variable ${{ inputs.pipeline-variable }}
         )
