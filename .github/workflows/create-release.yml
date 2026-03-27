@@ -41,7 +41,7 @@ jobs:
       - if: steps.version-type.outputs.version-type != 'production'
         name: Set version
         run: |
-          BRANCH_NAME=${{ github.ref }}
+          BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD)
           COMMITISH=${{ github.sha }}
           NOW=$(date +%Y%m%d%H%M)
 
