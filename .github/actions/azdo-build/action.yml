@@ -43,7 +43,7 @@ inputs:
     type: string
 
   pipeline-variable:
-    description: Pipeline variable
+    description: Pipeline variable (multiline)
     required: true
     type: string
 
@@ -118,7 +118,7 @@ runs:
             --org ${{ inputs.azdo-org }} \
             --output json \
             --project ${{ inputs.azdo-project }} \
-            --variable ${{ inputs.pipeline-variable }}
+            $(echo "${{ inputs.pipeline-variable }}" | while IFS= read -r line; do [ -n "$line" ] && printf '--variable %q ' "$line"; done)
         )
 
         RUN_ID=$(echo "$OUTPUT" | jq -r '.id')
