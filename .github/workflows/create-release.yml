@@ -116,7 +116,7 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
-      - run: npm install --global keep-a-changelog@2
+      - run: npm install --global keep-a-changelog@2 prettier
 
       - if: needs.prepare.outputs.version-type != 'production'
         name: Tag unreleased as latest
@@ -124,6 +124,9 @@ jobs:
 
       - name: Extract latest entry
         run: npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
+
+      - name: Format extracted entry
+        run: npx prettier CHANGELOG.latest.md --tab-width 3 --write
 
       - name: Upload changelog
         uses: actions/upload-artifact@v7
