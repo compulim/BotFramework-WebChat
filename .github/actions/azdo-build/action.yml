@@ -78,11 +78,17 @@ runs:
 
     - name: Azure login
       run: |
+        # az login \
+        #   --client-id ${{ inputs.azure-client-id }} \
+        #   --federated-token ${{ github.token }} \
+        #   --identity \
+        #   --subscription ${{ inputs.azure-subscription-id }} \
+        #   --tenant ${{ inputs.azure-tenant-id }}
+
         az login \
+          --allow-no-subscription \
           --client-id ${{ inputs.azure-client-id }} \
           --federated-token ${{ github.token }} \
-          --identity \
-          --subscription ${{ inputs.azure-subscription-id }} \
           --tenant ${{ inputs.azure-tenant-id }}
       shell: bash
 
@@ -403,3 +409,8 @@ runs:
 #         gh release edit ${{ needs.create-release.outputs.release-tag }} \
 #           --draft=false \
 #           --repo ${{ github.repository }}
+
+    - if: ${{ always() }}
+      name: Azure logout
+      run: az logout
+      shell: bash
