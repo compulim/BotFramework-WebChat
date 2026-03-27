@@ -97,7 +97,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: bundle-iife
-          path: ./packages/bundle/dist/**/*
+          path: ./packages/bundle/dist/webchat*.js
 
       - uses: actions/upload-artifact@v7
         with:
