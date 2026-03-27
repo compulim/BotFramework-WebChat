@@ -215,7 +215,7 @@ runs:
 
         # Download the artifact
         az pipelines runs artifact download \
-          --artifact-name "drop_build_main" \
+          --artifact-name "${{ inputs.artifact-name }}" \
           --detect false \
           --org ${{ inputs.azdo-org }} \
           --path "$GITHUB_WORKSPACE/artifact-download/" \
