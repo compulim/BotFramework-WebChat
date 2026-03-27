@@ -60,10 +60,6 @@ outputs:
     description: Version
     value: ${{ steps.get-version.outputs.version-type }}
 
-defaults:
-  run:
-    shell: bash
-
 env:
   AZDO_ORG: ${{ inputs.azdo-org }}
   AZDO_PIPELINE_NAME: ${{ inputs.azdo-pipeline-name }}
@@ -122,6 +118,7 @@ runs:
       run: |
         echo run-id=422059 | tee --append $GITHUB_OUTPUT
         echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/422059 | tee --append $GITHUB_OUTPUT
+      shell: bash
 
     - name: Wait for pipeline completion
       uses: azure/cli@v2
@@ -222,6 +219,7 @@ runs:
         echo version=$VERSION | tee --append $GITHUB_OUTPUT
 
         if [[ "$VERSION" == *-0 ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi
+      shell: bash
       working-directory: ./artifact-download/tgzfiles
 
 # prepare-release:
