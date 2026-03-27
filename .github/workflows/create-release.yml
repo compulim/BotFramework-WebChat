@@ -152,7 +152,7 @@ jobs:
           echo branch-name=$BRANCH_NAME | tee --append $GITHUB_OUTPUT
 
       - id: azdo-build
-        uses: ./.github/workflows/reusable-azdo-build.yml
+        uses: ./.github/actions/azdo-build
         with:
           artifact-name: azdo-artifact
           branch-name: ${{ steps.get-branch-name.outputs.branch-name }}

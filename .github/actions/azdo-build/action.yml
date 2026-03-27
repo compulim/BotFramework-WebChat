@@ -1,0 +1,356 @@
+name: 'Build via AzDO'
+
+inputs:
+  artifact-name:
+    description: Output artifact name
+    default: azdo-artifact
+    type: string
+
+  branch-name:
+    description: Branch name
+    default: main
+    type: string
+
+  # dist-tag:
+  #   description: Dist-tag
+  #   default: main
+  #   type: string
+
+  # version:
+  #   description: Version
+  #   required: true
+  #   type: string
+
+outputs:
+  version:
+    description: Version
+    value: ${{ jobs.download-pipeline-artifact.outputs.version }}
+
+  version-type:
+    description: Version
+    value: ${{ jobs.download-pipeline-artifact.outputs.version-type }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  AZDO_ORG: ${{ vars.AZDO_ORG }}
+  AZDO_PIPELINE_NAME: ${{ vars.AZDO_PIPELINE_NAME }}
+  AZDO_PROJECT: ${{ vars.AZDO_PROJECT }}
+  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+
+runs:
+  using: composite
+  steps:
+    - uses: azure/login@v2
+      with:
+        allow-no-subscriptions: true
+        client-id: ${{ env.AZURE_CLIENT_ID }}
+        tenant-id: ${{ env.AZURE_TENANT_ID }}
+
+    # - id: run-pipeline
+    #   uses: azure/cli@v2
+    #   with:
+    #     inlineScript: |
+    #       set -e -o pipefail
+
+    #       az extension add --name azure-devops --only-show-errors
+    #       # az pipelines list --org ${{ env.AZDO_ORG }} --project ${{ env.AZDO_PROJECT }}
+    #       OUTPUT=$(
+    #         az pipelines run \
+    #         --detect false --output json) \
+    #         --name ${{ env.AZDO_PIPELINE_NAME }} \
+    #         --org ${{ env.AZDO_ORG }} \
+    #         --project ${{ env.AZDO_PROJECT }} \
+    #         --variable ProjectBranch=${{ inputs.branch-name }}
+    #       )
+
+    #       RUN_ID=$(echo "$OUTPUT" | jq -r '.id')
+    #       RUN_URL=$(echo "$OUTPUT" | jq -r '.url')
+
+    #       if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+    #         echo "$OUTPUT"
+    #         echo "Failed to extract run ID from output"
+    #         exit 1
+    #       fi
+
+    #       if [ -z "$RUN_URL" ] || [ "$RUN_URL" = "null" ]; then
+    #         echo "$OUTPUT"
+    #         echo "Failed to extract run URL from output"
+    #         exit 1
+    #       fi
+
+    #       echo "run-id=$RUN_ID" | tee --append $GITHUB_OUTPUT
+    #       echo "url=$RUN_URL" | tee --append $GITHUB_OUTPUT
+
+    # Temporarily not running pipeline but getting from existing result
+    - id: run-pipeline
+      name: Run pipeline
+      run: |
+        echo run-id=422059 | tee --append $GITHUB_OUTPUT
+        echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/422059 | tee --append $GITHUB_OUTPUT
+
+    - name: Wait for pipeline completion
+      uses: azure/cli@v2
+      with:
+        inlineScript: |
+          set -e -o pipefail
+
+          az extension add --name azure-devops --only-show-errors
+
+          RUN_ID="${{ needs.run-pipeline.outputs.run-id }}"
+          echo "Waiting for run ID: $RUN_ID to complete..."
+
+          # Timeout after 45 minutes (2700 seconds)
+          TIMEOUT=2700
+          ELAPSED=0
+          INTERVAL=5
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            OUTPUT=$(az pipelines runs show --id "$RUN_ID" --org ${{ env.AZDO_ORG }} --project ${{ env.AZDO_PROJECT }} --detect false --output json)
+            STATUS=$(echo "$OUTPUT" | jq -r '.status')
+
+            if [ -z "$STATUS" ] || [ "$STATUS" = "null" ]; then
+              echo "Failed to extract status from output"
+              exit 1
+            fi
+
+            echo "Current status: $STATUS (elapsed: ${ELAPSED}s)"
+
+            # Check for terminal states
+            if [ "$STATUS" = "completed" ]; then
+              echo "Pipeline completed!"
+              RESULT=$(echo "$OUTPUT" | jq -r '.result')
+              echo "Result: $RESULT"
+
+              if [ "$RESULT" != "succeeded" ]; then
+                echo "Pipeline failed with result: $RESULT"
+                exit 1
+              fi
+
+              echo "Pipeline succeeded!"
+              exit 0
+            elif [ "$STATUS" = "canceling" ] || [ "$STATUS" = "canceled" ]; then
+              echo "Pipeline was canceled"
+              exit 1
+            fi
+
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "Timeout reached after ${TIMEOUT} seconds for run ID: $RUN_ID"
+          exit 1
+
+    - name: Download artifact from Azure DevOps
+      uses: azure/cli@v2
+      with:
+        inlineScript: |
+          set -e -o pipefail
+
+          tdnf install -y icu
+          tdnf install -y jq
+          az extension add --name azure-devops --only-show-errors
+
+          RUN_ID="${{ needs.run-pipeline.outputs.run-id }}"
+          echo "Downloading artifact 'drop_build_main' from run ID: $RUN_ID"
+
+          # Create directory for artifact
+          mkdir -p ./artifact-download/
+
+          # Download the artifact
+          az pipelines runs artifact download \
+            --artifact-name "drop_build_main" \
+            --detect false \
+            --org ${{ env.AZDO_ORG }} \
+            --path "$GITHUB_WORKSPACE/artifact-download/" \
+            --project ${{ env.AZDO_PROJECT }} \
+            --run-id "$RUN_ID"
+
+          # Verify artifact was downloaded
+          if [ -z "$(ls -A artifact-download)" ]; then
+            echo "Artifact directory is empty after download"
+            exit 1
+          fi
+
+          echo "Artifact downloaded successfully"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: drop_build_main
+        path: ./artifact-download/
+
+    - id: get-version
+      name: Get version
+      run: |
+        VERSION=$(tar -xzOf botframework-webchat-core-*.tgz package/package.json)
+
+        echo version=$VERSION | tee --append $GITHUB_OUTPUT
+
+        if [[ "$VERSION" == *-0 ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi
+      working-directory: ./artifact-download/tgzfiles
+
+# prepare-release:
+#   name: Prepare release
+#   needs:
+#     - upload-pipeline-artifact
+#   outputs:
+#     prerelease: ${{ steps.save-version.outputs.prerelease }}
+#     version: ${{ steps.save-version.outputs.version }}
+#   permissions:
+#     actions: read
+#     contents: read
+#     id-token: write
+#   runs-on: ubuntu-latest
+
+#   steps:
+#     - uses: actions/checkout@v6
+#     - uses: actions/setup-node@v6
+
+#     - name: Download build artifact
+#       uses: actions/download-artifact@v7
+#       with:
+#         name: drop_build_main
+#         path: ./azdo-artifact/
+
+#     - name: Prepare CDN artifact
+#       run: |
+#         mkdir -p ./github-artifact/cdn/
+#         cd ./github-artifact/cdn/
+#         unzip ../../azdo-artifact/cdn_files/CdnFilesUpload.zip
+
+#     - name: Upload CDN artifact
+#       uses: actions/upload-artifact@v6
+#       with:
+#         name: asset-cdn
+#         path: ./github-artifact/cdn/
+
+#     - name: Prepare tarball artifact
+#       run: |
+#         mkdir -p ./github-artifact/tarball/
+#         cd ./github-artifact/tarball/
+#         cp ../../azdo-artifact/tgzfiles/* .
+
+#     - name: Upload tarball artifact
+#       uses: actions/upload-artifact@v6
+#       with:
+#         name: asset-tarball
+#         path: ./github-artifact/tarball/
+
+#     - id: save-version
+#       name: Save version
+#       run: |
+#         version=$(cat version.txt)
+
+#         prerelease=$([[ "$version" == *-* ]] && echo true || echo false)
+
+#         echo prerelease="$prerelease" | tee --append $GITHUB_OUTPUT
+#         echo version="$version" | tee --append $GITHUB_OUTPUT
+#       working-directory: ./azdo-artifact/version/
+
+#     - name: Prepare release notes
+#       run: |
+#         cp ./.github/release_notes_template.md ./release_notes.md
+
+#         node \
+#           --eval "import fs from 'node:fs'; fs.writeFileSync(process.argv[1], fs.readFileSync(process.argv[1], 'utf8').replaceAll(process.argv[2], process.argv[3]));" \
+#           --input-type=module \
+#           -- \
+#           ./release_notes.md \
+#           {{webchat-js-integrity}} \
+#           "sha384-$(openssl dgst -sha384 -binary ./github-artifact/cdn/webchat.js | openssl base64 -A)"
+
+#         node \
+#           --eval "import fs from 'node:fs'; fs.writeFileSync(process.argv[1], fs.readFileSync(process.argv[1], 'utf8').replaceAll(process.argv[2], process.argv[3]));" \
+#           --input-type=module \
+#           -- \
+#           ./release_notes.md \
+#           {{webchat-minimal-js-integrity}} \
+#           "sha384-$(openssl dgst -sha384 -binary ./github-artifact/cdn/webchat-minimal.js | openssl base64 -A)"
+
+#         node \
+#           --eval "import fs from 'node:fs'; fs.writeFileSync(process.argv[1], fs.readFileSync(process.argv[1], 'utf8').replaceAll(process.argv[2], process.argv[3]));" \
+#           --input-type=module \
+#           -- \
+#           ./release_notes.md \
+#           {{version}} \
+#           "${{ steps.save-version.outputs.version }}"
+
+#         cat ./release_notes.md
+
+#     - name: Upload release notes
+#       uses: actions/upload-artifact@v6
+#       with:
+#         name: release-notes
+#         path: ./release_notes.md
+
+# create-release:
+#   name: Create release
+#   needs:
+#     - prepare-release
+#   outputs:
+#     release-tag: ${{ steps.create-release.outputs.release-tag }}
+#   permissions:
+#     contents: write
+#   runs-on: ubuntu-latest
+
+#   steps:
+#     - name: Download release notes
+#       uses: actions/download-artifact@v7
+#       with:
+#         name: release-notes
+#         path: release-notes
+
+#     - env:
+#         GH_TOKEN: ${{ github.token }}
+#       id: create-release
+#       name: Create release
+#       run: |
+#         if [[ "${{ needs.prepare-release.outputs.prerelease }}" == "true" ]]; then prerelease=1; fi
+
+#         release_tag=v${{ needs.prepare-release.outputs.version }}
+
+#         gh release create $release_tag \
+#           --draft \
+#           --notes-file ./release-notes/release_notes.md \
+#           ${prerelease:+--prerelease} \
+#           --repo ${{ github.repository }} \
+#           --target ${{ github.ref }}
+
+#         echo release-tag=$release_tag | tee --append $GITHUB_OUTPUT
+
+# upload-release-asset:
+#   name: Upload release asset
+#   needs:
+#     - create-release
+#   permissions:
+#     contents: write
+#   runs-on: ubuntu-latest
+
+#   steps:
+#     - name: Download asset artifact
+#       uses: actions/download-artifact@v7
+#       with:
+#         merge-multiple: true
+#         path: ./asset/
+#         pattern: asset-*
+
+#     - env:
+#         GH_TOKEN: ${{ github.token }}
+#       name: Upload assets
+#       run: |
+#         gh release upload ${{ needs.create-release.outputs.release-tag }} \
+#           ./asset/* \
+#           --repo ${{ github.repository }}
+
+#     - env:
+#         GH_TOKEN: ${{ github.token }}
+#       name: Publish release
+#       run: |
+#         gh release edit ${{ needs.create-release.outputs.release-tag }} \
+#           --draft=false \
+#           --repo ${{ github.repository }}
