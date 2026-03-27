@@ -37,11 +37,6 @@ inputs:
     required: true
     type: string
 
-  branch-name:
-    description: Branch name
-    default: main
-    type: string
-
   download-artifact-name:
     description: Name of AzDO artifact to download
     required: true
