@@ -11,6 +11,36 @@ inputs:
     default: main
     type: string
 
+  azdo-org:
+    description: AzDO org URL
+    required: true
+    type: string
+
+  azdo-pipeline-name:
+    description: AzDO pipeline name
+    required: true
+    type: string
+
+  azdo-project:
+    description: AzDO project name
+    required: true
+    type: string
+
+  azure-client-id:
+    description: Azure client ID
+    required: true
+    type: string
+
+  azure-subscription-id:
+    description: Azure subscription ID
+    required: true
+    type: string
+
+  azure-tenant-id:
+    description: Azure tenant ID
+    required: true
+    type: string
+
   # dist-tag:
   #   description: Dist-tag
   #   default: main
@@ -35,12 +65,12 @@ defaults:
     shell: bash
 
 env:
-  AZDO_ORG: ${{ vars.AZDO_ORG }}
-  AZDO_PIPELINE_NAME: ${{ vars.AZDO_PIPELINE_NAME }}
-  AZDO_PROJECT: ${{ vars.AZDO_PROJECT }}
-  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZDO_ORG: ${{ inputs.azdo-org }}
+  AZDO_PIPELINE_NAME: ${{ inputs.azdo-pipeline-name }}
+  AZDO_PROJECT: ${{ inputs.azdo-project }}
+  AZURE_CLIENT_ID: ${{ inputs.azure-client-id }}
+  AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscription-id }}
+  AZURE_TENANT_ID: ${{ inputs.azure-tenant-id }}
 
 runs:
   using: composite

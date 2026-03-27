@@ -155,6 +155,12 @@ jobs:
         uses: ./.github/actions/azdo-build
         with:
           artifact-name: azdo-artifact
+          azdo-org: ${{ vars.AZDO_ORG }}
+          azdo-pipeline-name: ${{ vars.AZDO_PIPELINE_NAME }}
+          azdo-project: ${{ vars.AZDO_PROJECT }}
+          azure-client-id: ${{ vars.AZURE_CLIENT_ID }}
+          azure-subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          azure-tenant-id: ${{ vars.AZURE_TENANT_ID }}
           branch-name: ${{ steps.get-branch-name.outputs.branch-name }}
 
       - name: Extract artifact (bundle)
