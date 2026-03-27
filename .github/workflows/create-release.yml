@@ -36,7 +36,8 @@ jobs:
       - if: steps.version-type.outputs.version-type != 'production'
         name: Set version
         run: |
-          BRANCH_NAME=$(git branch --show-current)
+          # BRANCH_NAME=${{ github.ref }}
+          BRANCH_NAME=main
           COMMITISH=${{ github.sha }}
           NOW=$(date +%Y%m%d%H%M)
 
@@ -102,7 +103,6 @@ jobs:
           path: ./packages/fluent-theme/static/**/*
 
   upload-changelog:
-    continue-on-error: true
     name: Upload changelog
     needs: prepare
     permissions:
@@ -116,14 +116,12 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
-      - run: npm install --global keep-a-changelog@3
-
       - if: needs.prepare.outputs.version-type != 'production'
         name: Tag unreleased as latest
-        run: npx keep-a-changelog --format markdownlint --release=${{ needs.prepare.outputs.version }}
+        run: npx keep-a-changelog@3 --format markdownlint --release=${{ needs.prepare.outputs.version }}
 
       - name: Extract latest entry
-        run: npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
+        run: npx keep-a-changelog@3 --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
 
       - name: Upload changelog
         uses: actions/upload-artifact@v7
