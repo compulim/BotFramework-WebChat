@@ -64,7 +64,10 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Install AZ CLI
+    # Docker is required for azure/cli
+    - uses: docker/setup-docker-action@v5
+
+    - name: Install Azure CLI
       run: |
         if ! command -v az > /dev/null; then
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -121,8 +124,8 @@ runs:
     - id: run-pipeline
       name: Run pipeline
       run: |
-        echo run-id=422059 | tee --append $GITHUB_OUTPUT
-        echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/422059 | tee --append $GITHUB_OUTPUT
+        echo run-id=424951 | tee --append $GITHUB_OUTPUT
+        echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/424951 | tee --append $GITHUB_OUTPUT
       shell: bash
 
     - name: Wait for pipeline completion
