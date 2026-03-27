@@ -64,6 +64,8 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
+      - run: npm version --no-git-tag-version ${{ needs.prepare.outputs.version }}
+
       - run: npm clean-install
 
       - run: npm run build
