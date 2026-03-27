@@ -226,6 +226,12 @@ jobs:
           name: fluent-theme-esm
           path: ./fluent-theme/static/
 
+      - name: Upload artifact (sbom)
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: ./_manifest/spdx_2.2/manifest.spdx.json
+
   upload-changelog:
     name: Upload changelog
     needs: build
@@ -286,11 +292,11 @@ jobs:
           name: changelog
           path: ./
 
-      # - name: Download artifact (sbom)
-      #   uses: actions/download-artifact@v8
-      #   with:
-      #     name: sbom
-      #     path: ./asset
+      - name: Download artifact (sbom)
+        uses: actions/download-artifact@v8
+        with:
+          name: sbom
+          path: ./asset
 
       - id: compute-hash
         name: Compute build metadata
@@ -361,5 +367,5 @@ jobs:
           gh release upload ${{ steps.release.outputs.tag }} \
             --repo ${{ github.repository }} \
             ./asset/*.js \
-            ./asset/*.tgz
-        # ./aseet/sbom.spdx.json
+            ./asset/*.tgz \
+            ./aseet/manifest.spdx.json
