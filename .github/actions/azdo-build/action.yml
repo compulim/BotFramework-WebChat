@@ -64,9 +64,6 @@ outputs:
 runs:
   using: composite
   steps:
-    # Docker is required for azure/cli
-    - uses: docker/setup-docker-action@v5
-
     - name: Install Azure CLI
       run: |
         if ! command -v az > /dev/null; then
