@@ -3,7 +3,12 @@ name: Create release
 on:
   pull_request: # Temporarily add pull_request for testing
     branches: main
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      skip-release:
+        default: false
+        description: Skip release
+        type: boolean
 
 defaults:
   run:
@@ -51,6 +56,8 @@ jobs:
         run: echo version=$(cat package.json | jq -r '.version') | tee --append $GITHUB_OUTPUT
 
   build:
+    env:
+      NODE_ENV: production
     name: Build
     permissions:
       contents: read
@@ -79,6 +86,10 @@ jobs:
             --workspace=./packages/bundle \
             --workspace=./packages/fluent-theme
 
+      - name: Generate SBOM
+        # --workspace has no effect, the resulting SBOM still contains other packages in the workspace
+        run: npm sbom --package-lock-only --sbom-format spdx --sbom-type library | tee ./sbom.spdx.json
+
       - uses: actions/upload-artifact@v7
         with:
           name: tarball
@@ -103,6 +114,12 @@ jobs:
         with:
           name: fluent-theme-esm
           path: ./packages/fluent-theme/static/**/*
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: ./sbom.spdx.json
 
   upload-changelog:
     name: Upload changelog
@@ -135,3 +152,66 @@ jobs:
         with:
           name: changelog
           path: ./CHANGELOG.latest.md
+
+  release:
+    name: Release
+    needs:
+      - build
+      - prepare
+      - upload-changelog
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact (tarball)
+        uses: actions/download-artifact@v8
+        with:
+          name: tarball
+          path: ./asset
+
+      - name: Download artifact (bundle-iife)
+        uses: actions/download-artifact@v8
+        with:
+          name: bundle-iife
+          path: ./asset
+
+      - name: Download artifact (changelog)
+        uses: actions/download-artifact@v8
+        with:
+          name: changelog
+          path: ./
+
+      - name: Download artifact (sbom)
+        uses: actions/download-artifact@v8
+        with:
+          name: sbom
+          path: ./asset
+
+      - env:
+          # Use actions/create-github-app-token if create release would need to trigger another workflow.
+          GH_TOKEN: ${{ github.token }}
+        id: release
+        name: Create release
+        # Do not upload assets while creating release, otherwise, it will not trigger "release created" event.
+        run: |
+          if [[ "${{ needs.prepare.outputs.version-type }}" == "prerelease" ]]; then PRERELEASE=1; fi
+
+          TAG=v${{ needs.prepare.outputs.version }}
+
+          gh release create $TAG \
+            --notes-file ./CHANGELOG.latest.md \
+            ${PRERELEASE:+--prerelease} \
+            --repo ${{ github.repository }} \
+            --target ${{ github.ref }}
+
+          echo tag=$TAG | tee --append $GITHUB_OUTPUT
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Upload assets
+        run: |
+          gh release upload ${{ steps.release.outputs.tag }} \
+            --repo ${{ github.repository }} \
+            ./asset/*.js \
+            ./asset/*.tgz \
+            ./aseet/sbom.spdx.json
