@@ -1,6 +1,8 @@
 name: Create release
 
 on:
+  pull_request: # Temporarily add pull_request for testing
+    branches: main
   workflow_dispatch: {}
 
 defaults:
