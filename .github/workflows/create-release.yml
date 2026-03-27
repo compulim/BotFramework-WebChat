@@ -116,12 +116,14 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
+      - run: npm install --global keep-a-changelog@2
+
       - if: needs.prepare.outputs.version-type != 'production'
         name: Tag unreleased as latest
-        run: npx keep-a-changelog@3 --format markdownlint --release=${{ needs.prepare.outputs.version }}
+        run: npx keep-a-changelog --format markdownlint --release=${{ needs.prepare.outputs.version }}
 
       - name: Extract latest entry
-        run: npx keep-a-changelog@3 --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
+        run: npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
 
       - name: Upload changelog
         uses: actions/upload-artifact@v7
