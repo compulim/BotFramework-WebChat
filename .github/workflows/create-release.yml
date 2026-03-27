@@ -137,7 +137,8 @@ jobs:
     outputs:
       version: ${{ steps.azdo-build.outputs.version }}
       version-type: ${{ steps.azdo-build.outputs.version-type }}
-    permissions: {}
+    permissions:
+      contents: read
     runs-on: ubuntu-slim
 
     steps:
