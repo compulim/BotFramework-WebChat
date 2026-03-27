@@ -110,48 +110,47 @@ runs:
         client-id: ${{ inputs.azure-client-id }}
         tenant-id: ${{ inputs.azure-tenant-id }}
 
-    # - id: run-pipeline
-    #   uses: azure/cli@v2
-    #   with:
-    #     inlineScript: |
-    #       set -e -o pipefail
+    - id: run-pipeline
+      run: |
+        set -e -o pipefail
 
-    #       az extension add --name azure-devops --only-show-errors
-    #       # az pipelines list --org ${{ env.AZDO_ORG }} --project ${{ env.AZDO_PROJECT }}
-    #       OUTPUT=$(
-    #         az pipelines run \
-    #         --detect false --output json) \
-    #         --name ${{ env.AZDO_PIPELINE_NAME }} \
-    #         --org ${{ env.AZDO_ORG }} \
-    #         --project ${{ env.AZDO_PROJECT }} \
-    #         --variable ${{ inputs.pipeline-variable }}
-    #       )
+        az extension add --name azure-devops --only-show-errors
+        # az pipelines list --org ${{ vars.azdo-org }} --project ${{ vars.azdo-project }}
+        OUTPUT=$(
+          az pipelines run \
+            --detect false --output json) \
+            --name ${{ vars.azdo-pipeline-name }} \
+            --org ${{ vars.azdo-org }} \
+            --project ${{ vars.azdo-project }} \
+            --variable ${{ inputs.pipeline-variable }}
+        )
 
-    #       RUN_ID=$(echo "$OUTPUT" | jq -r '.id')
-    #       RUN_URL=$(echo "$OUTPUT" | jq -r '.url')
+        RUN_ID=$(echo "$OUTPUT" | jq -r '.id')
+        RUN_URL=$(echo "$OUTPUT" | jq -r '.url')
 
-    #       if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-    #         echo "$OUTPUT"
-    #         echo "Failed to extract run ID from output"
-    #         exit 1
-    #       fi
+        if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+          echo "$OUTPUT"
+          echo "Failed to extract run ID from output"
+          exit 1
+        fi
 
-    #       if [ -z "$RUN_URL" ] || [ "$RUN_URL" = "null" ]; then
-    #         echo "$OUTPUT"
-    #         echo "Failed to extract run URL from output"
-    #         exit 1
-    #       fi
+        if [ -z "$RUN_URL" ] || [ "$RUN_URL" = "null" ]; then
+          echo "$OUTPUT"
+          echo "Failed to extract run URL from output"
+          exit 1
+        fi
 
-    #       echo "run-id=$RUN_ID" | tee --append $GITHUB_OUTPUT
-    #       echo "url=$RUN_URL" | tee --append $GITHUB_OUTPUT
+        echo "run-id=$RUN_ID" | tee --append $GITHUB_OUTPUT
+        echo "url=$RUN_URL" | tee --append $GITHUB_OUTPUT
+      shell: bash
 
     # Temporarily not running pipeline but getting from existing result
-    - id: run-pipeline
-      name: Run pipeline
-      run: |
-        echo run-id=424951 | tee --append $GITHUB_OUTPUT
-        echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/424951 | tee --append $GITHUB_OUTPUT
-      shell: bash
+    # - id: run-pipeline
+    #   name: Run pipeline
+    #   run: |
+    #     echo run-id=424951 | tee --append $GITHUB_OUTPUT
+    #     echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/424951 | tee --append $GITHUB_OUTPUT
+    #   shell: bash
 
     - name: Wait for pipeline completion
       run: |

@@ -265,6 +265,9 @@ jobs:
           path: ./CHANGELOG.latest.md
 
   release:
+    environment:
+      name: github-release
+      url: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }}
     name: Release
     needs:
       - build
