@@ -60,22 +60,14 @@ outputs:
     description: Version
     value: ${{ steps.get-version.outputs.version-type }}
 
-env:
-  AZDO_ORG: ${{ inputs.azdo-org }}
-  AZDO_PIPELINE_NAME: ${{ inputs.azdo-pipeline-name }}
-  AZDO_PROJECT: ${{ inputs.azdo-project }}
-  AZURE_CLIENT_ID: ${{ inputs.azure-client-id }}
-  AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscription-id }}
-  AZURE_TENANT_ID: ${{ inputs.azure-tenant-id }}
-
 runs:
   using: composite
   steps:
     - uses: azure/login@v2
       with:
         allow-no-subscriptions: true
-        client-id: ${{ env.AZURE_CLIENT_ID }}
-        tenant-id: ${{ env.AZURE_TENANT_ID }}
+        client-id: ${{ inputs.azure-client-id }}
+        tenant-id: ${{ inputs.azure-tenant-id }}
 
     # - id: run-pipeline
     #   uses: azure/cli@v2
@@ -137,7 +129,14 @@ runs:
           INTERVAL=5
 
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            OUTPUT=$(az pipelines runs show --id "$RUN_ID" --org ${{ env.AZDO_ORG }} --project ${{ env.AZDO_PROJECT }} --detect false --output json)
+            OUTPUT=$(
+              az pipelines runs show \
+                --id "$RUN_ID" \
+                --org ${{ inputs.azdo-org }} \
+                --project ${{ inputs.azdo-project }} \
+                --detect false \
+                --output json
+            )
             STATUS=$(echo "$OUTPUT" | jq -r '.status')
 
             if [ -z "$STATUS" ] || [ "$STATUS" = "null" ]; then
@@ -192,9 +191,9 @@ runs:
           az pipelines runs artifact download \
             --artifact-name "drop_build_main" \
             --detect false \
-            --org ${{ env.AZDO_ORG }} \
+            --org ${{ inputs.azdo-org }} \
             --path "$GITHUB_WORKSPACE/artifact-download/" \
-            --project ${{ env.AZDO_PROJECT }} \
+            --project ${{ inputs.azdo-project }} \
             --run-id "$RUN_ID"
 
           # Verify artifact was downloaded
