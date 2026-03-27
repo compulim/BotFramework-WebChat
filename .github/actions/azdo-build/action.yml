@@ -89,6 +89,7 @@ runs:
           --allow-no-subscription \
           --client-id ${{ inputs.azure-client-id }} \
           --federated-token ${{ github.token }} \
+          --service-principal \
           --tenant ${{ inputs.azure-tenant-id }}
       shell: bash
 
