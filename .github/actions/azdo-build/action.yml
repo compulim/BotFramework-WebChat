@@ -7,11 +7,6 @@ inputs:
     default: azdo-artifact
     type: string
 
-  branch-name:
-    description: Branch name
-    default: main
-    type: string
-
   azdo-org:
     description: AzDO org URL
     required: true
@@ -39,6 +34,21 @@ inputs:
 
   azure-tenant-id:
     description: Azure tenant ID
+    required: true
+    type: string
+
+  branch-name:
+    description: Branch name
+    default: main
+    type: string
+
+  download-artifact-name:
+    description: Name of AzDO artifact to download
+    required: true
+    type: string
+
+  pipeline-variable:
+    description: Pipeline variable
     required: true
     type: string
 
@@ -114,7 +124,7 @@ runs:
     #         --name ${{ env.AZDO_PIPELINE_NAME }} \
     #         --org ${{ env.AZDO_ORG }} \
     #         --project ${{ env.AZDO_PROJECT }} \
-    #         --variable ProjectBranch=${{ inputs.branch-name }}
+    #         --variable ${{ inputs.pipeline-variable }}
     #       )
 
     #       RUN_ID=$(echo "$OUTPUT" | jq -r '.id')
