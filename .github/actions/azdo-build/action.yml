@@ -63,6 +63,9 @@ outputs:
 runs:
   using: composite
   steps:
+    # Docker is required for azure/cli
+    - uses: actions/setup-docker-action@v5
+
     - uses: azure/login@v2
       with:
         allow-no-subscriptions: true
