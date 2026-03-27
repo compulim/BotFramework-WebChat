@@ -24,11 +24,11 @@ inputs:
 outputs:
   version:
     description: Version
-    value: ${{ jobs.download-pipeline-artifact.outputs.version }}
+    value: ${{ steps.get-version.outputs.version }}
 
   version-type:
     description: Version
-    value: ${{ jobs.download-pipeline-artifact.outputs.version-type }}
+    value: ${{ steps.get-version.outputs.version-type }}
 
 defaults:
   run:
