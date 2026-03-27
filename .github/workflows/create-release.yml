@@ -68,7 +68,13 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
-      - run: npm version --no-git-tag-version ${{ needs.prepare.outputs.version }}
+      - name: npm version ${{ needs.prepare.outputs.version }}
+        run: |
+          npm version ${{ needs.prepare.outputs.version }} \
+            --include-workspace-root \
+            --no-git-tag-version \
+            --no-workspaces-update \
+            --workspaces
 
       - run: npm clean-install
 
