@@ -101,7 +101,7 @@ runs:
 
           az extension add --name azure-devops --only-show-errors
 
-          RUN_ID="${{ needs.run-pipeline.outputs.run-id }}"
+          RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
           echo "Waiting for run ID: $RUN_ID to complete..."
 
           # Timeout after 45 minutes (2700 seconds)
@@ -155,7 +155,7 @@ runs:
           tdnf install -y jq
           az extension add --name azure-devops --only-show-errors
 
-          RUN_ID="${{ needs.run-pipeline.outputs.run-id }}"
+          RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
           echo "Downloading artifact 'drop_build_main' from run ID: $RUN_ID"
 
           # Create directory for artifact
