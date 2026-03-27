@@ -1,0 +1,121 @@
+name: Create release
+
+on:
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  node-version: 22
+
+jobs:
+  prepare:
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version-type: ${{ steps.version-type.outputs.version-type }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: version-type
+        name: Determine version type
+        run: 'if [[ "$(cat ./package.json | jq -r ''.version'')" == *-0 ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi'
+
+      - if: steps.version-type.outputs.version-type != 'production'
+        name: Set version
+        run: |
+          BRANCH_NAME=${{ github.ref_name }}
+          COMMITISH=${{ github.sha }}
+          NOW=$(date +%Y%m%d%H%M)
+
+          SHORT_COMMITISH=${COMMITISH:0:7}
+
+          # npm version simply ignoring the build metadata + (plus) sign, we need to use dot or hyphen instead.
+          npm version --no-git-tag-version $(echo $(cat ./package.json | jq -r '.version') | cut -d- -f1)-$BRANCH_NAME.$NOW.$SHORT_COMMITISH
+
+      - id: version
+        name: Get version
+        run: echo version=$(cat package.json | jq -r '.version') | tee --append $GITHUB_OUTPUT
+
+  build:
+    permissions:
+      contents: read
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.node-version }}
+
+      - run: npm clean-install
+
+      - run: npm run build
+
+      - run: npm pack --workspaces
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: tarball
+          path: |
+            ./packages/core/*.tgz
+            ./packages/api/*.tgz
+            ./packages/component/*.tgz
+            ./packages/bundle/*.tgz
+            ./packages/fluent-theme/*.tgz
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bundle-iife
+          path: ./packages/bundle/dist/**/*
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bundle-esm
+          path: ./packages/bundle/static/**/*
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: fluent-theme-iife
+          path: ./packages/fluent-theme/dist/**/*
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: fluent-theme-esm
+          path: ./packages/fluent-theme/static/**/*
+
+  upload-changelog:
+    continue-on-error: true
+    name: Upload changelog
+    needs: prepare
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.node-version }}
+
+      - if: needs.prepare.outputs.version-type == 'production'
+        name: Extract from latest release
+        run: npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
+
+      - if: needs.prepare.outputs.version-type != 'production'
+        name: Extract from unreleased
+        run: |
+          npx keep-a-changelog --format markdownlint --release ${{ needs.prepare.outputs.version }}
+          npx keep-a-changelog --format markdownlint --latest-release-full | tee ./CHANGELOG.latest.md
+
+      - name: Upload changelog
+        uses: actions/upload-artifact@v7
+        with:
+          name: changelog
+          path: ./CHANGELOG.latest.md
