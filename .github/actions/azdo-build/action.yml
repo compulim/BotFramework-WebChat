@@ -76,29 +76,28 @@ runs:
         fi
       shell: bash
 
-    - name: Azure login
-      run: |
-        # az login \
-        #   --client-id ${{ inputs.azure-client-id }} \
-        #   --federated-token ${{ github.token }} \
-        #   --identity \
-        #   --subscription ${{ inputs.azure-subscription-id }} \
-        #   --tenant ${{ inputs.azure-tenant-id }}
+    # - name: Azure login
+    #   run: |
+    #     # az login \
+    #     #   --client-id ${{ inputs.azure-client-id }} \
+    #     #   --federated-token ${{ github.token }} \
+    #     #   --identity \
+    #     #   --subscription ${{ inputs.azure-subscription-id }} \
+    #     #   --tenant ${{ inputs.azure-tenant-id }}
 
-        az login \
-          --allow-no-subscription \
-          --federated-token ${{ github.token }} \
-          --service-principal \
-          --tenant ${{ inputs.azure-tenant-id }} \
-          --username ${{ inputs.azure-client-id }}
-      shell: bash
+    #     az login \
+    #       --allow-no-subscription \
+    #       --federated-token ${{ github.token }} \
+    #       --service-principal \
+    #       --tenant ${{ inputs.azure-tenant-id }} \
+    #       --username ${{ inputs.azure-client-id }}
+    #   shell: bash
 
-    # - uses: azure/login@v2
-    #   with:
-    #     allow-no-subscriptions: true
-    #     client-id: ${{ inputs.azure-client-id }}
-    #     enable-AzPSSession: true
-    #     tenant-id: ${{ inputs.azure-tenant-id }}
+    - uses: azure/login@v2
+      with:
+        allow-no-subscriptions: true
+        client-id: ${{ inputs.azure-client-id }}
+        tenant-id: ${{ inputs.azure-tenant-id }}
 
     # - id: run-pipeline
     #   uses: azure/cli@v2
