@@ -182,11 +182,55 @@ jobs:
           name: changelog
           path: ./
 
-      - name: Download artifact (sbom)
-        uses: actions/download-artifact@v8
-        with:
-          name: sbom
-          path: ./asset
+      # - name: Download artifact (sbom)
+      #   uses: actions/download-artifact@v8
+      #   with:
+      #     name: sbom
+      #     path: ./asset
+
+      - id: compute-hash
+        name: Compute build metadata
+        run: |
+          echo git-short-sha=`echo ${{ github.sha }} | cut -c 1-7` | tee --append $GITHUB_OUTPUT
+          echo release-date=`date "+%Y-%m-%d %R:%S"` | tee --append $GITHUB_OUTPUT
+          echo sha384-es5=`cat webchat-es5.js | openssl dgst -sha384 -binary | openssl base64 -A` | tee --append $GITHUB_OUTPUT
+          echo sha384-full=`cat webchat.js | openssl dgst -sha384 -binary | openssl base64 -A` | tee --append $GITHUB_OUTPUT
+          echo sha384-minimal=`cat webchat-minimal.js | openssl dgst -sha384 -binary | openssl base64 -A` | tee --append $GITHUB_OUTPUT
+
+      - name: Build release notes
+        run: |
+          tee ./release.txt <<EOF
+          This release is for internal testing only. **Please do not use this build in production environment.**
+
+          | Build time | Run ID | Source version | Git ref | Package version |
+          | - | - | - | - | - |
+          | ${{ steps.compute-hash.outputs.release-date }}Z | [\`${{ github.run_id }}\`](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) | [\`${{ steps.compute-hash.outputs.git-short-sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) | \`${{ github.ref }}\` | \`${{ needs.prepare.outputs.version }}\` |
+
+          \`\`\`html
+          <script
+            crossorigin="anonymous"
+            integrity="sha384-${{ steps.compute-hash.outputs.sha384-full }}"
+            src="https://cdn.botframework.com/botframework-webchat@${{ needs.prepare.outputs.version }}/dist/webchat.js"
+          ></script>
+
+          <script
+            crossorigin="anonymous"
+            integrity="sha384-${{ steps.compute-hash.outputs.sha384-es5 }}"
+            src="https://cdn.botframework.com/botframework-webchat@${{ needs.prepare.outputs.version }}/dist/webchat-es5.js"
+          ></script>
+
+          <script
+            crossorigin="anonymous"
+            integrity="sha384-${{ steps.compute-hash.outputs.sha384-minimal }}"
+            src="https://cdn.botframework.com/botframework-webchat@${{ needs.prepare.outputs.version }}/dist/webchat-minimal.js"
+          ></script>
+          \`\`\`
+
+          # Changelog
+
+          EOF
+
+          cat ./CHANGELOG.latest.md | tee --append ./release.txt
 
       - env:
           # Use actions/create-github-app-token if create release would need to trigger another workflow.
@@ -200,7 +244,7 @@ jobs:
           TAG=v${{ needs.prepare.outputs.version }}
 
           gh release create $TAG \
-            --notes-file ./CHANGELOG.latest.md \
+            --notes-file ./release.txt \
             ${PRERELEASE:+--prerelease} \
             --repo ${{ github.repository }} \
             --target ${{ github.ref }}
