@@ -87,10 +87,10 @@ runs:
 
         az login \
           --allow-no-subscription \
-          --client-id ${{ inputs.azure-client-id }} \
           --federated-token ${{ github.token }} \
           --service-principal \
-          --tenant ${{ inputs.azure-tenant-id }}
+          --tenant ${{ inputs.azure-tenant-id }} \
+          --username ${{ inputs.azure-client-id }}
       shell: bash
 
     # - uses: azure/login@v2
@@ -411,7 +411,8 @@ runs:
 #           --draft=false \
 #           --repo ${{ github.repository }}
 
-    - if: ${{ always() }}
+    - continue-on-error: true
+      if: ${{ always() }}
       name: Azure logout
       run: az logout
       shell: bash
