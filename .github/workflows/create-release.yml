@@ -1,8 +1,8 @@
-name: Create release
+name: 🚀 Create release
 
 on:
-  pull_request: # Temporarily add pull_request for testing
-    branches: main
+  push: # Temporarily added for testing
+    branches: feat-create-request
   workflow_dispatch:
     inputs:
       skip-release:
@@ -41,8 +41,7 @@ jobs:
       - if: steps.version-type.outputs.version-type != 'production'
         name: Set version
         run: |
-          # BRANCH_NAME=${{ github.ref }}
-          BRANCH_NAME=main
+          BRANCH_NAME=${{ github.ref }}
           COMMITISH=${{ github.sha }}
           NOW=$(date +%Y%m%d%H%M)
 
