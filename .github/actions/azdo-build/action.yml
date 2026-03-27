@@ -118,7 +118,7 @@ runs:
             --org ${{ inputs.azdo-org }} \
             --output json \
             --project ${{ inputs.azdo-project }} \
-            $(echo "${{ inputs.pipeline-variable }}" | while IFS= read -r line; do [ -n "$line" ] && printf '--variable %q ' "$line"; done)
+            $(echo "${{ inputs.pipeline-variable }}" | while IFS= read -r line; do [ -n "$line" ] && printf '%s ' "--variable=$(printf '%q' "$line")"; done)
         )
 
         RUN_ID=$(echo "$OUTPUT" | jq -r '.id')
