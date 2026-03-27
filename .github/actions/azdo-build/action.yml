@@ -72,7 +72,8 @@ runs:
 
         if ! command -v jq > /dev/null; then
           sudo apt-get update
-          sudo apt-get install -y icu jq
+          # sudo apt-get install -y icu jq
+          sudo apt-get install -y jq
         fi
       shell: bash
 

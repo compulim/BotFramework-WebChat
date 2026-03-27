@@ -165,6 +165,11 @@ jobs:
           azure-tenant-id: ${{ vars.AZURE_TENANT_ID }}
           branch-name: ${{ steps.get-branch-name.outputs.branch-name }}
 
+      - name: Download AzDO build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: azdo-artifact
+
       - name: Extract artifact (bundle)
         run: |
           mkdir -p ./bundle/
