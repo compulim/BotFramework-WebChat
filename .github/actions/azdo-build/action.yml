@@ -1,4 +1,5 @@
 name: 'Build via AzDO'
+description: Run a build pipeline via Azure DevOps and download the build artifact
 
 inputs:
   artifact-name:
@@ -66,6 +67,18 @@ runs:
     # Docker is required for azure/cli
     - uses: docker/setup-docker-action@v5
 
+    - name: Install AZ CLI
+      run: |
+        if ! command -v az > /dev/null; then
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        fi
+
+        if ! command -v jq > /dev/null; then
+          sudo apt-get update
+          sudo apt-get install -y jq
+        fi
+      shell: bash
+
     - uses: azure/login@v2
       with:
         allow-no-subscriptions: true
@@ -116,96 +129,94 @@ runs:
       shell: bash
 
     - name: Wait for pipeline completion
-      uses: azure/cli@v2
-      with:
-        inlineScript: |
-          set -e -o pipefail
+      run: |
+        set -e -o pipefail
 
-          az extension add --name azure-devops --only-show-errors
+        az extension add --name azure-devops --only-show-errors
 
-          RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
-          echo "Waiting for run ID: $RUN_ID to complete..."
+        RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
+        echo "Waiting for run ID: $RUN_ID to complete..."
 
-          # Timeout after 45 minutes (2700 seconds)
-          TIMEOUT=2700
-          ELAPSED=0
-          INTERVAL=5
+        # Timeout after 45 minutes (2700 seconds)
+        TIMEOUT=2700
+        ELAPSED=0
+        INTERVAL=5
 
-          while [ $ELAPSED -lt $TIMEOUT ]; do
-            OUTPUT=$(
-              az pipelines runs show \
-                --id "$RUN_ID" \
-                --org ${{ inputs.azdo-org }} \
-                --project ${{ inputs.azdo-project }} \
-                --detect false \
-                --output json
-            )
-            STATUS=$(echo "$OUTPUT" | jq -r '.status')
+        while [ $ELAPSED -lt $TIMEOUT ]; do
+          OUTPUT=$(
+            az pipelines runs show \
+              --id "$RUN_ID" \
+              --org ${{ inputs.azdo-org }} \
+              --project ${{ inputs.azdo-project }} \
+              --detect false \
+              --output json
+          )
+          STATUS=$(echo "$OUTPUT" | jq -r '.status')
 
-            if [ -z "$STATUS" ] || [ "$STATUS" = "null" ]; then
-              echo "Failed to extract status from output"
-              exit 1
-            fi
-
-            echo "Current status: $STATUS (elapsed: ${ELAPSED}s)"
-
-            # Check for terminal states
-            if [ "$STATUS" = "completed" ]; then
-              echo "Pipeline completed!"
-              RESULT=$(echo "$OUTPUT" | jq -r '.result')
-              echo "Result: $RESULT"
-
-              if [ "$RESULT" != "succeeded" ]; then
-                echo "Pipeline failed with result: $RESULT"
-                exit 1
-              fi
-
-              echo "Pipeline succeeded!"
-              exit 0
-            elif [ "$STATUS" = "canceling" ] || [ "$STATUS" = "canceled" ]; then
-              echo "Pipeline was canceled"
-              exit 1
-            fi
-
-            sleep $INTERVAL
-            ELAPSED=$((ELAPSED + INTERVAL))
-          done
-
-          echo "Timeout reached after ${TIMEOUT} seconds for run ID: $RUN_ID"
-          exit 1
-
-    - name: Download artifact from Azure DevOps
-      uses: azure/cli@v2
-      with:
-        inlineScript: |
-          set -e -o pipefail
-
-          tdnf install -y icu
-          tdnf install -y jq
-          az extension add --name azure-devops --only-show-errors
-
-          RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
-          echo "Downloading artifact 'drop_build_main' from run ID: $RUN_ID"
-
-          # Create directory for artifact
-          mkdir -p ./artifact-download/
-
-          # Download the artifact
-          az pipelines runs artifact download \
-            --artifact-name "drop_build_main" \
-            --detect false \
-            --org ${{ inputs.azdo-org }} \
-            --path "$GITHUB_WORKSPACE/artifact-download/" \
-            --project ${{ inputs.azdo-project }} \
-            --run-id "$RUN_ID"
-
-          # Verify artifact was downloaded
-          if [ -z "$(ls -A artifact-download)" ]; then
-            echo "Artifact directory is empty after download"
+          if [ -z "$STATUS" ] || [ "$STATUS" = "null" ]; then
+            echo "Failed to extract status from output"
             exit 1
           fi
 
-          echo "Artifact downloaded successfully"
+          echo "Current status: $STATUS (elapsed: ${ELAPSED}s)"
+
+          # Check for terminal states
+          if [ "$STATUS" = "completed" ]; then
+            echo "Pipeline completed!"
+            RESULT=$(echo "$OUTPUT" | jq -r '.result')
+            echo "Result: $RESULT"
+
+            if [ "$RESULT" != "succeeded" ]; then
+              echo "Pipeline failed with result: $RESULT"
+              exit 1
+            fi
+
+            echo "Pipeline succeeded!"
+            exit 0
+          elif [ "$STATUS" = "canceling" ] || [ "$STATUS" = "canceled" ]; then
+            echo "Pipeline was canceled"
+            exit 1
+          fi
+
+          sleep $INTERVAL
+          ELAPSED=$((ELAPSED + INTERVAL))
+        done
+
+        echo "Timeout reached after ${TIMEOUT} seconds for run ID: $RUN_ID"
+        exit 1
+      shell: bash
+
+    - name: Download artifact from Azure DevOps
+      run: |
+        set -e -o pipefail
+
+        tdnf install -y icu
+        tdnf install -y jq
+        az extension add --name azure-devops --only-show-errors
+
+        RUN_ID="${{ steps.run-pipeline.outputs.run-id }}"
+        echo "Downloading artifact 'drop_build_main' from run ID: $RUN_ID"
+
+        # Create directory for artifact
+        mkdir -p ./artifact-download/
+
+        # Download the artifact
+        az pipelines runs artifact download \
+          --artifact-name "drop_build_main" \
+          --detect false \
+          --org ${{ inputs.azdo-org }} \
+          --path "$GITHUB_WORKSPACE/artifact-download/" \
+          --project ${{ inputs.azdo-project }} \
+          --run-id "$RUN_ID"
+
+        # Verify artifact was downloaded
+        if [ -z "$(ls -A artifact-download)" ]; then
+          echo "Artifact directory is empty after download"
+          exit 1
+        fi
+
+        echo "Artifact downloaded successfully"
+      shell: bash
 
     - name: Upload artifact
       uses: actions/upload-artifact@v6
