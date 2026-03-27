@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Debug OIDC Claims
-        uses: github/actions-oidc-debugger@bc12dcf
+        uses: github/actions-oidc-debugger@v1
         with:
           audience: '${{ github.server_url }}/${{ github.repository_owner }}'
 
