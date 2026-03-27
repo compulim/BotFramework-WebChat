@@ -368,4 +368,4 @@ jobs:
             --repo ${{ github.repository }} \
             ./asset/*.js \
             ./asset/*.tgz \
-            ./aseet/manifest.spdx.json
+            ./asset/manifest.spdx.json
