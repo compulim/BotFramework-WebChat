@@ -1,3 +1,17 @@
+# This GitHub actions must output with the followings.
+#
+# Outputs:
+# - version, from package.json/version
+# - version-type, either "prerelease" or "production"
+#
+# Artifacts:
+# - tarball, pack of 6 packages: core, api, component, directlinespeech-sdk, bundle, fluent-theme
+# - bundle-iife, /bundle/dist/webchat*.js
+# - bundle-esm, /bundle/static/
+# - fluent-theme-iife, /fluent-theme/dist/
+# - fluent-theme-esm, /fluent-theme/static/
+# - sbom, *.spdx.json (optional)
+
 name: 'Build via AzDO'
 description: Run a build pipeline via Azure DevOps and download the build artifact
 
@@ -59,12 +73,15 @@ runs:
           --workspace=./packages/api \
           --workspace=./packages/component \
           --workspace=./packages/bundle \
+          --workspace=./packages/directlinespeech \
           --workspace=./packages/fluent-theme
       shell: bash
 
+    # TODO: Currently, SBOM is broken due to adaptivecards@3.0.5 and swiper.
     # - name: Generate SBOM
     #   # --workspace has no effect, the resulting SBOM still contains other packages in the workspace
     #   run: npm sbom --package-lock-only --sbom-format spdx --sbom-type library | tee ./sbom.spdx.json
+    #   shell: bash
 
     - uses: actions/upload-artifact@v7
       with:

@@ -1,8 +1,10 @@
 name: 🚀 Create release
 
 on:
-  push: # Temporarily added for testing
-    branches: feat-create-request
+  push:
+    branches:
+      - feat-create-request # Temporarily added for testing
+      - main
   workflow_dispatch:
     inputs:
       local-build:
@@ -21,6 +23,7 @@ defaults:
 
 env:
   build-on: ${{ case(inputs.local-build || false, 'local', 'azdo') }}
+  # Force running build locally when pushing to `main` branch.
   # build-on: local
   node-version: 22
 

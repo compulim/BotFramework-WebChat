@@ -1,3 +1,15 @@
+# API
+# Outputs:
+# - version
+# - version-type
+# Artifacts:
+# - tarball, npm pack of all 6 packages: core, api, component, directlinespeech-sdk, bundle, fluent-theme
+# - bundle-iife, /bundle/dist/webchat*.js
+# - bundle-esm, /bundle/static/
+# - fluent-theme-iife, /fluent-theme/dist/
+# - fluent-theme-esm, /fluent-theme/static/
+# - sbom, *.spdx.json (optional)
+
 name: 'Build via AzDO'
 description: Run a build pipeline via Azure DevOps and download the build artifact
 
@@ -54,10 +66,12 @@ runs:
         if ! command -v az > /dev/null; then
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
         fi
+      shell: bash
 
+    - name: Install yq
+      run: |
         if ! command -v jq > /dev/null; then
           sudo apt-get update
-          # sudo apt-get install -y icu jq
           sudo apt-get install -y jq
         fi
       shell: bash
@@ -103,12 +117,12 @@ runs:
         echo "url=$RUN_URL" | tee --append $GITHUB_OUTPUT
       shell: bash
 
-    # Temporarily not running pipeline but getting from existing result
+    # For testing: temporarily getting from existing pipeline result, instead of running
     # - id: run-pipeline
     #   name: Run pipeline
     #   run: |
-    #     echo run-id=424951 | tee --append $GITHUB_OUTPUT
-    #     echo url=https://fuselabs.visualstudio.com/531382a8-71ae-46c8-99eb-9512ccb91a43/_apis/build/Builds/424951 | tee --append $GITHUB_OUTPUT
+    #     echo run-id=xxx | tee --append $GITHUB_OUTPUT
+    #     echo url=https://xxx.visualstudio.com/12345678-1234-5678-abcd-12345678abcd/_apis/build/Builds/xxx | tee --append $GITHUB_OUTPUT
     #   shell: bash
 
     - name: Wait for pipeline completion
@@ -198,12 +212,6 @@ runs:
 
         echo "Artifact downloaded successfully"
       shell: bash
-
-    # - name: Upload artifact
-    #   uses: actions/upload-artifact@v6
-    #   with:
-    #     name: ${{ inputs.artifact-name }}
-    #     path: ./artifact-download/
 
     - id: get-version
       name: Get version
