@@ -223,7 +223,7 @@ runs:
 
         tar \
           --extract \
-          --file=../tgzfiles/botframework-webchat-${{ steps.get-version.outputs.version }}.tgz \
+          --file=../artifact-download/tgzfiles/botframework-webchat-${{ steps.get-version.outputs.version }}.tgz \
           --strip-component=1 \
           package/dist/ \
           package/static/
@@ -236,7 +236,7 @@ runs:
 
         tar \
           --extract \
-          --file=../tgzfiles/botframework-webchat-fluent-theme-${{ steps.get-version.outputs.version }}.tgz \
+          --file=../artifact-download/tgzfiles/botframework-webchat-fluent-theme-${{ steps.get-version.outputs.version }}.tgz \
           --strip-component=1 \
           package/dist/ \
           package/static/
@@ -246,7 +246,7 @@ runs:
       uses: actions/upload-artifact@v7
       with:
         name: tarball
-        path: ./tgzfiles/*.tgz
+        path: ./artifact-download/tgzfiles/*.tgz
 
     - name: Upload artifact (bundle-iife)
       uses: actions/upload-artifact@v7
@@ -276,4 +276,4 @@ runs:
       uses: actions/upload-artifact@v7
       with:
         name: sbom
-        path: ./_manifest/spdx_2.2/manifest.spdx.json
+        path: ./artifact-download/_manifest/spdx_2.2/manifest.spdx.json
