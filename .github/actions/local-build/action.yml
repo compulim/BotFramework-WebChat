@@ -1,0 +1,88 @@
+name: 'Build via AzDO'
+description: Run a build pipeline via Azure DevOps and download the build artifact
+
+inputs: {}
+
+outputs:
+  version:
+    description: Version
+    value: ${{ steps.get-version.outputs.version }}
+
+  version-type:
+    description: Version
+    value: ${{ steps.get-version.outputs.version-type }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.node-version }}
+
+    - run: npm clean-install
+
+    - name: npm version ${{ needs.prepare.outputs.version }}
+      run: |
+        npm version ${{ needs.prepare.outputs.version }} \
+          --include-workspace-root \
+          --no-git-tag-version \
+          --no-workspaces-update \
+          --workspaces
+
+    - env:
+        NODE_ENV: production
+      run: npm run build
+
+    - name: Pack as tarball
+      run: |
+        npm pack \
+          --workspace=./packages/core \
+          --workspace=./packages/api \
+          --workspace=./packages/component \
+          --workspace=./packages/bundle \
+          --workspace=./packages/fluent-theme
+
+    # - name: Generate SBOM
+    #   # --workspace has no effect, the resulting SBOM still contains other packages in the workspace
+    #   run: npm sbom --package-lock-only --sbom-format spdx --sbom-type library | tee ./sbom.spdx.json
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: tarball
+        path: ./*.tgz
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: bundle-iife
+        path: ./packages/bundle/dist/webchat*.js
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: bundle-esm
+        path: ./packages/bundle/static/
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: fluent-theme-iife
+        path: ./packages/fluent-theme/dist/
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: fluent-theme-esm
+        path: ./packages/fluent-theme/static/
+
+    # - name: Upload SBOM artifact
+    #   uses: actions/upload-artifact@v7
+    #   with:
+    #     name: sbom
+    #     path: ./sbom.spdx.json
+
+    - id: get-version
+      name: Get version
+      run: |
+        VERSION=$(tar -xzOf botframework-webchat-core-*.tgz package/package.json | jq -r '.version')
+
+        echo version=$VERSION | tee --append $GITHUB_OUTPUT
+
+        if [[ "$VERSION" == *-* ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi
+      shell: bash

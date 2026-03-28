@@ -2,11 +2,6 @@ name: 'Build via AzDO'
 description: Run a build pipeline via Azure DevOps and download the build artifact
 
 inputs:
-  artifact-name:
-    description: Output artifact name
-    default: azdo-artifact
-    type: string
-
   azdo-org:
     description: AzDO org URL
     required: true
@@ -34,11 +29,6 @@ inputs:
 
   azure-tenant-id:
     description: Azure tenant ID
-    required: true
-    type: string
-
-  download-artifact-name:
-    description: Name of AzDO artifact to download
     required: true
     type: string
 
@@ -209,11 +199,11 @@ runs:
         echo "Artifact downloaded successfully"
       shell: bash
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v6
-      with:
-        name: ${{ inputs.artifact-name }}
-        path: ./artifact-download/
+    # - name: Upload artifact
+    #   uses: actions/upload-artifact@v6
+    #   with:
+    #     name: ${{ inputs.artifact-name }}
+    #     path: ./artifact-download/
 
     - id: get-version
       name: Get version
@@ -225,3 +215,63 @@ runs:
         if [[ "$VERSION" == *-* ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi
       shell: bash
       working-directory: ./artifact-download/tgzfiles
+
+    - name: Extract artifact (bundle)
+      run: |
+        mkdir -p ./bundle/
+        cd ./bundle/
+
+        tar \
+          --extract \
+          --file=../tgzfiles/botframework-webchat-${{ steps.azdo-build.outputs.version }}.tgz \
+          --strip-component=1 \
+          package/dist/ \
+          package/static/
+
+    - name: Extract artifact (fluent-theme)
+      run: |
+        mkdir -p ./fluent-theme/
+        cd ./fluent-theme/
+
+        tar \
+          --extract \
+          --file=../tgzfiles/botframework-webchat-fluent-theme-${{ steps.azdo-build.outputs.version }}.tgz \
+          --strip-component=1 \
+          package/dist/ \
+          package/static/
+
+    - name: Upload artifact (tarball)
+      uses: actions/upload-artifact@v7
+      with:
+        name: tarball
+        path: ./tgzfiles/*.tgz
+
+    - name: Upload artifact (bundle-iife)
+      uses: actions/upload-artifact@v7
+      with:
+        name: bundle-iife
+        path: ./bundle/dist/webchat*.js
+
+    - name: Upload artifact (bundle-esm)
+      uses: actions/upload-artifact@v7
+      with:
+        name: bundle-esm
+        path: ./bundle/static/
+
+    - name: Upload artifact (fluent-theme-iife)
+      uses: actions/upload-artifact@v7
+      with:
+        name: fluent-theme-iife
+        path: ./fluent-theme/dist/
+
+    - name: Upload artifact (fluent-theme-esm)
+      uses: actions/upload-artifact@v7
+      with:
+        name: fluent-theme-esm
+        path: ./fluent-theme/static/
+
+    - name: Upload artifact (sbom)
+      uses: actions/upload-artifact@v7
+      with:
+        name: sbom
+        path: ./_manifest/spdx_2.2/manifest.spdx.json

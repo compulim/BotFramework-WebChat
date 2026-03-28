@@ -5,6 +5,11 @@ on:
     branches: feat-create-request
   workflow_dispatch:
     inputs:
+      local-build:
+        default: false
+        description: Use local build
+        type: boolean
+
       skip-release:
         default: false
         description: Skip release
@@ -18,48 +23,6 @@ env:
   node-version: 22
 
 jobs:
-  # prepare:
-  #   name: Prepare
-  #   outputs:
-  #     branch-name: ${{ steps.get-branch-name.outputs.branch-name }}
-  #   permissions:
-  #     contents: read
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v6
-
-  #     - id: get-branch-name
-  #       name: Get branch name
-  #       run: |
-  #         BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD)
-
-  #         echo branch-name=$BRANCH_NAME | tee --append $GITHUB_OUTPUT
-
-  #     # - uses: actions/setup-node@v6
-  #     #   with:
-  #     #     node-version: ${{ env.node-version }}
-
-  #     # - id: version-type
-  #     #   name: Determine version type
-  #     #   run: 'if [[ "$(cat ./package.json | jq -r ''.version'')" == *-0 ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi'
-
-  #     # - if: steps.version-type.outputs.version-type != 'production'
-  #     #   name: Set version
-  #     #   run: |
-  #     #     BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD)
-  #     #     COMMITISH=${{ github.sha }}
-  #     #     NOW=$(date +%Y%m%d%H%M)
-
-  #     #     SHORT_COMMITISH=${COMMITISH:0:7}
-
-  #     #     # npm version simply ignoring the build metadata + (plus) sign, we need to use dot or hyphen instead.
-  #     #     npm version --no-git-tag-version $(echo $(cat ./package.json | jq -r '.version') | cut -d- -f1)-$BRANCH_NAME.$NOW.$SHORT_COMMITISH
-
-  #     # - id: version
-  #     #   name: Get version
-  #     #   run: echo version=$(cat package.json | jq -r '.version') | tee --append $GITHUB_OUTPUT
-
   # build:
   #   name: Build
   #   permissions:
@@ -138,8 +101,8 @@ jobs:
       name: azure-devops
     name: Build
     outputs:
-      version: ${{ steps.azdo-build.outputs.version }}
-      version-type: ${{ steps.azdo-build.outputs.version-type }}
+      version: ${{ steps.get-version.outputs.version }}
+      version-type: ${{ steps.get-version.outputs.version-type }}
     permissions:
       contents: read
       id-token: write
@@ -157,85 +120,93 @@ jobs:
           echo branch-name=$BRANCH_NAME | tee --append $GITHUB_OUTPUT
 
       - id: azdo-build
+        if: '!inputs.local-build'
         timeout-minutes: 45
         uses: ./.github/actions/azdo-build
         with:
-          artifact-name: azdo-artifact
           azdo-org: ${{ vars.AZDO_ORG }}
           azdo-pipeline-name: ${{ vars.AZDO_PIPELINE_NAME }}
           azdo-project: ${{ vars.AZDO_PROJECT }}
           azure-client-id: ${{ vars.AZURE_CLIENT_ID }}
           azure-subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           azure-tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          download-artifact-name: drop_build_main
           pipeline-variable: |
             ProjectBranch=${{ steps.get-branch-name.outputs.branch-name }}
             ProjectRepository=${{ github.repository }}
 
-      - name: Download AzDO build artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: azdo-artifact
+      - id: local-build
+        if: inputs.local-build
+        uses: ./.github/actions/local-build
 
-      - name: Extract artifact (bundle)
+      - id: get-version
         run: |
-          mkdir -p ./bundle/
-          cd ./bundle/
+          echo version=${{ case(inputs.local-build, steps.local-build.outputs.version, steps.azdo-build.outputs.version) }} | tee --append $GITHUB_OUTPUT
+          echo version-type=${{ case(inputs.local-build, steps.local-build.outputs.version-type, steps.azdo-build.outputs.version-type) }} | tee --append $GITHUB_OUTPUT
 
-          tar \
-            --extract \
-            --file=../tgzfiles/botframework-webchat-${{ steps.azdo-build.outputs.version }}.tgz \
-            --strip-component=1 \
-            package/dist/ \
-            package/static/
+      # - name: Download AzDO build artifact
+      #   uses: actions/download-artifact@v8
+      #   with:
+      #     name: azdo-artifact
 
-      - name: Extract artifact (fluent-theme)
-        run: |
-          mkdir -p ./fluent-theme/
-          cd ./fluent-theme/
+      # - name: Extract artifact (bundle)
+      #   run: |
+      #     mkdir -p ./bundle/
+      #     cd ./bundle/
 
-          tar \
-            --extract \
-            --file=../tgzfiles/botframework-webchat-fluent-theme-${{ steps.azdo-build.outputs.version }}.tgz \
-            --strip-component=1 \
-            package/dist/ \
-            package/static/
+      #     tar \
+      #       --extract \
+      #       --file=../tgzfiles/botframework-webchat-${{ steps.azdo-build.outputs.version }}.tgz \
+      #       --strip-component=1 \
+      #       package/dist/ \
+      #       package/static/
 
-      - name: Upload artifact (tarball)
-        uses: actions/upload-artifact@v7
-        with:
-          name: tarball
-          path: ./tgzfiles/*.tgz
+      # - name: Extract artifact (fluent-theme)
+      #   run: |
+      #     mkdir -p ./fluent-theme/
+      #     cd ./fluent-theme/
 
-      - name: Upload artifact (bundle-iife)
-        uses: actions/upload-artifact@v7
-        with:
-          name: bundle-iife
-          path: ./bundle/dist/webchat*.js
+      #     tar \
+      #       --extract \
+      #       --file=../tgzfiles/botframework-webchat-fluent-theme-${{ steps.azdo-build.outputs.version }}.tgz \
+      #       --strip-component=1 \
+      #       package/dist/ \
+      #       package/static/
 
-      - name: Upload artifact (bundle-esm)
-        uses: actions/upload-artifact@v7
-        with:
-          name: bundle-esm
-          path: ./bundle/static/
+      # - name: Upload artifact (tarball)
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: tarball
+      #     path: ./tgzfiles/*.tgz
 
-      - name: Upload artifact (fluent-theme-iife)
-        uses: actions/upload-artifact@v7
-        with:
-          name: fluent-theme-iife
-          path: ./fluent-theme/dist/
+      # - name: Upload artifact (bundle-iife)
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: bundle-iife
+      #     path: ./bundle/dist/webchat*.js
 
-      - name: Upload artifact (fluent-theme-esm)
-        uses: actions/upload-artifact@v7
-        with:
-          name: fluent-theme-esm
-          path: ./fluent-theme/static/
+      # - name: Upload artifact (bundle-esm)
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: bundle-esm
+      #     path: ./bundle/static/
 
-      - name: Upload artifact (sbom)
-        uses: actions/upload-artifact@v7
-        with:
-          name: sbom
-          path: ./_manifest/spdx_2.2/manifest.spdx.json
+      # - name: Upload artifact (fluent-theme-iife)
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: fluent-theme-iife
+      #     path: ./fluent-theme/dist/
+
+      # - name: Upload artifact (fluent-theme-esm)
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: fluent-theme-esm
+      #     path: ./fluent-theme/static/
+
+      # - name: Upload artifact (sbom)
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: sbom
+      #     path: ./_manifest/spdx_2.2/manifest.spdx.json
 
   upload-changelog:
     name: Upload changelog
@@ -382,6 +353,4 @@ jobs:
         run: |
           gh release upload ${{ steps.release.outputs.tag }} \
             --repo ${{ github.repository }} \
-            ./asset/*.js \
-            ./asset/*.tgz \
-            ./asset/manifest.spdx.json
+            ./asset/*
