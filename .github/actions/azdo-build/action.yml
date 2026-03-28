@@ -249,7 +249,7 @@ runs:
 
         echo version=$VERSION | tee --append $GITHUB_OUTPUT
 
-        if [[ "$VERSION" == *-0 ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi
+        if [[ "$VERSION" == *-* ]]; then echo version-type=prerelease | tee --append $GITHUB_OUTPUT; else echo version-type=production | tee --append $GITHUB_OUTPUT; fi
       shell: bash
       working-directory: ./artifact-download/tgzfiles
 
