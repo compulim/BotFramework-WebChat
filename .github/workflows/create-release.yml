@@ -144,6 +144,7 @@ jobs:
       contents: read
       id-token: write
     runs-on: ubuntu-slim
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v6
@@ -349,10 +350,16 @@ jobs:
 
           cat ./CHANGELOG.latest.md | tee --append ./release.txt
 
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-notes
+          path: ./release.txt
+
       - env:
           # Use actions/create-github-app-token if create release would need to trigger another workflow.
           GH_TOKEN: ${{ github.token }}
         id: release
+        if: '!inputs.skip-release'
         name: Create release
         # Do not upload assets while creating release, otherwise, it will not trigger "release created" event.
         run: |
@@ -369,6 +376,7 @@ jobs:
           echo tag=$TAG | tee --append $GITHUB_OUTPUT
       - env:
           GH_TOKEN: ${{ github.token }}
+        if: '!inputs.skip-release'
         name: Upload assets
         run: |
           gh release upload ${{ steps.release.outputs.tag }} \
