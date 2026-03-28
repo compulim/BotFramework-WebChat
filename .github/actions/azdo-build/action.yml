@@ -227,6 +227,7 @@ runs:
           --strip-component=1 \
           package/dist/ \
           package/static/
+      shell: bash
 
     - name: Extract artifact (fluent-theme)
       run: |
@@ -239,6 +240,7 @@ runs:
           --strip-component=1 \
           package/dist/ \
           package/static/
+      shell: bash
 
     - name: Upload artifact (tarball)
       uses: actions/upload-artifact@v7
