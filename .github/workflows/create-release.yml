@@ -20,7 +20,7 @@ defaults:
     shell: bash
 
 env:
-  build-on: ${{ case(inputs.local-build, 'local', 'azdo') }}
+  build-on: ${{ case(inputs.local-build || false, 'local', 'azdo') }}
   # build-on: local
   node-version: 22
 
