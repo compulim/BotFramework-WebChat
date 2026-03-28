@@ -108,7 +108,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    runs-on: ubuntu-slim
+    runs-on: ${{ case(env.build-on == 'local', 'ubuntu-latest', 'ubuntu-slim') }}
     timeout-minutes: 45
 
     steps:
