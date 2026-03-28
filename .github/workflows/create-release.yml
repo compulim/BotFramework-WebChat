@@ -276,7 +276,8 @@ jobs:
           name: changelog
           path: ./
 
-      - name: Download artifact (sbom)
+      - continue-on-error: true
+        name: Download artifact (sbom)
         uses: actions/download-artifact@v8
         with:
           name: sbom
