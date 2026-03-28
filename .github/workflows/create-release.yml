@@ -353,6 +353,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: release-notes
+          overwrite: true
           path: ./release.txt
 
       - env:
