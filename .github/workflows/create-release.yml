@@ -133,7 +133,9 @@ jobs:
   #     #     path: ./sbom.spdx.json
 
   build:
-    environment: azure-devops
+    environment:
+      deployment: false
+      name: azure-devops
     name: Build
     outputs:
       version: ${{ steps.azdo-build.outputs.version }}
