@@ -223,7 +223,7 @@ runs:
 
         tar \
           --extract \
-          --file=../tgzfiles/botframework-webchat-${{ steps.azdo-build.outputs.version }}.tgz \
+          --file=../tgzfiles/botframework-webchat-${{ steps.get-version.outputs.version }}.tgz \
           --strip-component=1 \
           package/dist/ \
           package/static/
@@ -236,7 +236,7 @@ runs:
 
         tar \
           --extract \
-          --file=../tgzfiles/botframework-webchat-fluent-theme-${{ steps.azdo-build.outputs.version }}.tgz \
+          --file=../tgzfiles/botframework-webchat-fluent-theme-${{ steps.get-version.outputs.version }}.tgz \
           --strip-component=1 \
           package/dist/ \
           package/static/

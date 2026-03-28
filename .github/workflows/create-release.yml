@@ -121,6 +121,7 @@ jobs:
 
       - id: azdo-build
         if: '!inputs.local-build'
+        name: Build (Azure DevOps)
         timeout-minutes: 45
         uses: ./.github/actions/azdo-build
         with:
@@ -136,9 +137,11 @@ jobs:
 
       - id: local-build
         if: inputs.local-build
+        name: Build (local)
         uses: ./.github/actions/local-build
 
       - id: get-version
+        name: Get version
         run: |
           echo version=${{ case(inputs.local-build, steps.local-build.outputs.version, steps.azdo-build.outputs.version) }} | tee --append $GITHUB_OUTPUT
           echo version-type=${{ case(inputs.local-build, steps.local-build.outputs.version-type, steps.azdo-build.outputs.version-type) }} | tee --append $GITHUB_OUTPUT
