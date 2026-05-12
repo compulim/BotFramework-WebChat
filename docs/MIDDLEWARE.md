@@ -320,6 +320,34 @@ The following table shows how polymiddleware are prioritized.
 | Low      | Polymiddleware     | Polymiddleware passed to the `polymiddleware` prop.                                                                                                                                         |
 | Lowest   | Catch-all as error | Requests not handled by any polymiddleware in the chain will be thrown as an error.                                                                                                         |
 
+### I am seeing error: "next() cannot be called after the function had returned synchronously"
+
+`next` function will be available only in the handler function and no longer available after the handler function returned. If `next()` is called outside of handler function, you will see an error message: "next() cannot be called after the function had returned synchronously".
+
+The following code should be updated by moving the `next()` call into the handler function.
+
+```jsx
+const activityMiddleware = () => next => (...args) => {
+  return children => {
+    const result = next(...args); // The next() function can no longer available at this point.
+
+    return <ActivityContainer>{result(children)}</ActivityContainer>;
+  };
+};
+```
+
+The call to `next()` is being moved to the handler function.
+
+```jsx
+const activityMiddleware = () => next => (...args) => {
+  const result = next(...args); // The next() function call is being moved to the handler function.
+
+  return children => {
+    return <ActivityContainer>{result(children)}</ActivityContainer>;
+  };
+};
+```
+
 ## Deprecation dates
 
 We introduced polymiddleware in 2025-08-16. Based on our 2-year deprecation rule, legacy middleware will be removed on or after 2027-08-16. The following table shows deprecation dates for various legacy middleware.

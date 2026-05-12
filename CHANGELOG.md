@@ -42,6 +42,36 @@ Breaking changes in this release:
 - 💥 `activityStatusMiddleware.nextVisibleActivity` and `activityStatusMiddleware.sameTimestampGroup` is removed after deprecation, in PR [#5565](https://github.com/microsoft/BotFramework-WebChat/issues/5565), by [@compulim](https://github.com/compulim)
 - 💥 `avatarMiddleware` is being deprecated in favor of [`polymiddleware`](./docs/MIDDLEWARE.md). It will be removed on or after 2028-03-16, related to PR [#5779](https://github.com/microsoft/BotFramework-WebChat/pull/5779)
 
+#### Activity middleware and avatar middleware changes
+
+> Note: this is current in effect for activity middleware and avatar middleware only. In future, it will be in effect for all middleware.
+
+`next` function will be available only in the handler function and no longer available after the handler function returned. If `next()` is called outside of handler function, you will see an error message: "next() cannot be called after the function had returned synchronously".
+
+The following code should be updated by moving the `next()` call into the handler function.
+
+```jsx
+const activityMiddleware = () => next => (...args) => {
+  return children => {
+    const result = next(...args); // The next() function can no longer available at this point.
+
+    return <ActivityContainer>{result(children)}</ActivityContainer>;
+  };
+};
+```
+
+The call to `next()` is being moved to the handler function.
+
+```jsx
+const activityMiddleware = () => next => (...args) => {
+  const result = next(...args); // The next() function call is being moved to the handler function.
+
+  return children => {
+    return <ActivityContainer>{result(children)}</ActivityContainer>;
+  };
+};
+```
+
 ### Added
 
 - (Experimental) Added pre-chat message with starter prompts in Fluent UI, in PR [#5255](https://github.com/microsoft/BotFramework-WebChat/issues/5255) and [#5263](https://github.com/microsoft/BotFramework-WebChat/issues/5263), by [@compulim](https://github.com/compulim)
