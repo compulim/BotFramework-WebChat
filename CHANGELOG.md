@@ -55,7 +55,7 @@ const activityMiddleware = () => next => (...args) => {
   return children => {
     const result = next(...args); // The next() function can no longer available at this point.
 
-    return <ActivityContainer>{result(children)}</ActivityContainer>;
+    return <ActivityContainer>{result?.(children)}</ActivityContainer>;
   };
 };
 ```
@@ -67,7 +67,7 @@ const activityMiddleware = () => next => (...args) => {
   const result = next(...args); // The next() function call is being moved to the handler function.
 
   return children => {
-    return <ActivityContainer>{result(children)}</ActivityContainer>;
+    return <ActivityContainer>{result?.(children)}</ActivityContainer>;
   };
 };
 ```
